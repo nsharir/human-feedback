@@ -350,7 +350,7 @@ async function cursorToBox(page, box) {
 async function feedbackFlow(page) {
   // Wait for form to render
   await page.waitForSelector('.q-card[data-id="project_name"]', { timeout: 10000 });
-  await sleep(page, 600);
+  await sleep(page, 700);
 
   // 1. project_name (text) — type 'Mailbox'
   await scrollCardIntoView(page, 'project_name');
@@ -358,72 +358,67 @@ async function feedbackFlow(page) {
     const input = page.locator('.q-card[data-id="project_name"] input.q-input');
     const box = await input.boundingBox();
     await cursorToBox(page, box);
-    await sleep(page, 200);
+    await sleep(page, 100);
     await input.click();
-    await page.keyboard.type('Mailbox', { delay: 55 });
+    await page.keyboard.type('Mailbox', { delay: 50 });
+    await sleep(page, 250);
+  }
+
+  // 2. elevator_pitch (textarea) — required
+  await scrollCardIntoView(page, 'elevator_pitch');
+  {
+    const ta = page.locator('.q-card[data-id="elevator_pitch"] textarea.q-textarea');
+    const box = await ta.boundingBox();
+    await cursorToBox(page, box);
+    await sleep(page, 100);
+    await ta.click();
+    await page.keyboard.type('A fast, keyboard-first email client with smart triage.', { delay: 35 });
     await sleep(page, 500);
   }
 
-  // 2. audience (radio) — pick "Individual power user…"
+  // 3. audience (radio) — first option
   await scrollCardIntoView(page, 'audience');
-  await sleep(page, 300);
   {
     const opt = page.locator('.q-card[data-id="audience"] .q-option').first();
     const box = await opt.boundingBox();
     await cursorToBox(page, box);
-    await sleep(page, 250);
-    await opt.click();
-    await sleep(page, 600);
-  }
-
-  // 3. platforms (checkbox) — pick 3 options
-  await scrollCardIntoView(page, 'platforms');
-  await sleep(page, 300);
-  for (const idx of [0, 1, 4]) { // Web app, macOS, iOS
-    const opt = page.locator('.q-card[data-id="platforms"] .q-option').nth(idx);
-    const box = await opt.boundingBox();
-    await cursorToBox(page, box);
-    await sleep(page, 200);
+    await sleep(page, 150);
     await opt.click();
     await sleep(page, 350);
   }
-  await sleep(page, 300);
 
-  // 4. ai_aggressiveness (scale) — click button "4"
+  // 4. platforms (checkbox) — pick 3
+  await scrollCardIntoView(page, 'platforms');
+  for (const idx of [0, 1, 4]) {
+    const opt = page.locator('.q-card[data-id="platforms"] .q-option').nth(idx);
+    const box = await opt.boundingBox();
+    await cursorToBox(page, box);
+    await sleep(page, 100);
+    await opt.click();
+    await sleep(page, 200);
+  }
+  await sleep(page, 200);
+
+  // 5. ai_aggressiveness (scale) — click "4"
   await scrollCardIntoView(page, 'ai_aggressiveness');
-  await sleep(page, 300);
   {
     const btn = page.locator('.q-card[data-id="ai_aggressiveness"] .q-scale-btn').nth(3);
     const box = await btn.boundingBox();
     await cursorToBox(page, box);
-    await sleep(page, 250);
+    await sleep(page, 150);
     await btn.click();
-    await sleep(page, 600);
+    await sleep(page, 350);
   }
 
-  // 5. offline_required (boolean) — click "Yes"
+  // 6. offline_required (boolean) — "Yes"
   await scrollCardIntoView(page, 'offline_required');
-  await sleep(page, 300);
   {
     const yes = page.locator('.q-card[data-id="offline_required"] .q-bool-btn').first();
     const box = await yes.boundingBox();
     await cursorToBox(page, box);
-    await sleep(page, 250);
+    await sleep(page, 150);
     await yes.click();
-    await sleep(page, 600);
-  }
-
-  // 6. biggest_worry (textarea)
-  await scrollCardIntoView(page, 'biggest_worry');
-  await sleep(page, 300);
-  {
-    const ta = page.locator('.q-card[data-id="biggest_worry"] textarea.q-textarea');
-    const box = await ta.boundingBox();
-    await cursorToBox(page, box);
-    await sleep(page, 200);
-    await ta.click();
-    await page.keyboard.type('Sync conflicts across devices', { delay: 40 });
-    await sleep(page, 600);
+    await sleep(page, 500);
   }
 
   // 7. Click Preview button
@@ -431,34 +426,34 @@ async function feedbackFlow(page) {
     const b = document.getElementById('preview-btn');
     if (b) b.scrollIntoView({ block: 'center', behavior: 'instant' });
   });
-  await sleep(page, 400);
+  await sleep(page, 250);
   {
     const btn = await page.locator('#preview-btn').boundingBox();
     await cursorToBox(page, btn);
-    await sleep(page, 300);
+    await sleep(page, 200);
     await page.click('#preview-btn');
-    await sleep(page, 1200);
+    await sleep(page, 1100);
   }
 
-  // 8. Show the prompt briefly (scroll textarea)
+  // 8. Briefly show prompt
   await page.evaluate(() => {
     const ta = document.getElementById('preview-textarea');
     if (ta) ta.scrollTop = 0;
   });
-  await sleep(page, 900);
+  await sleep(page, 1100);
   await page.evaluate(() => {
     const ta = document.getElementById('preview-textarea');
-    if (ta) ta.scrollTop = 140;
+    if (ta) ta.scrollTop = 200;
   });
-  await sleep(page, 700);
+  await sleep(page, 900);
 
-  // 9. Click "Copy to Clipboard"
+  // 9. Click Copy to Clipboard
   {
     const copyBox = await page.locator('#preview-copy').boundingBox();
     await cursorToBox(page, copyBox);
-    await sleep(page, 300);
+    await sleep(page, 250);
     await page.click('#preview-copy');
-    await sleep(page, 1400);
+    await sleep(page, 1500);
   }
 }
 
