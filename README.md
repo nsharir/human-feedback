@@ -109,6 +109,15 @@ See [`plugins/<harness>/INSTALL.md`](plugins/) for per-harness details.
 
 The command definition tells the agent everything it needs: when to use each tool, how to name output files, the JSON schema for questionnaires, and the expected response format.
 
+When the agent edits the source file after the initial compile, it automatically recompiles and shares an updated link — the user always sees the latest version without asking.
+
+### Sub-commands (Claude Code)
+
+| Command | Description |
+|---|---|
+| `/agent-feedback` | Default — compile and present a feedback surface |
+| `/agent-feedback update` | Update to the latest version and reinstall the skill |
+
 ---
 
 ## Three tools, one command
@@ -427,7 +436,23 @@ The built templates are committed to git so `npm install` works without a build 
 
 ---
 
-## Upgrading from v1.x
+## Updating
+
+In Claude Code, just type:
+
+```
+/agent-feedback update
+```
+
+This updates the npm package and reinstalls the skill in one step.
+
+From the terminal:
+
+```bash
+npm install -g @nsharir/agent-feedback@latest && agent-feedback install
+```
+
+### Upgrading from v1.x
 
 v2.0 replaces the hook-based auto-wrap system with a user-triggered `/agent-feedback` command. To upgrade:
 

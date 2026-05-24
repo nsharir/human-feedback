@@ -3,11 +3,32 @@
 
 Compile an artifact into an interactive feedback surface the user opens in a browser.
 
-## When the user invokes this command
+## Sub-commands
+
+Check `$ARGUMENTS` first. If it matches a sub-command below, run that instead of the default compile flow.
+
+| `$ARGUMENTS` | Action |
+|---|---|
+| `update` | Run the update flow (see below) |
+| anything else | Continue to the compile flow |
+
+### `/agent-feedback update`
+
+Update the agent-feedback package to the latest version and reinstall the skill:
+
+```
+npm install -g @nsharir/agent-feedback@latest && agent-feedback install --claude-code
+```
+
+Report the new version (`agent-feedback --version`) and confirm the skill was reinstalled. Then stop — do not compile anything.
+
+---
+
+## When the user invokes this command (default compile flow)
 
 Determine what needs feedback:
 
-1. If `$ARGUMENTS` is provided, use it to identify the file or describe what to compile.
+1. If `$ARGUMENTS` is provided (and is not a sub-command above), use it to identify the file or describe what to compile.
 2. Otherwise, look at your recent conversation — find the most recent artifact you produced (an HTML mockup, a markdown spec/plan, or a situation where you need to ask the user multiple structured questions).
 
 ## Identify the input
@@ -46,6 +67,10 @@ If Claude Preview is available, show it inline:
 2. `mcp__Claude_Preview__preview_screenshot` to display it
 
 Tell the user the feedback surface is ready and **wait for their response**. Do not continue with work that depends on their feedback until they paste the structured prompt back.
+
+## Keep the link up to date
+
+After the initial compile, **every time you edit the source file** (the `.md`, `.html`, or `.json` that was compiled), you MUST immediately recompile by running the same `agent-feedback compile` command again with `--force`. Then share the updated `file://` link (or refresh the Claude Preview) so the user always sees the latest version. Do not wait for the user to ask — recompile proactively whenever you modify the source.
 
 ## JSON questionnaire schema
 

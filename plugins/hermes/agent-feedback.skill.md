@@ -57,6 +57,10 @@ MEDIA:<absolute-output-path>
 
 Tell the user the feedback surface is ready and **wait for their response**. Do not continue with work that depends on their feedback until they paste the structured prompt back.
 
+## Keep the link up to date
+
+After the initial compile, **every time you edit the source file** (the `.md`, `.html`, or `.json` that was compiled), you MUST immediately recompile by running the same `agent-feedback compile` command again with `--force`. Then share the updated `file://` link (and `MEDIA:` token if applicable) so the user always sees the latest version. Do not wait for the user to ask — recompile proactively whenever you modify the source.
+
 ## JSON questionnaire schema
 
 When you need to ask the user multiple questions, write a `.json` file:

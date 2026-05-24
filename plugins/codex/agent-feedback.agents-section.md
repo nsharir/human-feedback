@@ -34,6 +34,10 @@ Share: `file://<absolute-output-path>`
 
 Wait for the user's response. Do not continue with dependent work until they paste back the structured feedback prompt.
 
+### Keep the link up to date
+
+After the initial compile, **every time you edit the source file** (the `.md`, `.html`, or `.json` that was compiled), you MUST immediately recompile by running the same `agent-feedback compile` command again with `--force`. Then share the updated `file://` link so the user always sees the latest version. Do not wait for the user to ask — recompile proactively whenever you modify the source.
+
 ### JSON questionnaire schema
 
 ```json
