@@ -14,20 +14,21 @@
 
 /* Tool-specific accents and aliases */
 :root {
-  --accent:       #c0392b;
-  --accent2:      #e67e22;
-  --accent-hover: #a93226;
-  --accent-bg:    #fff8f7;
+  --accent:       #4f46e5;
+  --accent2:      #7c3aed;
+  --accent-hover: #4338ca;
+  --accent-soft:  #eef2ff;
+  --accent-bg:    #f5f5ff;
   --rule:         var(--border);
 
-  --mark-1: rgba(255,107,107,0.25);
-  --mark-2: rgba(255,217,61,0.35);
-  --mark-3: rgba(107,203,119,0.3);
-  --mark-4: rgba(77,150,255,0.25);
-  --mark-5: rgba(199,125,255,0.25);
-  --mark-6: rgba(255,154,60,0.3);
+  --mark-1: rgba(255,217,102,0.55);
+  --mark-2: rgba(255,217,102,0.55);
+  --mark-3: rgba(255,217,102,0.55);
+  --mark-4: rgba(255,217,102,0.55);
+  --mark-5: rgba(255,217,102,0.55);
+  --mark-6: rgba(255,217,102,0.55);
 
-  --panel-w:   340px;
+  --panel-w:   360px;
   --toolbar-h: 52px;
 }
 
@@ -219,7 +220,7 @@ body {
 }
 .modal-btn:hover { border-color: var(--ink); color: var(--ink); }
 .modal-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.modal-btn.primary:hover { background: #a93226; }
+.modal-btn.primary:hover { background: var(--accent-hover); }
 
 /* ── PREVIEW AREA ── */
 #preview-wrap {
@@ -293,15 +294,50 @@ body {
 .ann-block-highlight {
   outline: 2px solid var(--ann-color, var(--accent));
   outline-offset: 3px;
-  border-radius: 2px;
+  border-radius: 4px;
   position: relative;
   cursor: default;
+  background: var(--accent-soft);
 }
 .ann-text-mark {
-  background: var(--ann-color, var(--mark-2));
+  background: var(--mark-2);
+  border-bottom: 2px solid var(--accent);
   border-radius: 2px;
+  padding: 0 1px;
   cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
 }
+.ann-text-mark:hover { background: rgba(255,196,0,0.65); }
+
+/* Floating annotation label (Google-Docs style sticker) */
+.ann-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--accent);
+  vertical-align: super;
+  margin: 0 2px 0 3px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(79,70,229,0.35), 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.12s, box-shadow 0.12s;
+  user-select: none;
+  -webkit-user-select: none;
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+.ann-label:hover { transform: translateY(-1px) scale(1.05); box-shadow: 0 3px 10px rgba(79,70,229,0.45); }
+.ann-label.active { background: var(--ink); box-shadow: 0 0 0 3px rgba(79,70,229,0.25); }
+
 .ann-pin {
   display: inline-flex;
   align-items: center;
@@ -314,20 +350,22 @@ body {
   font-weight: 600;
   color: #fff;
   vertical-align: super;
-  margin-left: 2px;
+  margin-left: 4px;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   transition: transform 0.12s;
   flex-shrink: 0;
+  unicode-bidi: isolate;
+  direction: ltr;
 }
-.ann-pin:hover { transform: scale(1.2); }
+.ann-pin:hover { transform: scale(1.15); }
 
 /* Hover target in annotate mode */
 .ann-hover {
-  outline: 1.5px dashed rgba(192,57,43,0.5) !important;
+  outline: 1.5px dashed rgba(79,70,229,0.5) !important;
   outline-offset: 3px !important;
   cursor: crosshair !important;
-  background: rgba(192,57,43,0.03) !important;
+  background: rgba(79,70,229,0.04) !important;
 }
 
 /* ── SIDE PANEL ── */
@@ -338,62 +376,96 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transform: translateX(100%);
-  transition: transform 0.26s cubic-bezier(0.16,1,0.3,1);
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
-  z-index: 50;
+  transform: translateX(calc(100% + 40px));
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  position: fixed;
+  top: var(--toolbar-h); right: 0; bottom: 0;
+  z-index: 998;
+  box-shadow: -8px 0 32px rgba(0,0,0,0.08);
 }
 #side-panel.open { transform: translateX(0); }
 
 #panel-header {
-  padding: 16px 18px;
+  padding: 18px 20px;
   border-bottom: 1px solid var(--rule);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: var(--surface);
 }
-#panel-header h3 { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink); letter-spacing: 0.06em; }
+#panel-header h3 {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#panel-header h3::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
 
 #panel-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ann-card {
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--rule);
-  padding: 12px;
+  padding: 12px 14px;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  background: var(--bg);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  background: var(--surface);
+  position: relative;
 }
-.ann-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-.ann-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.ann-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.ann-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(79,70,229,0.12); transform: translateY(-1px); }
+.ann-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ann-card-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
 .ann-card-id { font-family: var(--mono); font-size: 10px; color: var(--ink3); flex: 1; }
-.ann-card-type { font-family: var(--mono); font-size: 9px; background: var(--rule); padding: 2px 6px; border-radius: 10px; color: var(--ink2); }
-.ann-card-del { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 16px; padding: 2px 4px; transition: color 0.12s; line-height: 1; }
-.ann-card-del:hover { color: var(--accent); }
+.ann-card-type { font-family: var(--mono); font-size: 9px; background: var(--accent-soft); color: var(--accent); padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.ann-card-line { font-family: var(--mono); font-size: 9px; background: #edf7f2; color: #2d7a2d; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.ann-card-del { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: all 0.12s; line-height: 1; }
+.ann-card-del:hover { color: #fff; background: var(--accent); }
 .ann-card-src {
   font-family: var(--mono);
   font-size: 10px;
   color: var(--ink3);
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 5px 8px;
-  margin-bottom: 7px;
+  background: var(--bg);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 10px;
+  margin-bottom: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.4;
+  line-height: 1.5;
 }
-.ann-card-comment { font-family: var(--mono); font-size: 11px; color: var(--ink2); line-height: 1.5; }
+.ann-card-comment { font-family: var(--serif); font-size: 13px; color: var(--ink); line-height: 1.5; }
 
 #panel-footer {
   padding: 14px;
@@ -401,8 +473,43 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: var(--surface);
 }
-#panel-footer button { width: 100%; justify-content: center; font-size: 11px; }
+#panel-footer .panel-btn {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+#panel-footer .panel-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+#panel-footer .panel-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+#panel-footer .panel-btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
+#panel-footer .panel-btn.danger { color: var(--red); border-color: transparent; }
+#panel-footer .panel-btn.danger:hover { background: var(--red-lt); border-color: var(--red); color: var(--red); }
+#panel-footer .panel-row { display: flex; gap: 8px; }
+#panel-footer .panel-row .panel-btn { flex: 1; }
+
+#panel-empty {
+  padding: 60px 24px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  line-height: 1.7;
+}
+#panel-empty .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
 
 /* ── COMMENT POPOVER ── */
 #comment-pop {
@@ -467,7 +574,7 @@ body {
 }
 .pop-btn:hover { border-color: #888; color: #fff; }
 .pop-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.pop-btn.primary:hover { background: #a93226; }
+.pop-btn.primary:hover { background: var(--accent-hover); }
 
 /* Mobile bottom sheet */
 @media (pointer: coarse) {
@@ -497,34 +604,45 @@ body {
   #topbar .logo-text { display: none; }
 }
 
-/* ── MOBILE FAB ── */
+/* ── FLOATING ACTION BUTTON (desktop + mobile) ── */
 #mob-fab {
-  display: none;
+  display: flex;
   position: fixed;
-  bottom: 24px; right: 20px;
+  bottom: 24px; right: 24px;
   z-index: 999;
-  width: 52px; height: 52px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
-  font-size: 20px;
+  font-size: 22px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(192,57,43,0.45);
+  box-shadow: 0 8px 24px rgba(79,70,229,0.45), 0 2px 6px rgba(0,0,0,0.1);
   align-items: center; justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
 }
-#mob-fab:active { transform: scale(0.92); }
+#mob-fab:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(79,70,229,0.5); }
+#mob-fab:active { transform: scale(0.95); }
 #mob-fab-badge {
   position: absolute; top: -4px; right: -4px;
   background: var(--ink); color: #fff;
-  font-family: var(--mono); font-size: 9px; font-weight: 600;
-  border-radius: 10px; padding: 2px 5px;
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  border-radius: 11px; padding: 2px 6px; min-width: 18px;
   display: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 #mob-fab-badge.on { display: block; }
-@media (pointer: coarse) { #mob-fab { display: flex; } }
+#mob-fab.hidden { display: none; }
+
+/* Card flash highlight when targeted */
+.ann-card-flash {
+  animation: ann-card-flash-anim 1.4s ease;
+}
+@keyframes ann-card-flash-anim {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79,70,229,0); }
+  30%      { box-shadow: 0 0 0 4px rgba(79,70,229,0.35); border-color: var(--accent); }
+}
 
 /* ── SELECTION BAR (mobile text) ── */
 #sel-bar {
@@ -620,13 +738,17 @@ body {
   <!-- SIDE PANEL -->
   <div id="side-panel">
     <div id="panel-header">
-      <h3>ANNOTATIONS</h3>
-      <button class="tb-btn" id="panel-close">✕</button>
+      <h3>ANNOTATIONS <span id="panel-count" style="color:var(--ink3);font-weight:400;">(0)</span></h3>
+      <button class="tb-btn" id="panel-close" style="border-color:var(--rule);color:var(--ink2);">✕</button>
     </div>
     <div id="panel-list"></div>
     <div id="panel-footer">
-      <button class="tb-btn primary" id="copy-btn-2">⎘ Copy Prompt to Clipboard</button>
-      <button class="tb-btn" id="clear-btn" style="border-color:#e4dacf;color:#9a9490;">⊘ Clear All</button>
+      <button class="panel-btn primary" id="copy-prompt-btn">⎘ Copy Prompt</button>
+      <div class="panel-row">
+        <button class="panel-btn" id="copy-json-btn">{ } Copy JSON</button>
+        <button class="panel-btn" id="copy-btn-2">👁 Preview</button>
+      </div>
+      <button class="panel-btn danger" id="clear-btn">⊘ Clear All</button>
     </div>
   </div>
 
@@ -655,8 +777,8 @@ body {
   </div>
 </div>
 
-<!-- MOBILE FAB -->
-<button id="mob-fab">✏️<span id="mob-fab-badge">0</span></button>
+<!-- FLOATING ACTIONS BUTTON -->
+<button id="mob-fab" class="hidden" title="View annotations" aria-label="View annotations">💬<span id="mob-fab-badge">0</span></button>
 
 <!-- OVERLAY -->
 <div id="overlay"></div>
@@ -813,7 +935,7 @@ const MARK_COLORS = ['var(--mark-1)','var(--mark-2)','var(--mark-3)','var(--mark
 let colorIdx = 0;
 const nextColor = () => ({ solid: COLORS[colorIdx % COLORS.length], mark: MARK_COLORS[colorIdx++ % MARK_COLORS.length] });
 
-const isMobile = () => window.matchMedia('(pointer: coarse)').matches;
+const isMobile = () => typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
 const loadScreen   = document.getElementById('load-screen');
@@ -844,8 +966,12 @@ function updateCount() {
   annCount.style.display = n > 0 ? '' : 'none';
   document.getElementById('panel-btn').style.display = n > 0 ? '' : 'none';
   document.getElementById('copy-btn').style.display = n > 0 ? '' : 'none';
+  const pc = document.getElementById('panel-count');
+  if (pc) pc.textContent = `(${n})`;
   mobBadge.textContent = n;
   mobBadge.classList.toggle('on', n > 0);
+  // Hide FAB until a document is loaded
+  mobFab.classList.toggle('hidden', !previewWrap.classList.contains('active'));
 }
 
 function getTextSnippet(text, max = 100) {
@@ -1030,22 +1156,24 @@ function doSave() {
 function saveAnnotation(comment) {
   const { solid, mark } = nextColor();
   const id = ++idCounter;
-  const ann = { id, solid, mark, comment, type: pendingAnn.type, mdRef: pendingAnn.mdRef };
+  const labelText = 'A' + id;
+  const ann = { id, labelText, solid, mark, comment, type: pendingAnn.type, mdRef: pendingAnn.mdRef };
 
   if (pendingAnn.type === 'block') {
     const el = pendingAnn.el;
     el.classList.add('ann-block-highlight');
-    el.style.setProperty('--ann-color', solid);
-    // inline pin
-    const pin = document.createElement('span');
-    pin.className = 'ann-pin';
-    pin.style.background = solid;
-    pin.textContent = id;
-    pin.title = comment;
-    pin.dataset.annId = id;
-    el.appendChild(pin);
+    el.style.setProperty('--ann-color', 'var(--accent)');
+    // floating label appended to the block
+    const label = document.createElement('span');
+    label.className = 'ann-label';
+    label.textContent = labelText;
+    label.title = comment;
+    label.dataset.annId = id;
+    label.setAttribute('contenteditable', 'false');
+    label.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); focusAnnotation(id); });
+    el.appendChild(label);
     ann.el = el;
-    ann.pin = pin;
+    ann.label = label;
   } else {
     // text
     const range = pendingAnn.range || savedRange;
@@ -1053,11 +1181,20 @@ function saveAnnotation(comment) {
       if (range) {
         const mk = document.createElement('mark');
         mk.className = 'ann-text-mark';
-        mk.style.setProperty('--ann-color', mark);
-        mk.title = `[${id}] ${comment}`;
+        mk.title = `[${labelText}] ${comment}`;
         mk.dataset.annId = id;
         range.surroundContents(mk);
+        // floating label after the mark
+        const label = document.createElement('span');
+        label.className = 'ann-label';
+        label.textContent = labelText;
+        label.title = comment;
+        label.dataset.annId = id;
+        label.setAttribute('contenteditable', 'false');
+        label.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); focusAnnotation(id); });
+        mk.insertAdjacentElement('afterend', label);
         ann.mark = mk;
+        ann.label = label;
       }
     } catch(e) { /* complex range */ }
     window.getSelection()?.removeAllRanges();
@@ -1067,7 +1204,24 @@ function saveAnnotation(comment) {
   updateCount();
   renderPanel();
   closePop();
-  showToast(`✓ Annotation #${id} saved`, 'success');
+  showToast(`✓ Annotation ${labelText} saved`, 'success');
+}
+
+// ── Focus on annotation (open panel + scroll to card) ─────────────────────
+function focusAnnotation(id) {
+  openPanel();
+  setTimeout(() => {
+    const card = panelList.querySelector(`[data-id="${id}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('ann-card-flash');
+      setTimeout(() => card.classList.remove('ann-card-flash'), 1500);
+    }
+  }, 60);
+  // visually mark active label
+  document.querySelectorAll('.ann-label.active').forEach(el => el.classList.remove('active'));
+  const lbl = document.querySelector(`.ann-label[data-ann-id="${id}"]`);
+  if (lbl) lbl.classList.add('active');
 }
 
 // ── Remove annotation ──────────────────────────────────────────────────────
@@ -1078,8 +1232,8 @@ function removeAnnotation(id) {
   if (ann.el) {
     ann.el.classList.remove('ann-block-highlight');
     ann.el.style.removeProperty('--ann-color');
-    ann.pin?.remove();
   }
+  if (ann.label) ann.label.remove();
   if (ann.mark) ann.mark.replaceWith(document.createTextNode(ann.mark.textContent));
   annotations.splice(idx, 1);
   updateCount();
@@ -1093,25 +1247,36 @@ function clearAll() {
 // ── Panel ──────────────────────────────────────────────────────────────────
 function renderPanel() {
   if (!annotations.length) {
-    panelList.innerHTML = `<div style="padding:40px 16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink3);">No annotations yet.</div>`;
+    panelList.innerHTML = `<div id="panel-empty"><div class="empty-icon">💬</div>No annotations yet.<br/>Highlight text or click a paragraph to start.</div>`;
     return;
   }
   panelList.innerHTML = annotations.map(a => `
     <div class="ann-card" data-id="${a.id}">
       <div class="ann-card-top">
-        <div class="ann-dot" style="background:${a.solid}"></div>
-        <div class="ann-card-id">#${a.id}</div>
-        <div class="ann-card-type">${a.type === 'text' ? 'text' : 'block'}</div>
-        ${a.mdRef.label && a.mdRef.label !== '?' ? `<div class="ann-card-type" style="background:#e8f4e8;color:#2d7a2d;">${a.mdRef.label}</div>` : ''}
-        <button class="ann-card-del" data-del="${a.id}">✕</button>
+        <div class="ann-card-badge">${a.labelText || ('A' + a.id)}</div>
+        <div class="ann-card-id">${a.type === 'text' ? 'text selection' : 'block element'}</div>
+        ${a.mdRef.label && a.mdRef.label !== '?' ? `<div class="ann-card-line">${a.mdRef.label}</div>` : ''}
+        <button class="ann-card-del" data-del="${a.id}" title="Delete annotation">✕</button>
       </div>
-      <div class="ann-card-src">${a.mdRef.content}</div>
-      <div class="ann-card-comment">${a.comment}</div>
+      <div class="ann-card-src">${escHtmlSafe(a.mdRef.content)}</div>
+      <div class="ann-card-comment">${escHtmlSafe(a.comment)}</div>
     </div>
   `).join('');
   panelList.querySelectorAll('[data-del]').forEach(btn => {
     btn.addEventListener('click', e => { e.stopPropagation(); removeAnnotation(parseInt(btn.dataset.del)); });
   });
+  panelList.querySelectorAll('.ann-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = parseInt(card.dataset.id);
+      const ann = annotations.find(a => a.id === id);
+      const target = ann && (ann.mark || ann.el);
+      if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+}
+
+function escHtmlSafe(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function openPanel() { sidePanel.classList.add('open'); if (isMobile()) overlay.classList.add('on'); }
@@ -1121,6 +1286,20 @@ document.getElementById('panel-btn').addEventListener('click', openPanel);
 document.getElementById('panel-close').addEventListener('click', closePanel);
 document.getElementById('copy-btn').addEventListener('click', openPromptPreview);
 document.getElementById('copy-btn-2').addEventListener('click', openPromptPreview);
+document.getElementById('copy-prompt-btn').addEventListener('click', async () => {
+  if (!annotations.length) { showToast('No annotations yet'); return; }
+  const text = buildPromptText();
+  const res = await copyToClipboardSafe(text);
+  if (res === 'auto') showToast('✓ Prompt copied to clipboard', 'success');
+  else { openPromptPreview(); showToast('Open preview to copy manually'); }
+});
+document.getElementById('copy-json-btn').addEventListener('click', async () => {
+  if (!annotations.length) { showToast('No annotations yet'); return; }
+  const json = JSON.stringify(buildPayload(), null, 2);
+  const res = await copyToClipboardSafe(json);
+  if (res === 'auto') showToast('✓ JSON copied to clipboard', 'success');
+  else showToast('Copy failed — try Preview');
+});
 document.getElementById('clear-btn').addEventListener('click', () => {
   if (!annotations.length) return;
   if (!confirm(`Clear all ${annotations.length} annotations?`)) return;
@@ -1128,6 +1307,27 @@ document.getElementById('clear-btn').addEventListener('click', () => {
 });
 
 // ── Prompt ─────────────────────────────────────────────────────────────────
+function buildPayload() {
+  return {
+    _type: 'md_annotator_response',
+    timestamp: new Date().toISOString(),
+    document: {
+      excerpt: rawMarkdown.slice(0, 400) + (rawMarkdown.length > 400 ? '\n…' : ''),
+      total_lines: rawMarkdown.split('\n').length,
+      char_count: rawMarkdown.length
+    },
+    annotations: annotations.map(a => ({
+      id: a.labelText || ('A' + a.id),
+      type: a.type === 'text' ? 'text_selection' : 'block_element',
+      line_start: a.mdRef.lineStart,
+      line_end: a.mdRef.lineEnd,
+      line_label: a.mdRef.label,
+      source: a.mdRef.content,
+      comment: a.comment
+    }))
+  };
+}
+
 function buildPromptText() {
   if (!annotations.length) return '';
   const lines = [
@@ -1139,13 +1339,14 @@ function buildPromptText() {
   ];
   annotations.forEach(a => {
     lines.push('');
-    lines.push(`### Annotation #${a.id} — ${a.type === 'text' ? 'Text Selection' : 'Block Element'}`);
+    lines.push(`### Annotation ${a.labelText || ('A' + a.id)} — ${a.type === 'text' ? 'Text Selection' : 'Block Element'}`);
     if (a.mdRef.lineStart) lines.push(`Line: ${a.mdRef.label}`);
     lines.push(`Markdown source reference:`);
     lines.push('```markdown', a.mdRef.content, '```');
     lines.push(`Comment: ${a.comment}`);
     lines.push('---');
   });
+  lines.push('', 'Structured JSON payload:', '```json', JSON.stringify(buildPayload(), null, 2), '```');
   lines.push('', 'Please address each annotation with respect to the markdown source above.');
   return lines.join('\n');
 }
@@ -1159,7 +1360,7 @@ function openPromptPreview() {
 
 // ── Preview event listeners ───────────────────────────────────────────────
 const ANNOTATABLE = 'h1,h2,h3,h4,h5,h6,p,li,blockquote,pre,td,th,tr';
-const IGNORE = ['#comment-pop','#side-panel','#topbar','#sel-bar','#mob-fab','.ann-pin'];
+const IGNORE = ['#comment-pop','#side-panel','#topbar','#sel-bar','#mob-fab','.ann-pin','.ann-label'];
 
 function isIgnored(el) { return IGNORE.some(s => el.closest && el.closest(s)); }
 function getAnnotatable(el) { return el.closest(ANNOTATABLE); }
@@ -1282,10 +1483,13 @@ selBar.addEventListener('click', e => {
   openPop(pending, window.innerWidth / 2, window.innerHeight / 2);
 });
 
-// Mobile FAB
+// FAB — opens/toggles the panel
 mobFab.addEventListener('click', () => {
-  if (annotations.length) openPanel();
-  else showToast(annotationMode ? 'Long-press elements or select text' : 'Annotation mode is paused');
+  if (sidePanel.classList.contains('open')) { closePanel(); return; }
+  if (!annotations.length) {
+    showToast(annotationMode ? 'Highlight text or click a block to annotate' : 'Annotation mode is paused');
+  }
+  openPanel();
 });
 
 // Overlay click → close pop or panel
