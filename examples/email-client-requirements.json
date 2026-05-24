@@ -1,10 +1,24 @@
 {
   "title": "Email Client — Requirements Discovery",
-  "description": "You asked the agent to build an email client. Before drafting a spec, it needs to understand who this is for, which features matter, and what trade-offs you're willing to make. Answer below and the agent will produce a functional spec from your responses.",
+  "description": "Before drafting a functional spec, the agent needs structured input across many dimensions. This form exercises every supported question type so you can see what's possible. Answer below; on Submit you'll get a JSON payload to hand back to the agent.",
   "questions": [
     {
+      "id": "project_name",
+      "text": "What should we call this project? (a short codename works)",
+      "type": "text",
+      "placeholder": "e.g. Mailbox, Inbox Zero, ProjectX",
+      "required": true
+    },
+    {
+      "id": "elevator_pitch",
+      "text": "Describe the product in 2–3 sentences as if you were pitching it.",
+      "type": "textarea",
+      "hint": "Focus on user value, not implementation.",
+      "required": true
+    },
+    {
       "id": "audience",
-      "text": "Who is the primary user?",
+      "text": "Who is the PRIMARY user?",
       "type": "radio",
       "options": [
         "Individual power user (heavy keyboard, many accounts)",
@@ -17,38 +31,20 @@
     },
     {
       "id": "platforms",
-      "text": "Which platforms must this ship on at v1?",
+      "text": "Which platforms must ship at v1? (select all that apply)",
       "type": "checkbox",
       "options": ["Web app", "macOS desktop", "Windows desktop", "Linux desktop", "iOS", "Android"],
       "required": true
     },
     {
-      "id": "providers",
-      "text": "Which email providers must be supported out of the box?",
-      "type": "checkbox",
-      "options": ["Gmail / Google Workspace", "Outlook / Microsoft 365", "Generic IMAP/SMTP", "iCloud Mail", "Fastmail", "ProtonMail (bridge)"],
-      "required": true
+      "id": "design_inspiration",
+      "text": "Which existing client is the closest visual/UX reference?",
+      "type": "select",
+      "options": ["Gmail", "Apple Mail", "Outlook", "Superhuman", "HEY", "Spark", "Thunderbird", "Mutt / aerc (TUI)"],
+      "other": true
     },
     {
-      "id": "core_features",
-      "text": "Which features are NON-NEGOTIABLE at v1?",
-      "type": "checkbox",
-      "options": [
-        "Unified inbox across accounts",
-        "Threaded conversation view",
-        "Full-text search (offline)",
-        "Snooze / send later",
-        "Rich-text composer",
-        "Calendar invitations (RSVP)",
-        "Filters / rules engine",
-        "PGP / S/MIME encryption",
-        "AI summarization & drafting",
-        "Keyboard-first navigation (Vim/Gmail-style)"
-      ],
-      "required": true
-    },
-    {
-      "id": "ai_role",
+      "id": "ai_aggressiveness",
       "text": "How aggressive should the AI features be?",
       "type": "scale",
       "min": 1,
@@ -58,55 +54,40 @@
       "required": true
     },
     {
-      "id": "design_inspiration",
-      "text": "Which existing client is the closest visual/UX reference?",
-      "type": "radio",
-      "options": ["Gmail", "Apple Mail", "Outlook", "Superhuman", "HEY", "Spark", "Thunderbird", "Mutt / aerc (TUI)"],
-      "other": true
+      "id": "ai_confidence",
+      "text": "How confident are you that AI features will be a differentiator?",
+      "type": "range",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%"
     },
     {
-      "id": "privacy_posture",
-      "text": "Where should mail data live?",
-      "type": "radio",
-      "options": [
-        "Local-only (no cloud sync of message bodies)",
-        "End-to-end encrypted cloud sync",
-        "Standard cloud (provider IMAP, our metadata only)",
-        "Don't care — whatever is simplest"
-      ],
-      "required": true
-    },
-    {
-      "id": "offline_support",
+      "id": "offline_required",
       "text": "Must the app work fully offline?",
       "type": "boolean",
       "required": true
     },
     {
-      "id": "target_users",
-      "text": "How many users do you expect at launch and at 12 months?",
-      "type": "textarea",
-      "hint": "Rough orders of magnitude are fine (e.g. '100 beta, 10k by Q4')."
-    },
-    {
-      "id": "deadline",
+      "id": "launch_date",
       "text": "Is there a hard launch date?",
       "type": "date"
     },
     {
-      "id": "budget_constraints",
-      "text": "Any budget / team-size constraints the agent should know about?",
-      "type": "textarea",
-      "hint": "e.g. 'solo founder, 6 month runway', 'team of 4 engineers, can ship paid services'."
-    },
-    {
       "id": "out_of_scope",
-      "text": "What is explicitly OUT of scope for v1?",
+      "text": "What is explicitly OUT of scope for v1? Anything the agent should NOT build.",
       "type": "textarea",
-      "hint": "List anything you want the agent to NOT build."
+      "hint": "Bullet list is fine."
     },
     {
-      "id": "open_concerns",
+      "id": "visual_reference",
+      "text": "Attach a sketch / mockup if you have one (optional)",
+      "type": "textarea",
+      "hint": "Describe what you're attaching, or upload an image.",
+      "allowImage": true
+    },
+    {
+      "id": "biggest_worry",
       "text": "What worries you most about this project?",
       "type": "textarea"
     }
