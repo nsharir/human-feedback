@@ -52,24 +52,24 @@ npx @nsharir/agent-feedback compile input.json -o form.html
 
 ---
 
-## Auto-wrap your agent's output (one command)
+## Add `/agent-feedback` to your agent (one command)
 
-Once installed, hook `agent-feedback` into your agent harness so it **automatically wraps every `.md` / `.html` / `.json` file the agent produces** with the feedback framework — no manual `agent-feedback compile` calls needed.
+Once installed, add the `/agent-feedback` command to your agent harness so the user can trigger interactive feedback surfaces on demand.
 
 ```bash
 npx @nsharir/agent-feedback install
 ```
 
-The installer detects which agent harnesses are present and offers to patch their hook configs. It's idempotent and preserves any existing user config.
+The installer detects which agent harnesses are present and installs a skill/command definition into each one.
 
 **Supported harnesses:**
 
-| Harness | Hook event | Config location |
+| Harness | What gets installed | Location |
 |---|---|---|
-| **Claude Code** | `PostToolUse` | `.claude/settings.json` |
-| **Cursor** (1.7+) | `afterFileEdit` | `.cursor/hooks.json` |
-| **Codex** (CLI) | `PostToolUse` | `.codex/hooks.json` |
-| **Hermes** (0.9+) | `post_tool_call` | `.hermes/plugins/` |
+| **Claude Code** | Custom slash command | `.claude/commands/agent-feedback.md` |
+| **Cursor** (1.7+) | Agent-requested rule | `.cursor/rules/agent-feedback.mdc` |
+| **Codex** (CLI) | AGENTS.md section | `AGENTS.md` |
+| **Hermes** (0.9+) | Skill file | `.hermes/skills/agent-feedback/SKILL.md` |
 
 **Targeted installs:**
 
@@ -93,7 +93,21 @@ npx @nsharir/agent-feedback doctor
 npx @nsharir/agent-feedback uninstall --all
 ```
 
-See [`plugins/<harness>/INSTALL.md`](plugins/) for per-harness details and manual install instructions.
+See [`plugins/<harness>/INSTALL.md`](plugins/) for per-harness details.
+
+---
+
+## How it works
+
+1. The user types `/agent-feedback` (or says "get feedback on this") in their agent chat
+2. The agent identifies the artifact to compile — an HTML mockup, a markdown doc, or a JSON questionnaire
+3. The agent runs `agent-feedback compile <input> -o <output> --force`
+4. The agent shares a `file://` link to the compiled file
+5. The user opens it in a browser, annotates or responds
+6. The user copies the structured prompt and pastes it back to the agent
+7. The agent reads the feedback and continues
+
+The command definition tells the agent everything it needs: when to use each tool, how to name output files, the JSON schema for questionnaires, and the expected response format.
 
 ---
 
@@ -280,41 +294,27 @@ The leading sentence varies by tool (`completed a questionnaire`, `reviewed the 
 
 ---
 
-## How the hooks work
+## Clipboard behavior
 
-A single shared Node.js script (`plugins/shared/post-write-hook.js`) handles all four harnesses. Each harness's config registers the same `agent-feedback __hook` command, which reads the harness-specific event JSON via stdin, normalizes it, and decides whether to wrap the written file.
+The framework uses a 3-tier clipboard strategy that gracefully degrades:
 
-The hook **never blocks the agent**. It runs after the write completes, wraps the file, and emits a non-blocking message telling the agent about the wrapped output. If anything fails, the agent continues with the raw file.
+1. **`navigator.clipboard.writeText`** — modern API (https / localhost only)
+2. **`document.execCommand('copy')`** — older fallback for some `file://` contexts
+3. **Manual selection** — auto-selects the preview textarea and shows a hint like *"Press ⌘ + C to copy manually"*
 
-**File patterns the hook wraps:**
-- `.md` / `.markdown` → `<name>.review.html` (markdown annotator)
-- `.html` / `.htm` → `<name>.annotated.html` (HTML annotator)
-- `.json` → `<name>.feedback.html` (feedback form)
+This means the tools work even when opened directly via `file://` — the user just hits one keystroke to finish.
 
-**Skipped automatically:**
-- Already-wrapped files (`.review.html`, `.annotated.html`, `.feedback.html`)
-- Config files (`package.json`, `tsconfig.json`, `.eslintrc.json`, etc.)
-- Files in `node_modules/`, `dist/`, `build/`, `.git/`
+---
 
-**Disable without uninstalling:**
+## Compiled file identification
 
-```bash
-export AGENT_FEEDBACK_DISABLED=1
+Every output file starts with an HTML comment identifying it:
+
+```html
+<!-- compiled by @nsharir/agent-feedback | tool: feedback | source: questions.json -->
 ```
 
-**Auto-open is OFF by default as of v1.7.0.** The hook compiles the file and includes a `file://` link in the agent's reply — the user clicks to open it. To re-enable automatic browser launch:
-
-```bash
-export AGENT_FEEDBACK_AUTO_OPEN=1
-```
-
-Auto-open (when enabled) is automatically skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
-
-**Quieter agent messages:**
-
-```bash
-export AGENT_FEEDBACK_VERBOSE=0
-```
+Agents can read the first line of any output file to verify what they're presenting to a user.
 
 ---
 
@@ -337,16 +337,15 @@ src/
 │   └── feedback/              ← Feedback form HTML template
 │
 plugins/                       ← Agent harness integrations
-├── shared/post-write-hook.js  ← Shared hook script (Node)
-├── claude-code/               ← Claude Code config + INSTALL.md
-├── cursor/                    ← Cursor config + INSTALL.md
-├── codex/                     ← Codex config + INSTALL.md
-└── hermes/                    ← Hermes Python plugin + INSTALL.md
+├── claude-code/               ← Slash command + INSTALL.md
+├── cursor/                    ← Rule file + INSTALL.md
+├── codex/                     ← AGENTS.md section + INSTALL.md
+└── hermes/                    ← Skill file + INSTALL.md
 
 build/build.js                 ← Resolves @include directives, writes templates
 lib/templates/                 ← Built templates (committed)
 lib/compiler.js                ← The compiler (consumes built templates)
-lib/installer.js               ← Detects + patches harness configs
+lib/installer.js               ← Detects + installs skill definitions
 bin/cli.js                     ← CLI entry point
 ```
 
@@ -395,58 +394,58 @@ The built templates are committed to git so `npm install` works without a build 
 
 ```
 1. Agent generates or modifies an HTML page
-2. Agent: agent-feedback compile page.html -o page.review.html
-3. Agent asks human: "Open page.review.html, annotate anything
-   that needs changing, then copy the prompt and paste it back."
-4. Human annotates → copies prompt
-5. Agent reads prompt, makes targeted edits
-6. Loop repeats until approved
+2. User types /agent-feedback (or "get feedback on the page")
+3. Agent: agent-feedback compile page.html -o page.annotated.html
+4. Agent shares the file:// link
+5. Human opens, annotates → copies prompt
+6. Agent reads prompt, makes targeted edits
+7. Loop repeats until approved
 ```
 
 ### Document review loop
 
 ```
 1. Agent writes a markdown document
-2. Agent: agent-feedback compile doc.md -o doc.review.html
-3. Human opens file, annotates sections by line number
-4. Agent receives prompt with line-referenced comments
-5. Agent edits the specific lines and recompiles
+2. User types /agent-feedback
+3. Agent: agent-feedback compile doc.md -o doc.review.html
+4. Human opens file, annotates sections by line number
+5. Agent receives prompt with line-referenced comments
+6. Agent edits the specific lines and recompiles
 ```
 
 ### Structured intake / clarification
 
 ```
 1. Agent needs information before proceeding
-2. Agent writes questions.json targeting exactly what it needs
-3. Agent: agent-feedback compile questions.json -o intake.html
-4. Human fills in the form, copies the prompt
-5. Agent reads the structured prompt, extracts answers
-6. Agent continues with full context — no back-and-forth
+2. User types /agent-feedback (or agent recognizes it needs input)
+3. Agent writes questions.json targeting exactly what it needs
+4. Agent: agent-feedback compile questions.json -o intake.html
+5. Human fills in the form, copies the prompt
+6. Agent reads the structured prompt, extracts answers
+7. Agent continues with full context — no back-and-forth
 ```
 
 ---
 
-## Clipboard behavior
+## Upgrading from v1.x
 
-The framework uses a 3-tier clipboard strategy that gracefully degrades:
+v2.0 replaces the hook-based auto-wrap system with a user-triggered `/agent-feedback` command. To upgrade:
 
-1. **`navigator.clipboard.writeText`** — modern API (https / localhost only)
-2. **`document.execCommand('copy')`** — older fallback for some `file://` contexts
-3. **Manual selection** — auto-selects the preview textarea and shows a hint like *"Press ⌘ + C to copy manually"*
+```bash
+# Remove old hooks
+npx @nsharir/agent-feedback uninstall --all
 
-This means the tools work even when opened directly via `file://` — the user just hits one keystroke to finish.
-
----
-
-## Compiled file identification
-
-Every output file starts with an HTML comment identifying it:
-
-```html
-<!-- compiled by @nsharir/agent-feedback | tool: feedback | source: questions.json -->
+# Install new skill definitions
+npx @nsharir/agent-feedback install --all
 ```
 
-Agents can read the first line of any output file to verify what they're presenting to a user.
+Or just run `install` — it automatically cleans up legacy hooks when it finds them.
+
+The `doctor` command will warn you if legacy hooks are still present:
+
+```bash
+npx @nsharir/agent-feedback doctor
+```
 
 ---
 

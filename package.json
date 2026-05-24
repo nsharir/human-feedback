@@ -1,20 +1,21 @@
 {
   "name": "@nsharir/agent-feedback",
-  "version": "1.7.4",
-  "description": "Close the loop on AI agent output — wrap .md / .html / .json files with interactive feedback surfaces, native hook plugins for Claude Code, Cursor, Codex, and Hermes.",
+  "version": "2.0.0",
+  "description": "Close the loop on AI agent output — compile .md / .html / .json files into interactive feedback surfaces. Install the /agent-feedback command into Claude Code, Cursor, Codex, or Hermes.",
   "main": "lib/compiler.js",
   "bin": {
     "agent-feedback": "./bin/cli.js"
   },
   "scripts": {
     "build": "node build/build.js",
-    "test": "npm run build && node test/run.js && node test/annotator.js && node test/md-annotator.js && node test/installer.js && node test/post-write-hook.js",
+    "test": "npm run build && node test/run.js && node test/annotator.js && node test/md-annotator.js && node test/installer.js",
     "prepack": "npm run build",
     "compile:examples": "node scripts/compile-examples.js"
   },
   "files": [
     "bin/",
     "lib/",
+    "plugins/",
     "src/",
     "build/",
     "README.md",

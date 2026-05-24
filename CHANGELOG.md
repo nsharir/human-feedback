@@ -2,7 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2.0.0] — 2026-05-24
+
+### Changed (BREAKING) — replaced hook system with `/agent-feedback` slash command
+
+- **The entire hook/rule-injection system has been removed.** No more `PostToolUse`, `SessionStart`, `UserPromptSubmit`, `beforeSubmitPrompt`, or `pre_llm_call` hooks. No more managed `MEMORY.md` entries. No more Python plugin for Hermes.
+- **Replaced with a simple slash command** (`/agent-feedback`) the user invokes explicitly. The installer now writes skill/command definition files instead of patching hook configs:
+  - Claude Code: `.claude/commands/agent-feedback.md`
+  - Cursor: `.cursor/rules/agent-feedback.mdc`
+  - Codex: `AGENTS.md` section (marked with `<!-- agent-feedback:begin/end -->`)
+  - Hermes: `.hermes/skills/agent-feedback/SKILL.md`
+- The core compile engine (`lib/compiler.js`) is unchanged. `agent-feedback compile` works exactly as before.
+- **Migration:** `agent-feedback install` automatically detects and cleans up v1.x hook-based installations. `agent-feedback doctor` warns about legacy hooks.
+
+### Removed
+
+- `lib/rule-injection.js` — rule text variants injected into agent context
+- `plugins/shared/post-write-hook.js` — the shared hook script
+- `plugins/hermes/agent_feedback/` — Python plugin directory
+- Hook template JSON files (`settings.template.json`, `hooks.template.json`)
+- The `__hook` hidden CLI command
+- `AGENT_FEEDBACK_DISABLED`, `AGENT_FEEDBACK_AUTO_OPEN`, `AGENT_FEEDBACK_VERBOSE`, `AGENT_FEEDBACK_QUESTIONNAIRE` env vars (no longer applicable)
+
+---
+
+## [1.7.4]
 
 ### Added — Hermes-only workspace path rule: write artifacts under `<workspace>/.hermes/plans/` (v1.7.3)
 

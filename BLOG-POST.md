@@ -99,7 +99,7 @@ Three principles, in case anyone wants to build something similar:
 
 1. **No server.** Everything compiles to a single self-contained HTML file. The "backend" is the clipboard.
 2. **One output format.** Every tool emits the same structured natural-language prompt. The agent can parse it the same way every time.
-3. **Native hook integration.** A single `agent-feedback install` command patches Claude Code / Cursor / Codex / Hermes hook configs so any file the agent writes gets auto-wrapped — no manual compile step.
+3. **Native agent integration.** A single `agent-feedback install` command adds the `/agent-feedback` command to Claude Code, Cursor, Codex, or Hermes — the user triggers it when they want to give feedback.
 
 The whole thing is ~3,000 lines of vanilla JS. No framework. No build pipeline beyond a simple file-inliner.
 

@@ -1,14 +1,12 @@
-# Hermes plugin
+# Hermes — agent-feedback skill
 
-Installs a `post_tool_call` plugin into Hermes that automatically wraps any `.md` / `.html` / `.json` file the agent writes with the **agent-feedback framework**.
-
-## Install (recommended)
+## Automatic install
 
 ```bash
 npx @nsharir/agent-feedback install --hermes
 ```
 
-This copies the Python plugin into `.hermes/plugins/agent_feedback/`. Add `--global` to install into `~/.hermes/plugins/agent_feedback/` instead.
+This writes `.hermes/skills/agent-feedback/SKILL.md` in your project. Add `--global` to install at `~/.hermes/skills/agent-feedback/` instead.
 
 ## Uninstall
 
@@ -18,35 +16,38 @@ npx @nsharir/agent-feedback uninstall --hermes
 
 ## What gets installed
 
-A Python plugin folder at `<scope>/.hermes/plugins/agent_feedback/`:
+A single skill file at `.hermes/skills/agent-feedback/SKILL.md` that teaches the agent to:
+
+1. Identify the artifact that needs feedback
+2. Run `agent-feedback compile <input> -o <output> --force`
+3. Write output under `<workspace>/.hermes/plans/` when appropriate
+4. Include both a `file://` link and a `MEDIA:` token in the reply (WebUI renders it inline)
+5. Wait for the user's structured feedback
+
+## Usage
+
+In Hermes, say:
 
 ```
-agent_feedback/
-├── __init__.py     ← plugin entry point with post_tool_call hook
-├── plugin.json     ← plugin manifest
-└── .agent_feedback_managed   ← marker for the uninstaller
+/agent-feedback
 ```
 
-## What the hook does
+Or:
 
-After every Hermes write/edit/create tool call:
-1. The Python plugin reads the file path from the tool's arguments
-2. Invokes the shared Node hook script via `agent-feedback __hook`
-3. Receives the structured message and returns it to Hermes as a `system_message` injected into the next LLM call
+```
+get feedback on the mockup
+```
 
 ## Manual install
 
-Copy the `plugins/hermes/agent_feedback/` directory from this repo into `~/.hermes/plugins/`.
+Copy `agent-feedback.skill.md` from this directory to `.hermes/skills/agent-feedback/SKILL.md`.
 
-```bash
-cp -r plugins/hermes/agent_feedback ~/.hermes/plugins/
-```
+## Upgrading from v1.x
 
-Restart Hermes. Verify with `hermes plugins list` (should show `agent_feedback`).
+Running `install` automatically removes the old Python plugin directory (`.hermes/plugins/agent_feedback/`) and the managed `MEMORY.md` entry.
 
 ## Requires
 
-- Hermes Agent 0.9 or later (lifecycle hooks released April 2026)
-- Python 3.10+ (Hermes' baseline)
+- Hermes Agent 0.9 or later
 - Node.js 18+ on PATH
-- `@nsharir/agent-feedback` installed globally
+- `@nsharir/agent-feedback` installed globally (`npm install -g @nsharir/agent-feedback`)

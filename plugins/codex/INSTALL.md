@@ -1,14 +1,12 @@
-# Codex plugin
+# Codex — agent-feedback in AGENTS.md
 
-Installs a `PostToolUse` hook into Codex CLI that automatically wraps any `.md` / `.html` / `.json` file the agent writes with the **agent-feedback framework**.
-
-## Install (recommended)
+## Automatic install
 
 ```bash
 npx @nsharir/agent-feedback install --codex
 ```
 
-This patches `.codex/hooks.json` in your project. Add `--global` to install at `~/.codex/hooks.json` instead.
+This appends a marked section to `AGENTS.md` in your project. Add `--global` to install at `~/AGENTS.md` instead.
 
 ## Uninstall
 
@@ -16,48 +14,34 @@ This patches `.codex/hooks.json` in your project. Add `--global` to install at `
 npx @nsharir/agent-feedback uninstall --codex
 ```
 
-## What gets added
+## What gets installed
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "^(Write|Edit|apply_patch|create_file|str_replace)$",
-        "__agent_feedback_managed__": true,
-        "hooks": [
-          { "type": "command", "command": "agent-feedback __hook", "timeout": 20 }
-        ]
-      }
-    ]
-  }
-}
+A section in `AGENTS.md` wrapped in `<!-- agent-feedback:begin -->` / `<!-- agent-feedback:end -->` markers. Existing content in `AGENTS.md` is preserved. Uninstall removes only the marked section.
+
+The section instructs the agent to:
+
+1. Identify the artifact that needs feedback
+2. Run `agent-feedback compile <input> -o <output> --force`
+3. Share a `file://` link to the compiled output
+4. Wait for the user's structured feedback
+
+## Usage
+
+In Codex, say:
+
 ```
-
-## What the hook does
-
-After every Codex write/edit/patch tool call:
-1. Reads the file path from `tool_input`
-2. Checks if it's a `.md`, `.html`, or `.json` file
-3. Runs `agent-feedback compile <file> -o <file>.{review,annotated,feedback}.html --force`
-4. Returns an `additionalContext` so the agent shares the wrapped file with the user
+use agent-feedback to review the spec
+```
 
 ## Manual install
 
-Add the JSON above to `.codex/hooks.json`. You can also configure inline in `config.toml`:
+Copy the content of `agent-feedback.agents-section.md` from this directory and paste it into your `AGENTS.md`.
 
-```toml
-[[hooks.PostToolUse]]
-matcher = "^(Write|Edit|apply_patch|create_file|str_replace)$"
+## Upgrading from v1.x
 
-[[hooks.PostToolUse.hooks]]
-type    = "command"
-command = "agent-feedback __hook"
-timeout = 20
-```
+Running `install` automatically removes old hook-based entries from `.codex/hooks.json`.
 
-Restart Codex. Verify with `codex hooks` (lists active hooks).
+## Requires
 
-## Trust requirements
-
-Codex requires project-local hooks to be **trusted** before they run. After installing, you'll be prompted on first use to trust `agent-feedback __hook`. Approve it to enable the hook.
+- Node.js 18+ on PATH
+- `@nsharir/agent-feedback` installed globally (`npm install -g @nsharir/agent-feedback`)

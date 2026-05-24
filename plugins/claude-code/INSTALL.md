@@ -1,14 +1,12 @@
-# Claude Code plugin
+# Claude Code — `/agent-feedback` command
 
-Installs a `PostToolUse` hook into Claude Code that automatically wraps any `.md` / `.html` / `.json` file the agent writes with the **agent-feedback framework**.
-
-## Install (recommended)
+## Automatic install
 
 ```bash
 npx @nsharir/agent-feedback install --claude-code
 ```
 
-This patches `.claude/settings.json` in your project. Add `--global` to install at `~/.claude/settings.json` instead.
+This writes `.claude/commands/agent-feedback.md` in your project. Add `--global` to install at `~/.claude/commands/` instead.
 
 ## Uninstall
 
@@ -16,63 +14,44 @@ This patches `.claude/settings.json` in your project. Add `--global` to install 
 npx @nsharir/agent-feedback uninstall --claude-code
 ```
 
-## What gets added
+## What gets installed
 
-The installer appends a single hook entry to your existing `settings.json`, preserving any other configuration:
+A single markdown file at `.claude/commands/agent-feedback.md` — a custom slash command the user invokes with `/agent-feedback` in Claude Code.
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Create",
-        "__agent_feedback_managed__": true,
-        "hooks": [
-          { "type": "command", "command": "agent-feedback __hook", "timeout": 20 }
-        ]
-      }
-    ]
-  }
-}
+The command teaches the agent to:
+
+1. Identify the artifact that needs feedback (from user input or recent context)
+2. Run `agent-feedback compile <input> -o <output> --force`
+3. Present the compiled file via Claude Preview or a `file://` link
+4. Wait for the user's structured feedback
+
+## Usage
+
+In Claude Code, type:
+
+```
+/agent-feedback
 ```
 
-The `__agent_feedback_managed__` marker lets the uninstaller find and remove this hook without touching anything else you've added.
+Or with a specific request:
 
-## What the hook does
-
-After every `Write` / `Edit` / `MultiEdit` / `Create` tool call:
-1. Reads the file path from the event
-2. Checks if it's a `.md`, `.html`, or `.json` file (skips `.review.html` / `.feedback.html` / `.annotated.html` to avoid loops, and config files like `package.json` / `tsconfig.json`)
-3. Runs `agent-feedback compile <file> -o <file>.{review,annotated,feedback}.html --force`
-4. Returns an `additionalContext` to the agent telling it to share the wrapped file with the user instead of the raw source
+```
+/agent-feedback review the mockup I just created
+```
 
 ## Manual install
 
-If the automatic installer can't run, add this to `.claude/settings.json` by hand:
+Copy `agent-feedback.command.md` from this directory to `.claude/commands/agent-feedback.md`.
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Create",
-        "hooks": [
-          { "type": "command", "command": "agent-feedback __hook", "timeout": 20 }
-        ]
-      }
-    ]
-  }
-}
-```
+## Upgrading from v1.x
 
-Restart Claude Code. Verify with `/hooks` to see the new hook listed.
-
-## Disabling without uninstalling
-
-Set the env var:
+Running `install` automatically removes old hook-based entries from `.claude/settings.json`. Run `doctor` to check:
 
 ```bash
-export AGENT_FEEDBACK_DISABLED=1
+npx @nsharir/agent-feedback doctor
 ```
 
-The hook will still fire but will short-circuit immediately.
+## Requires
+
+- Node.js 18+ on PATH
+- `@nsharir/agent-feedback` installed globally (`npm install -g @nsharir/agent-feedback`)

@@ -27,164 +27,168 @@ try {
     fs.mkdirSync(path.join(tmp, `.${name}`), { recursive: true });
   });
 
-  // Detection
+  // ── Detection ─────────────────────────────────────────────────────────────
   const detected = installer.detectAll();
   assert(detected['claude-code'].project === true, 'detects Claude Code project scope');
   assert(detected['cursor'].project === true,      'detects Cursor project scope');
   assert(detected['codex'].project === true,       'detects Codex project scope');
   assert(detected['hermes'].project === true,      'detects Hermes project scope');
 
-  // Install each
+  // ── Claude Code install ───────────────────────────────────────────────────
   const r1 = installer.install('claude-code', 'project');
-  assert(r1.changed && fs.existsSync(path.join(tmp, '.claude', 'settings.json')), 'installs Claude Code config');
+  const ccTarget = path.join(tmp, '.claude', 'commands', 'agent-feedback.md');
+  assert(r1.changed === true, 'Claude Code: install reports changed');
+  assert(fs.existsSync(ccTarget), 'Claude Code: command file created');
   {
-    const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.claude', 'settings.json'), 'utf8'));
-    assert(Array.isArray(cfg.hooks.PostToolUse) && cfg.hooks.PostToolUse.length === 1, 'Claude Code: PostToolUse group');
-    assert(Array.isArray(cfg.hooks.SessionStart) && cfg.hooks.SessionStart.length === 1, 'Claude Code: SessionStart group (rule injection)');
-    assert(Array.isArray(cfg.hooks.UserPromptSubmit) && cfg.hooks.UserPromptSubmit.length === 1, 'Claude Code: UserPromptSubmit group (rule injection)');
-  }
-
-  const r2 = installer.install('cursor', 'project');
-  assert(r2.changed && fs.existsSync(path.join(tmp, '.cursor', 'hooks.json')), 'installs Cursor config');
-  {
-    const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.cursor', 'hooks.json'), 'utf8'));
-    assert(Array.isArray(cfg.hooks.afterFileEdit) && cfg.hooks.afterFileEdit.length === 1, 'Cursor: afterFileEdit group');
-    assert(Array.isArray(cfg.hooks.beforeSubmitPrompt) && cfg.hooks.beforeSubmitPrompt.length === 1, 'Cursor: beforeSubmitPrompt group (rule injection)');
-  }
-
-  const r3 = installer.install('codex', 'project');
-  assert(r3.changed && fs.existsSync(path.join(tmp, '.codex', 'hooks.json')), 'installs Codex config');
-  {
-    const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.codex', 'hooks.json'), 'utf8'));
-    assert(Array.isArray(cfg.hooks.PostToolUse) && cfg.hooks.PostToolUse.length === 1, 'Codex: PostToolUse group');
-    assert(Array.isArray(cfg.hooks.SessionStart) && cfg.hooks.SessionStart.length === 1, 'Codex: SessionStart group (rule injection)');
-    assert(Array.isArray(cfg.hooks.UserPromptSubmit) && cfg.hooks.UserPromptSubmit.length === 1, 'Codex: UserPromptSubmit group (rule injection)');
-  }
-
-  const r4 = installer.install('hermes', 'project');
-  assert(r4.changed && fs.existsSync(path.join(tmp, '.hermes', 'plugins', 'agent_feedback', '__init__.py')), 'installs Hermes plugin');
-
-  // Hermes install also writes the rule into MEMORY.md (project scope here).
-  const memoryFile = path.join(tmp, '.hermes', 'memories', 'MEMORY.md');
-  assert(fs.existsSync(memoryFile), 'Hermes: creates MEMORY.md when missing');
-  {
-    const mem = fs.readFileSync(memoryFile, 'utf8');
-    assert(mem.includes('agent-feedback:managed-rule:begin'), 'Hermes: memory rule begin marker written');
-    assert(mem.includes('agent-feedback:managed-rule:end'),   'Hermes: memory rule end marker written');
-    assert(mem.includes('questions*.json'),                   'Hermes: memory rule body contains the >1-question contract');
-    assert(mem.includes('.hermes/plans/'),                    'Hermes: memory rule body instructs writing under .hermes/plans/');
-    assert(mem.includes('Workspace::v1'),                     'Hermes: memory rule body references the Workspace::v1 tag');
-    assert(r4.memory && r4.memory.wrote === true,             'Hermes: install result reports memory.wrote=true');
-  }
-
-  // Memory write is idempotent — second install on already-populated MEMORY.md
-  // must not duplicate the entry.
-  const r4c = installer.install('hermes', 'project');
-  {
-    const mem = fs.readFileSync(memoryFile, 'utf8');
-    const occurrences = (mem.match(/agent-feedback:managed-rule:begin/g) || []).length;
-    assert(occurrences === 1, 'Hermes: re-install does not duplicate the memory rule');
-    assert(r4c.memory && r4c.memory.wrote === false, 'Hermes: idempotent install reports memory.wrote=false');
-  }
-
-  // Memory install preserves prior MEMORY.md entries.
-  fs.unlinkSync(memoryFile);
-  fs.writeFileSync(memoryFile, 'user note one\n§\nuser note two\n');
-  // Force a re-write by removing the plugin sentinel + reinstalling
-  fs.rmSync(path.join(tmp, '.hermes', 'plugins', 'agent_feedback'), { recursive: true, force: true });
-  installer.install('hermes', 'project');
-  {
-    const mem = fs.readFileSync(memoryFile, 'utf8');
-    assert(mem.startsWith('user note one\n§\nuser note two\n'), 'Hermes: memory install preserves prior entries');
-    assert(mem.includes('agent-feedback:managed-rule:begin'),   'Hermes: memory install appends rule entry');
-    // The appended block must be separated by a "§" line.
-    assert(/\n§\n<!-- agent-feedback:managed-rule:begin -->/.test(mem),
-      'Hermes: appended rule is delimited by "§" from prior entries');
+    const content = fs.readFileSync(ccTarget, 'utf8');
+    assert(content.includes('agent-feedback compile'), 'Claude Code: command file contains compile instruction');
+    assert(content.includes('$ARGUMENTS'), 'Claude Code: command file references $ARGUMENTS');
+    assert(content.includes('Claude Preview'), 'Claude Code: command file mentions Preview');
   }
 
   // Idempotency
   const r1b = installer.install('claude-code', 'project');
-  assert(r1b.changed === false, 'Claude Code install is idempotent');
+  assert(r1b.changed === false, 'Claude Code: install is idempotent');
+
+  // ── Cursor install ────────────────────────────────────────────────────────
+  const r2 = installer.install('cursor', 'project');
+  const cursorTarget = path.join(tmp, '.cursor', 'rules', 'agent-feedback.mdc');
+  assert(r2.changed === true, 'Cursor: install reports changed');
+  assert(fs.existsSync(cursorTarget), 'Cursor: rule file created');
+  {
+    const content = fs.readFileSync(cursorTarget, 'utf8');
+    assert(content.includes('agent-feedback compile'), 'Cursor: rule file contains compile instruction');
+    assert(content.includes('alwaysApply: false'), 'Cursor: rule is agent-requested, not always-on');
+  }
+
+  // Idempotency
+  const r2b = installer.install('cursor', 'project');
+  assert(r2b.changed === false, 'Cursor: install is idempotent');
+
+  // ── Codex install (AGENTS.md) ─────────────────────────────────────────────
+  const r3 = installer.install('codex', 'project');
+  const agentsMd = path.join(tmp, 'AGENTS.md');
+  assert(r3.changed === true, 'Codex: install reports changed');
+  assert(fs.existsSync(agentsMd), 'Codex: AGENTS.md created');
+  {
+    const content = fs.readFileSync(agentsMd, 'utf8');
+    assert(content.includes('<!-- agent-feedback:begin'), 'Codex: AGENTS.md has begin marker');
+    assert(content.includes('<!-- agent-feedback:end -->'), 'Codex: AGENTS.md has end marker');
+    assert(content.includes('agent-feedback compile'), 'Codex: AGENTS.md contains compile instruction');
+  }
+
+  // Idempotency
+  const r3b = installer.install('codex', 'project');
+  assert(r3b.changed === false, 'Codex: install is idempotent');
+
+  // Preserves existing AGENTS.md content
+  {
+    fs.unlinkSync(agentsMd);
+    fs.writeFileSync(agentsMd, '# My Project Agents\n\nSome user content here.\n');
+    installer.install('codex', 'project');
+    const content = fs.readFileSync(agentsMd, 'utf8');
+    assert(content.startsWith('# My Project Agents'), 'Codex: preserves existing AGENTS.md content');
+    assert(content.includes('<!-- agent-feedback:begin'), 'Codex: appends section to existing file');
+  }
+
+  // ── Hermes install ────────────────────────────────────────────────────────
+  const r4 = installer.install('hermes', 'project');
+  const hermesTarget = path.join(tmp, '.hermes', 'skills', 'agent-feedback', 'SKILL.md');
+  assert(r4.changed === true, 'Hermes: install reports changed');
+  assert(fs.existsSync(hermesTarget), 'Hermes: skill file created');
+  {
+    const content = fs.readFileSync(hermesTarget, 'utf8');
+    assert(content.includes('agent-feedback compile'), 'Hermes: skill file contains compile instruction');
+    assert(content.includes('MEDIA:'), 'Hermes: skill file mentions MEDIA token');
+    assert(content.includes('Workspace::v1'), 'Hermes: skill file references Workspace tag');
+  }
+
+  // Idempotency
   const r4b = installer.install('hermes', 'project');
-  assert(r4b.changed === false, 'Hermes install is idempotent');
-  assert(r4b.plugin && r4b.plugin.action === 'skipped',
-    'Hermes: same-version re-install reports plugin.action=skipped');
+  assert(r4b.changed === false, 'Hermes: install is idempotent');
 
-  // v1.7.4 — auto-upgrade when the installed plugin.json reports an
-  // older version than the bundled one. Simulate by downgrading the
-  // installed plugin.json and re-running install.
-  {
-    const pluginFile = path.join(tmp, '.hermes', 'plugins', 'agent_feedback', 'plugin.json');
-    const meta = JSON.parse(fs.readFileSync(pluginFile, 'utf8'));
-    const realVersion = meta.version;
-    meta.version = '1.0.0-stale';
-    fs.writeFileSync(pluginFile, JSON.stringify(meta, null, 2));
+  // ── isInstalled ───────────────────────────────────────────────────────────
+  assert(installer.isInstalled('claude-code', 'project') === true, 'isInstalled: Claude Code = true');
+  assert(installer.isInstalled('cursor', 'project') === true, 'isInstalled: Cursor = true');
+  assert(installer.isInstalled('codex', 'project') === true, 'isInstalled: Codex = true');
+  assert(installer.isInstalled('hermes', 'project') === true, 'isInstalled: Hermes = true');
 
-    const rUp = installer.install('hermes', 'project');
-    assert(rUp.changed === true, 'Hermes: stale plugin triggers a re-install');
-    assert(rUp.plugin && rUp.plugin.action === 'upgraded',
-      'Hermes: stale plugin reports plugin.action=upgraded');
-    assert(rUp.plugin.from === '1.0.0-stale' && rUp.plugin.to === realVersion,
-      'Hermes: upgrade result reports from/to versions');
-
-    const after = JSON.parse(fs.readFileSync(pluginFile, 'utf8'));
-    assert(after.version === realVersion,
-      'Hermes: upgrade overwrites plugin.json with the bundled version');
-  }
-
-  // v1.7.4 — memory rule body update propagates when re-running install
-  // after the in-place MEMORY.md was hand-edited to an older variant.
-  {
-    let mem = fs.readFileSync(memoryFile, 'utf8');
-    const tampered = mem.replace(
-      /<!-- agent-feedback:managed-rule:begin -->[\s\S]*?<!-- agent-feedback:managed-rule:end -->/,
-      '<!-- agent-feedback:managed-rule:begin -->\nold short rule body\n<!-- agent-feedback:managed-rule:end -->',
-    );
-    fs.writeFileSync(memoryFile, tampered);
-
-    const rRewrite = installer.install('hermes', 'project');
-    assert(rRewrite.memory && rRewrite.memory.wrote === true,
-      'Hermes: drifted memory rule is rewritten on re-install');
-
-    mem = fs.readFileSync(memoryFile, 'utf8');
-    assert(!mem.includes('old short rule body'),
-      'Hermes: re-install removes the stale rule body');
-    assert(mem.includes('mockups') || mem.includes('UX mockups'),
-      'Hermes: refreshed rule body includes the mockup clause');
-    const occ = (mem.match(/agent-feedback:managed-rule:begin/g) || []).length;
-    assert(occ === 1, 'Hermes: re-write does not duplicate the managed block');
-  }
-
-  // Preserves existing config
-  const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.claude', 'settings.json'), 'utf8'));
-  cfg.userCustom = { foo: 'bar' };
-  cfg.hooks.PreToolUse = [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'echo hi' }] }];
-  fs.writeFileSync(path.join(tmp, '.claude', 'settings.json'), JSON.stringify(cfg, null, 2));
-
-  // Uninstall should preserve user content
+  // ── Uninstall Claude Code ─────────────────────────────────────────────────
   const u1 = installer.uninstall('claude-code', 'project');
-  assert(u1.changed === true, 'uninstalls Claude Code hook');
+  assert(u1.changed === true, 'Claude Code: uninstall reports changed');
+  assert(!fs.existsSync(ccTarget), 'Claude Code: command file removed');
+  assert(installer.isInstalled('claude-code', 'project') === false, 'Claude Code: isInstalled = false after uninstall');
 
-  const afterUninstall = JSON.parse(fs.readFileSync(path.join(tmp, '.claude', 'settings.json'), 'utf8'));
-  assert(afterUninstall.userCustom?.foo === 'bar', 'preserves user-added fields');
-  assert(afterUninstall.hooks?.PreToolUse?.length === 1, 'preserves user-added hooks');
-  assert(!afterUninstall.hooks?.PostToolUse, 'removed only the managed PostToolUse hook');
+  // Uninstall when already removed
+  const u1b = installer.uninstall('claude-code', 'project');
+  assert(u1b.changed === false, 'Claude Code: uninstall is idempotent');
 
-  // Uninstall Hermes
-  const u4 = installer.uninstall('hermes', 'project');
-  assert(u4.changed === true && !fs.existsSync(path.join(tmp, '.hermes', 'plugins', 'agent_feedback')), 'uninstalls Hermes plugin');
+  // ── Uninstall Cursor ──────────────────────────────────────────────────────
+  const u2 = installer.uninstall('cursor', 'project');
+  assert(u2.changed === true, 'Cursor: uninstall reports changed');
+  assert(!fs.existsSync(cursorTarget), 'Cursor: rule file removed');
 
-  // Uninstall must also strip the managed memory entry while preserving user prose.
-  if (fs.existsSync(memoryFile)) {
-    const mem = fs.readFileSync(memoryFile, 'utf8');
-    assert(!mem.includes('agent-feedback:managed-rule'), 'Hermes: uninstall removes managed memory rule');
-    assert(mem.includes('user note one') && mem.includes('user note two'),
-      'Hermes: uninstall preserves user-added memory entries');
-  } else {
-    // The user-prose-only file remained; ensure it really is empty-of-rule.
-    assert(true, 'Hermes: uninstall left no managed memory rule (file removed)');
+  // ── Uninstall Codex ───────────────────────────────────────────────────────
+  const u3 = installer.uninstall('codex', 'project');
+  assert(u3.changed === true, 'Codex: uninstall reports changed');
+  {
+    const content = fs.readFileSync(agentsMd, 'utf8');
+    assert(!content.includes('<!-- agent-feedback:begin'), 'Codex: section removed from AGENTS.md');
+    assert(content.includes('My Project Agents'), 'Codex: user content preserved after uninstall');
   }
-  assert(u4.memory && u4.memory.removed === true, 'Hermes: uninstall result reports memory.removed=true');
+
+  // ── Uninstall Hermes ──────────────────────────────────────────────────────
+  const u4 = installer.uninstall('hermes', 'project');
+  assert(u4.changed === true, 'Hermes: uninstall reports changed');
+  assert(!fs.existsSync(path.join(tmp, '.hermes', 'skills', 'agent-feedback')), 'Hermes: skill directory removed');
+
+  // ── Legacy hook migration ─────────────────────────────────────────────────
+  // Simulate a v1.x hook-based install and verify the new installer cleans it up
+  {
+    const settingsPath = path.join(tmp, '.claude', 'settings.json');
+    const legacyCfg = {
+      userCustom: { preserved: true },
+      hooks: {
+        PostToolUse: [{ __agent_feedback_managed__: true, hooks: [{ type: 'command', command: 'agent-feedback __hook' }] }],
+        SessionStart: [{ __agent_feedback_managed__: true, hooks: [{ type: 'command', command: 'agent-feedback __hook' }] }],
+        PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'echo hi' }] }],
+      },
+    };
+    fs.writeFileSync(settingsPath, JSON.stringify(legacyCfg, null, 2));
+
+    assert(installer.hasLegacyHooks('claude-code', 'project') === true, 'Legacy: detects old hooks');
+
+    // Installing the new skill should also clean up legacy hooks
+    installer.install('claude-code', 'project');
+    const after = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    assert(after.userCustom?.preserved === true, 'Legacy: user config preserved');
+    assert(after.hooks?.PreToolUse?.length === 1, 'Legacy: user hooks preserved');
+    assert(!after.hooks?.PostToolUse, 'Legacy: managed PostToolUse removed');
+    assert(!after.hooks?.SessionStart, 'Legacy: managed SessionStart removed');
+    assert(installer.hasLegacyHooks('claude-code', 'project') === false, 'Legacy: no more legacy hooks');
+    assert(fs.existsSync(ccTarget), 'Legacy: new skill file installed alongside cleanup');
+  }
+
+  // Legacy Hermes cleanup: old Python plugin + MEMORY.md
+  {
+    const pluginDir = path.join(tmp, '.hermes', 'plugins', 'agent_feedback');
+    fs.mkdirSync(pluginDir, { recursive: true });
+    fs.writeFileSync(path.join(pluginDir, '.agent_feedback_managed'), '1\n');
+    fs.writeFileSync(path.join(pluginDir, '__init__.py'), '# old plugin');
+
+    const memDir = path.join(tmp, '.hermes', 'memories');
+    fs.mkdirSync(memDir, { recursive: true });
+    fs.writeFileSync(path.join(memDir, 'MEMORY.md'),
+      'user note\n§\n<!-- agent-feedback:managed-rule:begin -->\nold rule\n<!-- agent-feedback:managed-rule:end -->\n');
+
+    installer.install('hermes', 'project');
+    assert(!fs.existsSync(pluginDir), 'Legacy Hermes: old plugin directory removed');
+    {
+      const mem = fs.readFileSync(path.join(memDir, 'MEMORY.md'), 'utf8');
+      assert(!mem.includes('agent-feedback:managed-rule'), 'Legacy Hermes: managed memory rule removed');
+      assert(mem.includes('user note'), 'Legacy Hermes: user memory entries preserved');
+    }
+  }
 
   console.log('\n=== Installer tests complete ===\n');
 } finally {

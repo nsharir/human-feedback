@@ -1,14 +1,12 @@
-# Cursor plugin
+# Cursor — agent-feedback rule
 
-Installs an `afterFileEdit` hook into Cursor (1.7+) that automatically wraps any `.md` / `.html` / `.json` file the agent writes with the **agent-feedback framework**.
-
-## Install (recommended)
+## Automatic install
 
 ```bash
 npx @nsharir/agent-feedback install --cursor
 ```
 
-This patches `.cursor/hooks.json` in your project. Add `--global` to install at `~/.cursor/hooks.json` instead.
+This writes `.cursor/rules/agent-feedback.mdc` in your project. Add `--global` to install at `~/.cursor/rules/` instead.
 
 ## Uninstall
 
@@ -16,49 +14,32 @@ This patches `.cursor/hooks.json` in your project. Add `--global` to install at 
 npx @nsharir/agent-feedback uninstall --cursor
 ```
 
-## What gets added
+## What gets installed
 
-```json
-{
-  "version": 1,
-  "hooks": {
-    "afterFileEdit": [
-      {
-        "__agent_feedback_managed__": true,
-        "command": "agent-feedback __hook",
-        "timeout": 20
-      }
-    ]
-  }
-}
+A single `.mdc` rule file at `.cursor/rules/agent-feedback.mdc`. The rule has `alwaysApply: false`, so Cursor only activates it when relevant (when the user mentions feedback, review, annotation, etc.).
+
+The rule teaches the agent to:
+
+1. Identify the artifact that needs feedback
+2. Run `agent-feedback compile <input> -o <output> --force`
+3. Share a `file://` link to the compiled output
+4. Wait for the user's structured feedback
+
+## Usage
+
+In Cursor, say:
+
 ```
-
-The `__agent_feedback_managed__` marker is used by the uninstaller to find and remove only the hook it added.
-
-## What the hook does
-
-After every Cursor file edit:
-1. Reads the file path from the event
-2. Checks if it's a `.md`, `.html`, or `.json` file (skips already-wrapped files and config files)
-3. Runs `agent-feedback compile <file> -o <file>.{review,annotated,feedback}.html --force`
-4. Returns an `agentMessage` telling the agent to share the wrapped file with the user
+use agent-feedback to get feedback on the page I just made
+```
 
 ## Manual install
 
-Add this to `.cursor/hooks.json`:
+Copy `agent-feedback.rule.mdc` from this directory to `.cursor/rules/agent-feedback.mdc`.
 
-```json
-{
-  "version": 1,
-  "hooks": {
-    "afterFileEdit": [
-      { "command": "agent-feedback __hook", "timeout": 20 }
-    ]
-  }
-}
-```
+## Upgrading from v1.x
 
-Restart Cursor. Check the Hooks settings tab to confirm.
+Running `install` automatically removes old hook-based entries from `.cursor/hooks.json`.
 
 ## Requires
 

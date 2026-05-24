@@ -1,0 +1,86 @@
+---
+name: agent-feedback
+version: "2.0.0"
+description: "Compile HTML, Markdown, or JSON artifacts into interactive feedback surfaces. Use when the user asks for feedback on a mockup, spec, plan, or questionnaire."
+tags: [feedback, review, annotate, questionnaire, human-in-the-loop]
+---
+<!-- agent-feedback v2.0.0 -->
+# agent-feedback
+
+Compile an artifact into an interactive feedback surface the user opens in a browser.
+
+## When to use
+
+Use this when the user asks for feedback on something you produced, or when you need structured input from the user. The user may say "agent-feedback", "get feedback on this", "let me review that", or similar.
+
+## Determine what to compile
+
+1. If the user specified a file or described what needs feedback, use that.
+2. Otherwise, look at your recent conversation — find the most recent artifact you produced (an HTML mockup, a markdown spec/plan, or a situation where you need to ask the user multiple structured questions).
+
+## Identify the input
+
+| Situation | What to do |
+|-----------|-----------|
+| You wrote an `.html` file | That file is the input — it becomes an annotatable page |
+| You wrote a `.md` file | That file is the input — it becomes a rendered review surface |
+| You need to ask the user ≥2 questions | Write a `questions.json` file first (schema below), then compile it |
+| The user pointed at a specific file | Use that file |
+
+## Compile
+
+Pick an output filename based on the input extension:
+
+- `.html` / `.htm` input → `<stem>.annotated.html`
+- `.md` / `.markdown` input → `<stem>.review.html`
+- `.json` input → `<stem>.feedback.html`
+
+Write the output file under the active workspace's plans directory when appropriate:
+`<workspace>/.hermes/plans/<output-filename>`
+
+where `<workspace>` is the absolute path from the most recent `[Workspace::v1: /abs/path]` tag on the user's message. Create the directory if it does not exist.
+
+Run:
+
+```
+agent-feedback compile <input-path> -o <output-path> --force
+```
+
+## Present the result
+
+Include both a `file://` link and a `MEDIA:` token in your reply so the WebUI embeds it inline:
+
+```
+file://<absolute-output-path>
+MEDIA:<absolute-output-path>
+```
+
+Tell the user the feedback surface is ready and **wait for their response**. Do not continue with work that depends on their feedback until they paste the structured prompt back.
+
+## JSON questionnaire schema
+
+When you need to ask the user multiple questions, write a `.json` file:
+
+```json
+{
+  "title": "Short title",
+  "description": "Context paragraph",
+  "questions": [
+    { "id": "q1", "text": "Question?", "type": "text", "hint": "optional helper" },
+    { "id": "q2", "text": "Pick one?", "type": "radio", "options": ["A", "B"] },
+    { "id": "q3", "text": "Select all?", "type": "checkbox", "options": ["X", "Y"] },
+    { "id": "q4", "text": "Yes or no?", "type": "boolean" },
+    { "id": "q5", "text": "Rate 1-10?", "type": "scale", "min": 1, "max": 10 }
+  ]
+}
+```
+
+Supported types: `text`, `textarea`, `radio`, `checkbox`, `select`, `boolean`, `scale`, `range`, `date`.
+
+- `radio`, `checkbox`, `select` require an `options` array
+- Add `"other": true` to include a free-text "Other…" option (on by default)
+- Add `"required": true` to make a question mandatory
+
+## User response format
+
+When the user pastes their response, it is a structured free-text prompt starting with "The user completed/reviewed/annotated…" — each `## Item N` section has their comment plus context (CSS selectors for HTML, line numbers for markdown, question types for forms).

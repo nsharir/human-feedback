@@ -16,6 +16,7 @@ const sym = {
   err:  pc.red('✗'),
   info: pc.dim('·'),
   arr:  pc.dim('→'),
+  warn: pc.yellow('⚠'),
 };
 
 function printBanner() {
@@ -60,7 +61,7 @@ ${pc.bold('Examples:')}
   $ agent-feedback compile docs.md        -o docs-review.html
   $ agent-feedback compile questions.json -o feedback.html
 
-  ${pc.dim('# Install hooks into your agent harness (auto-wraps every file the agent writes)')}
+  ${pc.dim('# Install the /agent-feedback command into your agent harness')}
   $ agent-feedback install                ${pc.dim('# interactive — detects what is present')}
   $ agent-feedback install --claude-code  ${pc.dim('# targeted')}
   $ agent-feedback install --all          ${pc.dim('# every detected harness')}
@@ -200,7 +201,7 @@ function readlineQuestion(query) {
 
 program
   .command('install')
-  .description('Install agent-feedback hooks into one or more agent harnesses')
+  .description('Install the /agent-feedback command into one or more agent harnesses')
   .option('--claude-code', 'Install into Claude Code')
   .option('--cursor',      'Install into Cursor')
   .option('--codex',       'Install into Codex')
@@ -216,8 +217,6 @@ program
 
     // Decide which harnesses to install into
     let targets = [];
-    const explicit = Object.keys(HARNESS_FLAGS).filter(k => opts[k.replace(/-/g, '')] || opts[k.split('-')[0]]);
-    // Commander camel-cases: --claude-code → opts.claudeCode
     const flagMap = {
       'claude-code': opts.claudeCode,
       'cursor':      opts.cursor,
@@ -229,10 +228,9 @@ program
     if (flaggedTargets.length > 0) {
       targets = flaggedTargets;
     } else if (opts.all) {
-      // Every harness detected at the chosen scope
       targets = Object.keys(detected).filter(k => detected[k][scope]);
       if (targets.length === 0) {
-        printError(`No agent harnesses detected at ${scope} scope.\n  Looked for: ${Object.values(installer.HARNESSES).map(h => scope === 'global' ? h.globalMarker : h.projectMarker).join(', ')}`);
+        printError(`No agent harnesses detected at ${scope} scope.`);
         process.exit(1);
       }
     } else {
@@ -242,7 +240,7 @@ program
       const candidates = [];
       for (const [key, label] of Object.entries(HARNESS_FLAGS)) {
         if (detected[key][scope]) {
-          console.log(`    ${sym.ok} ${pc.cyan(label.padEnd(14))} ${pc.dim(scope === 'global' ? installer.HARNESSES[key].globalMarker : installer.HARNESSES[key].projectMarker)}`);
+          console.log(`    ${sym.ok} ${pc.cyan(label.padEnd(14))}`);
           candidates.push(key);
         } else {
           console.log(`    ${pc.dim('·')} ${pc.dim(label.padEnd(14))} ${pc.dim('not found')}`);
@@ -256,7 +254,7 @@ program
       console.log('');
       const answer = opts.yes
         ? 'y'
-        : await readlineQuestion(`  Install hooks into all ${candidates.length} detected? ${pc.dim('[Y/n] ')}`);
+        : await readlineQuestion(`  Install into all ${candidates.length} detected? ${pc.dim('[Y/n] ')}`);
       if (answer && answer.trim().toLowerCase().startsWith('n')) {
         console.log('  Cancelled.\n');
         process.exit(0);
@@ -265,7 +263,7 @@ program
     }
 
     console.log('');
-    console.log(`  ${pc.bold('Installing hooks…')}`);
+    console.log(`  ${pc.bold('Installing…')}`);
     console.log('');
 
     let anyChange = false;
@@ -281,7 +279,7 @@ program
 
     console.log('');
     if (anyChange) {
-      console.log(`  ${sym.ok} ${pc.bold('Done.')} Restart your agent for hooks to take effect.`);
+      console.log(`  ${sym.ok} ${pc.bold('Done.')} The /agent-feedback command is now available.`);
     } else {
       console.log(`  ${pc.dim('Nothing to do.')}`);
     }
@@ -292,7 +290,7 @@ program
 
 program
   .command('uninstall')
-  .description('Remove agent-feedback hooks from one or more agent harnesses')
+  .description('Remove the /agent-feedback command from one or more agent harnesses')
   .option('--claude-code', 'Uninstall from Claude Code')
   .option('--cursor',      'Uninstall from Cursor')
   .option('--codex',       'Uninstall from Codex')
@@ -319,9 +317,9 @@ program
       try {
         const result = installer.uninstall(key, scope);
         if (result.changed) {
-          console.log(`  ${sym.ok} ${pc.cyan(HARNESS_FLAGS[key])}  ${pc.dim('removed from')} ${pc.dim(result.target)}`);
+          console.log(`  ${sym.ok} ${pc.cyan(HARNESS_FLAGS[key])}  ${pc.dim('removed')}`);
         } else {
-          console.log(`  ${pc.dim('·')} ${pc.cyan(HARNESS_FLAGS[key])}  ${pc.dim('nothing to remove' + (result.note ? ' (' + result.note + ')' : ''))}`);
+          console.log(`  ${pc.dim('·')} ${pc.cyan(HARNESS_FLAGS[key])}  ${pc.dim('nothing to remove')}`);
         }
       } catch (err) {
         console.log(`  ${sym.err} ${pc.cyan(HARNESS_FLAGS[key])}: ${pc.red(err.message)}`);
@@ -334,28 +332,42 @@ program
 
 program
   .command('doctor')
-  .description('Show which agent harnesses are detected and whether the hook is installed')
+  .description('Show which agent harnesses are detected and whether /agent-feedback is installed')
   .action(() => {
     printBanner();
     const d = installer.detectAll();
-    console.log(`  ${pc.bold('Detected agent harnesses:')}`);
+    console.log(`  ${pc.bold('Agent harness status:')}`);
     console.log('');
     for (const [key, label] of Object.entries(HARNESS_FLAGS)) {
-      const proj = d[key].project ? pc.green('✓') : pc.dim('·');
-      const glob = d[key].global  ? pc.green('✓') : pc.dim('·');
-      console.log(`  ${pc.cyan(label.padEnd(14))}  project ${proj}   global ${glob}`);
+      const projDetected = d[key].project;
+      const globDetected = d[key].global;
+      const projInstalled = installer.isInstalled(key, 'project');
+      const globInstalled = installer.isInstalled(key, 'global');
+      const projLegacy = installer.hasLegacyHooks(key, 'project');
+      const globLegacy = installer.hasLegacyHooks(key, 'global');
+
+      const projStatus = projInstalled ? pc.green('✓ installed')
+                       : projLegacy    ? pc.yellow('⚠ legacy hooks')
+                       : projDetected  ? pc.dim('not installed')
+                       : pc.dim('·');
+      const globStatus = globInstalled ? pc.green('✓ installed')
+                       : globLegacy    ? pc.yellow('⚠ legacy hooks')
+                       : globDetected  ? pc.dim('not installed')
+                       : pc.dim('·');
+
+      console.log(`  ${pc.cyan(label.padEnd(14))}  project ${projStatus}   global ${globStatus}`);
     }
+
+    // Check for any legacy hooks and suggest cleanup
+    const anyLegacy = Object.keys(HARNESS_FLAGS).some(k =>
+      installer.hasLegacyHooks(k, 'project') || installer.hasLegacyHooks(k, 'global')
+    );
+    if (anyLegacy) {
+      console.log('');
+      console.log(`  ${sym.warn} ${pc.yellow('Legacy v1.x hooks detected.')} Run ${pc.bold('agent-feedback install')} to upgrade.`);
+    }
+
     console.log('');
-  });
-
-// ── hidden __hook command (invoked by hook scripts) ───────────────────────────
-
-program
-  .command('__hook', { hidden: true })
-  .description('Internal: run the post-write hook (invoked by harness hook configs)')
-  .action(() => {
-    // Delegate to the shared hook script
-    require('../plugins/shared/post-write-hook.js');
   });
 
 program.parse(process.argv);
