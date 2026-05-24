@@ -107,6 +107,53 @@ try {
   assert(r1b.changed === false, 'Claude Code install is idempotent');
   const r4b = installer.install('hermes', 'project');
   assert(r4b.changed === false, 'Hermes install is idempotent');
+  assert(r4b.plugin && r4b.plugin.action === 'skipped',
+    'Hermes: same-version re-install reports plugin.action=skipped');
+
+  // v1.7.4 — auto-upgrade when the installed plugin.json reports an
+  // older version than the bundled one. Simulate by downgrading the
+  // installed plugin.json and re-running install.
+  {
+    const pluginFile = path.join(tmp, '.hermes', 'plugins', 'agent_feedback', 'plugin.json');
+    const meta = JSON.parse(fs.readFileSync(pluginFile, 'utf8'));
+    const realVersion = meta.version;
+    meta.version = '1.0.0-stale';
+    fs.writeFileSync(pluginFile, JSON.stringify(meta, null, 2));
+
+    const rUp = installer.install('hermes', 'project');
+    assert(rUp.changed === true, 'Hermes: stale plugin triggers a re-install');
+    assert(rUp.plugin && rUp.plugin.action === 'upgraded',
+      'Hermes: stale plugin reports plugin.action=upgraded');
+    assert(rUp.plugin.from === '1.0.0-stale' && rUp.plugin.to === realVersion,
+      'Hermes: upgrade result reports from/to versions');
+
+    const after = JSON.parse(fs.readFileSync(pluginFile, 'utf8'));
+    assert(after.version === realVersion,
+      'Hermes: upgrade overwrites plugin.json with the bundled version');
+  }
+
+  // v1.7.4 — memory rule body update propagates when re-running install
+  // after the in-place MEMORY.md was hand-edited to an older variant.
+  {
+    let mem = fs.readFileSync(memoryFile, 'utf8');
+    const tampered = mem.replace(
+      /<!-- agent-feedback:managed-rule:begin -->[\s\S]*?<!-- agent-feedback:managed-rule:end -->/,
+      '<!-- agent-feedback:managed-rule:begin -->\nold short rule body\n<!-- agent-feedback:managed-rule:end -->',
+    );
+    fs.writeFileSync(memoryFile, tampered);
+
+    const rRewrite = installer.install('hermes', 'project');
+    assert(rRewrite.memory && rRewrite.memory.wrote === true,
+      'Hermes: drifted memory rule is rewritten on re-install');
+
+    mem = fs.readFileSync(memoryFile, 'utf8');
+    assert(!mem.includes('old short rule body'),
+      'Hermes: re-install removes the stale rule body');
+    assert(mem.includes('mockups') || mem.includes('UX mockups'),
+      'Hermes: refreshed rule body includes the mockup clause');
+    const occ = (mem.match(/agent-feedback:managed-rule:begin/g) || []).length;
+    assert(occ === 1, 'Hermes: re-write does not duplicate the managed block');
+  }
 
   // Preserves existing config
   const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.claude', 'settings.json'), 'utf8'));

@@ -1,5 +1,5 @@
 name: agent_feedback
-version: "1.1.0"
+version: "1.7.4"
 description: "Auto-wraps agent-produced .md / .html / .json files and injects the >1-question rule into pre_llm_call"
 author: nsharir
 provides_hooks:
