@@ -1,10 +1,18 @@
 # human-feedback
 
-**A CLI tool for human-in-the-loop AI agent workflows.**
+**Give precise feedback on long agent output — without losing your mind.**
 
-When an AI agent produces output — a document, a plan, a UI, a dataset — the human needs a way to respond with precise, structured feedback. Not a chat message. Not a vague thumbs up. **Real inline feedback that the agent can act on.**
+AI agents write a lot. A 200-line functional spec. An HTML mockup. A multi-step migration plan. Reading all of that inside a chat window is painful. Scrolling back and forth, trying to remember which paragraph had the issue, then typing "the part about auth near the middle needs work" and hoping the agent figures out what you mean.
 
-`human-feedback` compiles your content into self-contained HTML tools the human opens in a browser, annotates or answers, then copies a structured **free-text prompt** back to the agent. No server. No special tooling. No integrations to set up.
+`human-feedback` fixes this. It compiles agent output into an interactive HTML page you open in a browser — click on an element, highlight a paragraph, annotate a section — then copies a structured prompt back to the agent with exact references (CSS selectors, line numbers, question IDs). The agent knows precisely what to fix.
+
+Three tools for three kinds of output:
+
+- **HTML Annotator** — click-to-annotate any HTML page the agent produced
+- **Markdown Annotator** — review a rendered spec/plan with line-number-referenced comments
+- **Questionnaire** — structured Q&A when the agent needs decisions from you before continuing
+
+No server. No browser extension. No integrations. Just a CLI that compiles a file and a browser that opens it.
 
 ```
 Agent produces output
@@ -159,13 +167,16 @@ Detect which tool would be used for a file without compiling.
 
 ## Why this exists
 
-AI agents are increasingly capable of producing complex artifacts: HTML pages, markdown documents, multi-step plans, design specs. But the feedback loop is broken. Humans either:
+The longer an agent's output gets, the worse the feedback loop becomes. A 20-line snippet is easy to comment on in chat. A 200-line spec is not. Humans end up:
 
-- Type vague free-text responses ("looks good but fix the header")
-- Screenshot and describe problems verbally
-- Spend time re-explaining context the agent already has
+- Skimming instead of reading, then giving vague feedback ("looks good but fix the header")
+- Screenshotting parts and describing problems verbally, losing all machine-readable context
+- Re-explaining things the agent already knows because pointing at "that paragraph" doesn't work in a chat window
+- Giving up and approving work they haven't fully reviewed
 
-`human-feedback` closes this gap by turning agent output into an interactive feedback surface — with **no extra tooling required on either side**. The agent writes a file. The human opens it in a browser. The output is a structured payload the agent can parse.
+The root problem: **chat is a terrible interface for reviewing long artifacts.** You need to see the whole document, point at specific parts, and have your comments land back in the agent's context with enough precision that it can act without guessing.
+
+`human-feedback` gives you a proper review surface — outside the chat — and brings the feedback back as a structured prompt the agent can parse.
 
 ---
 
