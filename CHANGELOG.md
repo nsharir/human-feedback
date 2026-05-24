@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - `src/shared/build-prompt.js` — single `buildAgentPrompt({ tool, source, items })` helper consumed by all three tools so the output shape is identical by construction.
+- `scripts/record-demo.js` + `examples/demos/md-annotator.gif` — scripted Playwright + ffmpeg demo recorder (reusable for html-annotator and feedback). Recording requires Playwright (any 1.5x+) and ffmpeg available on `PATH`; neither is an npm dependency of this repo. Run with `NODE_PATH=/path/to/playwright/node_modules node scripts/record-demo.js md-annotator`.
 
 ### Fixed
 - Light-mode the md-annotator comment popover (was dark on dark).
