@@ -433,6 +433,10 @@
       -webkit-tap-highlight-color: transparent;
     }
     .ann-card-del:active { color: #FF6B6B; }
+    .ann-card.ann-card-active {
+      border-color: var(--ann-accent);
+      box-shadow: 0 0 0 2px rgba(124,111,255,0.35);
+    }
     .ann-card-context { font-size:10px; color:var(--ann-muted); background:var(--ann-bg); border-radius:4px; padding:4px 8px; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .ann-card-comment { font-size:12px; color:var(--ann-text); line-height:1.5; }
     #ann-panel-footer {
@@ -753,7 +757,8 @@
   }
 
   const IGNORE_SELS = ['#ann-toolbar','#ann-panel','#ann-dialog','#ann-toast','#ann-fab',
-                       '#ann-fab-menu','#ann-sel-bar','#ann-overlay','#ann-longpress-ring','.ann-pin'];
+                       '#ann-fab-menu','#ann-sel-bar','#ann-overlay','#ann-longpress-ring',
+                       '#ann-preview-overlay','.ann-pin','.ann-text-mark'];
   function isAnnotatorEl(el) {
     if (!el) return true;
     return IGNORE_SELS.some(sel => el.closest && el.closest(sel));
@@ -824,6 +829,12 @@
       pin.style.background = color;
       pin.textContent = id;
       pin.title = comment;
+      pin.dataset.annId = id;
+      pin.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        focusAnnotation(id);
+      });
       el.appendChild(pin);
       ann.pin = pin;
     } else {
@@ -840,6 +851,11 @@
           mark.title = `[${id}] ${comment}`;
           mark.dataset.annId = id;
           rangeToUse.surroundContents(mark);
+          mark.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            focusAnnotation(id);
+          });
           ann.mark = mark;
         }
       } catch (e) { /* complex range */ }
@@ -876,8 +892,25 @@
       </div>
     `).join('');
     list.querySelectorAll('[data-del]').forEach(btn => {
-      btn.addEventListener('click', e => { e.stopPropagation(); removeAnnotation(parseInt(btn.dataset.del)); });
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.del);
+        if (!confirm('Delete this annotation? This cannot be undone.')) return;
+        removeAnnotation(id);
+      });
     });
+  }
+
+  function focusAnnotation(id) {
+    openPanel();
+    const list = document.getElementById('ann-panel-list');
+    const card = list && list.querySelector(`.ann-card[data-id="${id}"]`);
+    if (card) {
+      list.querySelectorAll('.ann-card.ann-card-active').forEach(c => c.classList.remove('ann-card-active'));
+      card.classList.add('ann-card-active');
+      try { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+      setTimeout(() => card.classList.remove('ann-card-active'), 1600);
+    }
   }
 
   function removeAnnotation(id) {
@@ -970,6 +1003,8 @@
   function openPromptPreview() {
     if (!annotations.length) { showToast('No annotations yet'); return; }
     clearAnnManualCopyHint();
+    // Clear any lingering hover highlight so it doesn't bleed under the dialog
+    if (tempHighlightEl) { tempHighlightEl.classList.remove('ann-hover-target'); tempHighlightEl = null; }
     pristinePrompt = buildPrompt();
     const ta = document.getElementById('ann-preview-textarea');
     ta.value = pristinePrompt;
@@ -1158,6 +1193,7 @@
 
   document.addEventListener('mouseover', e => {
     if (isMobile() || !annotationMode || dialog.style.display !== 'none') return;
+    if (previewOverlay.classList.contains('open')) return;
     if (isAnnotatorEl(e.target)) return;
     if (tempHighlightEl && tempHighlightEl !== e.target) tempHighlightEl.classList.remove('ann-hover-target');
     e.target.classList.add('ann-hover-target');
@@ -1171,6 +1207,8 @@
 
   document.addEventListener('click', e => {
     if (isMobile() || !annotationMode) return;
+    if (previewOverlay.classList.contains('open')) return;
+    if (dialog.style.display !== 'none') return;
     if (isAnnotatorEl(e.target)) return;
     const sel = window.getSelection();
     if (sel && sel.toString().trim().length > 0) return;
@@ -1181,6 +1219,7 @@
 
   document.addEventListener('mouseup', e => {
     if (isMobile() || !annotationMode) return;
+    if (previewOverlay.classList.contains('open')) return;
     if (isAnnotatorEl(e.target)) return;
     if (dialog.style.display !== 'none') return;
     const sel = window.getSelection();

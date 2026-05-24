@@ -86,6 +86,55 @@ setTimeout(() => {
     assert(document.getElementById('ann-panel-list').querySelectorAll('.ann-card').length === 1,
            'one annotation card rendered in panel');
 
+    // ── New: clicking the pin opens the panel and highlights the card ──
+    // Close panel first
+    document.getElementById('ann-panel-close').click();
+    assert(!document.getElementById('ann-panel').classList.contains('open'),
+           'panel closes via close button');
+    const pin = target.querySelector('.ann-pin');
+    pin.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    assert(document.getElementById('ann-panel').classList.contains('open'),
+           'clicking pin opens review panel');
+    const focusedCard = document.querySelector(`.ann-card[data-id="${pin.dataset.annId}"]`);
+    assert(focusedCard && focusedCard.classList.contains('ann-card-active'),
+           'pin click marks the matching card as active');
+
+    // ── New: preview dialog must isolate from annotation hover/click overlay ──
+    document.getElementById('ann-copy-btn').click(); // re-opens preview
+    const previewOverlay = document.getElementById('ann-preview-overlay');
+    assert(previewOverlay.classList.contains('open'), 'preview overlay open before isolation check');
+    const previewZ  = parseInt(window.getComputedStyle(previewOverlay).zIndex || '0', 10);
+    const pinZ      = parseInt(window.getComputedStyle(pin).zIndex || '0', 10);
+    assert(previewZ > pinZ, 'preview overlay z-index sits above annotation pins');
+    // While preview is open, page hover/click must NOT add the hover-target outline
+    const otherEl = document.querySelector('p, h2, a, span') || document.body.firstElementChild;
+    if (otherEl) {
+      otherEl.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true, cancelable: true }));
+      assert(!otherEl.classList.contains('ann-hover-target'),
+             'hover-target outline does not bleed onto page while preview is open');
+      otherEl.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+      assert(document.getElementById('ann-dialog').style.display === 'none',
+             'clicking page while preview is open does not open comment dialog');
+    }
+    document.getElementById('ann-preview-close').click();
+
+    // ── New: deleting a card requires confirmation ──
+    document.getElementById('ann-panel-btn').click();
+    let confirmCalled = 0, confirmMsg = '';
+    window.confirm = (msg) => { confirmCalled++; confirmMsg = msg; return false; };
+    const delBtn = document.querySelector('.ann-card [data-del]');
+    assert(!!delBtn, 'card delete button present');
+    delBtn.click();
+    assert(confirmCalled === 1, 'delete prompts for confirmation');
+    assert(/cannot be undone/i.test(confirmMsg), 'confirm message warns of irreversibility');
+    assert(document.querySelectorAll('.ann-card').length === 1,
+           'cancelled confirm preserves the annotation');
+    // Now accept the confirm and verify it deletes
+    window.confirm = () => true;
+    delBtn.click();
+    assert(document.querySelectorAll('.ann-card').length === 0,
+           'confirmed delete removes the annotation');
+
     console.log('\n=== ' + passed + ' passed, ' + failed + ' failed ===\n');
     if (failed > 0) process.exit(1);
   } catch (e) {
