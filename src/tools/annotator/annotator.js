@@ -12,6 +12,10 @@
   if (window.__annotatorLoaded) return;
   window.__annotatorLoaded = true;
 
+  // Inline the shared AnnPanel CSS + JS (resolved at build time).
+  window.__ANN_PANEL_CSS__ = /* @includeString shared/ann-panel.css */;
+  /* @include shared/ann-panel.js */
+
   // ─── State ────────────────────────────────────────────────────────────────
   const annotations = [];
   let idCounter = 0;
@@ -371,82 +375,7 @@
       justify-content: flex-end;
     }
 
-    /* ── Side panel ── */
-    #ann-panel {
-      position: fixed;
-      z-index: 999997;
-      background: var(--ann-bg);
-      display: flex;
-      flex-direction: column;
-      font-family: var(--ann-font);
-      transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
-    }
-    @media (pointer: fine) {
-      #ann-panel {
-        top: 0; right: 0;
-        height: 100%; width: 360px;
-        border-left: 1px solid var(--ann-border);
-        transform: translateX(100%);
-      }
-      #ann-panel.open { transform: translateX(0); }
-    }
-    @media (pointer: coarse) {
-      #ann-panel {
-        bottom: 0; left: 0; right: 0;
-        height: 75vh;
-        border-top: 1px solid var(--ann-border);
-        border-radius: 16px 16px 0 0;
-        transform: translateY(100%);
-      }
-      #ann-panel.open { transform: translateY(0); }
-    }
-    #ann-panel-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--ann-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    #ann-panel-header h3 { margin:0; font-size:13px; color:var(--ann-text); }
-    #ann-panel-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .ann-card {
-      background: var(--ann-surface);
-      border: 1px solid var(--ann-border);
-      border-radius: 8px;
-      padding: 12px;
-    }
-    .ann-card-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
-    .ann-card-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .ann-card-meta { font-size:10px; color:var(--ann-muted); flex:1; }
-    .ann-card-del {
-      background: none; border: none; cursor: pointer;
-      color: var(--ann-muted); font-size:18px; line-height:1;
-      padding: 4px 6px; transition: color 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .ann-card-del:active { color: #FF6B6B; }
-    .ann-card.ann-card-active {
-      border-color: var(--ann-accent);
-      box-shadow: 0 0 0 2px rgba(124,111,255,0.35);
-    }
-    .ann-card-context { font-size:10px; color:var(--ann-muted); background:var(--ann-bg); border-radius:4px; padding:4px 8px; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .ann-card-comment { font-size:12px; color:var(--ann-text); line-height:1.5; }
-    #ann-panel-footer {
-      padding: 12px 16px;
-      border-top: 1px solid var(--ann-border);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-bottom: env(safe-area-inset-bottom, 12px);
-    }
+    /* ── Side panel: now provided by shared/ann-panel.{css,js} ── */
 
     /* ── Toast ── */
     #ann-toast {
@@ -657,21 +586,7 @@
   `;
   document.body.appendChild(dialog);
 
-  // Side / bottom panel
-  const panel = document.createElement('div');
-  panel.id = 'ann-panel';
-  panel.innerHTML = `
-    <div id="ann-panel-header">
-      <h3>Annotations</h3>
-      <button class="ann-btn" id="ann-panel-close">✕</button>
-    </div>
-    <div id="ann-panel-list"></div>
-    <div id="ann-panel-footer">
-      <button class="ann-btn primary" id="ann-copy-btn-2" style="width:100%;justify-content:center;">⎘ Copy Prompt</button>
-      <button class="ann-btn danger" id="ann-clear-btn" style="width:100%;justify-content:center;">⊘ Clear All</button>
-    </div>
-  `;
-  document.body.appendChild(panel);
+  // Side / bottom panel — provided by shared/ann-panel.js (mounted below).
 
   // Overlay
   const overlay = document.createElement('div');
@@ -682,6 +597,30 @@
   const toast = document.createElement('div');
   toast.id = 'ann-toast';
   document.body.appendChild(toast);
+
+  // ─── Shared annotation panel ──────────────────────────────────────────────
+  const annPanel = window.AnnPanel.mount({
+    accent:        '#7c6fff',
+    title:         'Annotations',
+    showFab:       false,
+    showJsonButton: false,
+    emptyText:     'No annotations yet.<br/>Click an element or select text to start.',
+    getItems:      () => annotations.map(a => ({
+      id:        a.id,
+      badge:     '#' + a.id,
+      typeLabel: a.type === 'text' ? '✏ text' : '⬚ element',
+      snippet:   a.textSnippet || '',
+      comment:   a.comment,
+    })),
+    onCopyPrompt: () => copyPrompt(),
+    onClearAll:   () => {
+      [...annotations].forEach(a => removeAnnotationData(a.id));
+      showToast('Cleared');
+    },
+    onItemClick:  (id) => focusAnnotation(id),
+    onItemDelete: (id) => removeAnnotationData(id),
+  });
+  const panel = annPanel.els.panel;
 
   // Preview dialog
   const previewOverlay = document.createElement('div');
@@ -872,55 +811,23 @@
 
   // ─── Panel ────────────────────────────────────────────────────────────────
   function renderPanel() {
-    const list = document.getElementById('ann-panel-list');
-    if (annotations.length === 0) {
-      list.innerHTML = `<div style="color:var(--ann-muted);font-size:12px;text-align:center;padding:40px 16px;">
-        No annotations yet.<br><br>
-        ${isMobile() ? 'Long-press any element, or select text to annotate.' : 'Click elements or drag-select text to annotate.'}
-      </div>`;
-      return;
-    }
-    list.innerHTML = annotations.map(a => `
-      <div class="ann-card" data-id="${a.id}">
-        <div class="ann-card-header">
-          <div class="ann-card-dot" style="background:${a.color}"></div>
-          <div class="ann-card-meta">#${a.id} · ${a.type === 'text' ? '✏ text' : '⬚ element'} · <code style="font-size:9px">${a.selector.slice(-38)}</code></div>
-          <button class="ann-card-del" data-del="${a.id}">✕</button>
-        </div>
-        <div class="ann-card-context">${a.textSnippet || '(no text)'}</div>
-        <div class="ann-card-comment">${a.comment}</div>
-      </div>
-    `).join('');
-    list.querySelectorAll('[data-del]').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const id = parseInt(btn.dataset.del);
-        if (!confirm('Delete this annotation? This cannot be undone.')) return;
-        removeAnnotation(id);
-      });
-    });
+    annPanel.refresh();
   }
 
   function focusAnnotation(id) {
     openPanel();
-    const list = document.getElementById('ann-panel-list');
-    const card = list && list.querySelector(`.ann-card[data-id="${id}"]`);
-    if (card) {
-      list.querySelectorAll('.ann-card.ann-card-active').forEach(c => c.classList.remove('ann-card-active'));
-      card.classList.add('ann-card-active');
-      try { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
-      setTimeout(() => card.classList.remove('ann-card-active'), 1600);
-    }
+    if (typeof annPanel.focusItem === 'function') annPanel.focusItem(id);
   }
 
-  function removeAnnotation(id) {
+  // Data-only removal (AnnPanel handles its own confirm + card removal).
+  function removeAnnotationData(id) {
     const idx = annotations.findIndex(a => a.id === id);
     if (idx === -1) return;
     const ann = annotations[idx];
     if (ann.el) {
       ann.el.classList.remove('ann-highlighted');
       ann.el.style.removeProperty('--annotation-color');
-      ann.pin?.remove();
+      ann.pin && ann.pin.remove();
     }
     if (ann.mark) ann.mark.replaceWith(ann.mark.textContent);
     annotations.splice(idx, 1);
@@ -929,13 +836,13 @@
   }
 
   function openPanel() {
-    panel.classList.add('open');
+    annPanel.open();
     if (isMobile()) overlay.classList.add('visible');
     closeFabMenu();
   }
 
   function closePanel() {
-    panel.classList.remove('open');
+    annPanel.close();
     overlay.classList.remove('visible');
   }
 
@@ -1252,14 +1159,7 @@
     if (!annotationMode && tempHighlightEl) { tempHighlightEl.classList.remove('ann-hover-target'); tempHighlightEl = null; }
   });
   document.getElementById('ann-panel-btn').addEventListener('click', openPanel);
-  document.getElementById('ann-panel-close').addEventListener('click', closePanel);
   document.getElementById('ann-copy-btn').addEventListener('click', copyPrompt);
-  document.getElementById('ann-copy-btn-2').addEventListener('click', copyPrompt);
-  document.getElementById('ann-clear-btn').addEventListener('click', () => {
-    if (!annotations.length || !confirm(`Clear all ${annotations.length} annotations?`)) return;
-    [...annotations].forEach(a => removeAnnotation(a.id));
-    showToast('Cleared');
-  });
 
   // ─── Overlay / backdrop ───────────────────────────────────────────────────
   overlay.addEventListener('click', () => {

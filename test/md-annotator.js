@@ -42,15 +42,19 @@ function assert(cond, msg) {
 
   console.log('\n=== MD Annotator UX tests ===\n');
 
-  // FAB exists
-  const fab = document.getElementById('mob-fab');
-  assert(!!fab, 'Floating action button exists');
+  // FAB exists (shared module)
+  const fab = document.getElementById('ann-shared-fab');
+  assert(!!fab, 'Shared floating action button exists');
 
-  // Side panel exists with new buttons
-  assert(!!document.getElementById('copy-prompt-btn'), 'Copy Prompt button exists in side panel');
-  assert(!!document.getElementById('copy-json-btn'),   'Copy JSON button exists in side panel');
-  assert(!!document.getElementById('clear-btn'),       'Clear All button exists in side panel');
-  assert(!!document.getElementById('side-panel'),      'Side panel exists');
+  // Side panel exists with shared buttons
+  assert(!!document.getElementById('ann-copy-prompt'), 'Copy Prompt button exists in shared panel');
+  assert(!!document.getElementById('ann-copy-json'),   'Copy JSON button exists in shared panel');
+  assert(!!document.getElementById('ann-clear'),       'Clear All button exists in shared panel');
+  assert(!!document.getElementById('ann-panel'),       'Shared side panel exists');
+
+  // Button labels
+  assert(/Copy Prompt/.test(document.getElementById('ann-copy-prompt').textContent), 'Copy Prompt has correct label');
+  assert(/Copy JSON/.test(document.getElementById('ann-copy-json').textContent),     'Copy JSON has correct label');
 
   // Markdown rendered (auto-loaded from fixture)
   const preview = document.getElementById('preview');
@@ -58,7 +62,7 @@ function assert(cond, msg) {
   assert(preview.querySelectorAll('p').length >= 2, 'Markdown rendered ≥ 2 paragraphs');
 
   // FAB becomes visible after document loaded
-  assert(!fab.classList.contains('hidden'), 'FAB visible after document load');
+  assert(!fab.classList.contains('ann-hidden'), 'FAB visible after document load');
 
   // Simulate text annotation by directly calling save logic
   // Build a Range over first paragraph text
@@ -90,14 +94,14 @@ function assert(cond, msg) {
   assert(document.querySelector('.ann-label').textContent === 'A1', 'Label shows annotation ID "A1"');
 
   // FAB click opens panel
-  const panel = document.getElementById('side-panel');
+  const panel = document.getElementById('ann-panel');
   assert(!panel.classList.contains('open'), 'Panel starts closed');
   fab.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await ready(50);
   assert(panel.classList.contains('open'), 'FAB click opens panel');
 
   // Close button works
-  document.getElementById('panel-close').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  document.getElementById('ann-panel-close').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await ready(50);
   assert(!panel.classList.contains('open'), 'Close button closes panel');
 

@@ -1,0 +1,323 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Shared annotation panel + FAB — used by html-annotator and md-annotator.
+
+   Visual identity is owned here so all annotation tools look identical.
+   The container element gets the class `.ann-panel-host` and the indigo
+   accent is set on it via a CSS custom property so tools can theme it.
+
+   IDs used (single instance per page):
+     #ann-panel              (the slide-in side panel)
+     #ann-panel-header
+     #ann-panel-list
+     #ann-panel-footer
+     #ann-panel-close
+     #ann-panel-count
+     #ann-copy-prompt        (primary footer button)
+     #ann-copy-json
+     #ann-clear
+     #ann-shared-fab         (floating action button, optional)
+     #ann-shared-fab-badge
+
+   Classes used:
+     .ann-card, .ann-card-top, .ann-card-badge, .ann-card-id,
+     .ann-card-line, .ann-card-del, .ann-card-src, .ann-card-comment,
+     .ann-card-flash
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --ann-accent:        #4f46e5;
+  --ann-accent-hover:  #4338ca;
+  --ann-accent-soft:   #eef2ff;
+  --ann-panel-w:       360px;
+  --ann-panel-top:     0px;
+}
+
+/* ── SIDE PANEL ─────────────────────────────────────────────────────────── */
+#ann-panel {
+  position: fixed;
+  top: var(--ann-panel-top);
+  right: 0;
+  bottom: 0;
+  width: var(--ann-panel-w);
+  z-index: 999997;
+  background: var(--surface, #ffffff);
+  border-left: 1px solid var(--border, #e2ddd6);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(calc(100% + 40px));
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+  font-family: var(--sans, -apple-system, system-ui, sans-serif);
+  color: var(--ink, #1c1916);
+}
+#ann-panel.open { transform: translateX(0); }
+
+#ann-panel-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border, #e2ddd6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface, #ffffff);
+  gap: 10px;
+}
+#ann-panel-header h3 {
+  font-family: var(--display, var(--sans));
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink, #1c1916);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  text-transform: uppercase;
+}
+#ann-panel-header h3::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ann-accent);
+}
+#ann-panel-count {
+  color: var(--ink3, #9a9088);
+  font-weight: 400;
+  margin-left: 4px;
+}
+#ann-panel-close {
+  background: none;
+  border: 1px solid var(--border, #e2ddd6);
+  border-radius: 5px;
+  color: var(--ink2, #4a4540);
+  font-family: var(--sans);
+  font-size: 11px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1;
+}
+#ann-panel-close:hover { border-color: var(--ink, #1c1916); color: var(--ink, #1c1916); }
+
+#ann-panel-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+#ann-panel-empty {
+  padding: 60px 24px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink3, #9a9088);
+  line-height: 1.7;
+}
+#ann-panel-empty .ann-empty-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+/* ── CARD ───────────────────────────────────────────────────────────────── */
+.ann-card {
+  border-radius: 10px;
+  border: 1px solid var(--border, #e2ddd6);
+  background: var(--surface, #ffffff);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  position: relative;
+}
+.ann-card:hover {
+  border-color: var(--ann-accent);
+  box-shadow: 0 4px 16px rgba(79,70,229,0.12);
+  transform: translateY(-1px);
+}
+.ann-card.ann-card-active,
+.ann-card.ann-card-flash {
+  animation: ann-card-flash-anim 1.4s ease;
+}
+@keyframes ann-card-flash-anim {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79,70,229,0); }
+  30%      { box-shadow: 0 0 0 4px rgba(79,70,229,0.35); border-color: var(--ann-accent); }
+}
+
+.ann-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.ann-card-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 10px;
+  background: var(--ann-accent);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.ann-card-id {
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--ink3, #9a9088);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ann-card-line {
+  font-family: var(--sans);
+  font-size: 9px;
+  background: #edf7f2;
+  color: #2d7a2d;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.ann-card-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink3, #9a9088);
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.12s;
+  line-height: 1;
+}
+.ann-card-del:hover { color: #fff; background: var(--ann-accent); }
+.ann-card-src {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 10px;
+  color: var(--ink3, #9a9088);
+  background: var(--bg, #f5f2ed);
+  border-left: 2px solid var(--ann-accent);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+.ann-card-comment {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink, #1c1916);
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+/* ── FOOTER ─────────────────────────────────────────────────────────────── */
+#ann-panel-footer {
+  padding: 14px;
+  border-top: 1px solid var(--border, #e2ddd6);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface, #ffffff);
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));
+}
+.ann-panel-btn {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border, #e2ddd6);
+  background: var(--surface, #ffffff);
+  color: var(--ink2, #4a4540);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.ann-panel-btn:hover {
+  border-color: var(--ann-accent);
+  color: var(--ann-accent);
+  background: var(--ann-accent-soft);
+}
+.ann-panel-btn.primary {
+  background: var(--ann-accent);
+  border-color: var(--ann-accent);
+  color: #fff;
+}
+.ann-panel-btn.primary:hover {
+  background: var(--ann-accent-hover);
+  border-color: var(--ann-accent-hover);
+  color: #fff;
+}
+.ann-panel-btn.danger { color: #c0392b; border-color: transparent; }
+.ann-panel-btn.danger:hover { background: #fdf0ef; border-color: #c0392b; color: #c0392b; }
+.ann-panel-row { display: flex; gap: 8px; }
+.ann-panel-row .ann-panel-btn { flex: 1; }
+
+/* ── FAB ────────────────────────────────────────────────────────────────── */
+#ann-shared-fab {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 999996;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--ann-accent);
+  color: #fff;
+  font-size: 22px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(79,70,229,0.45), 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  font-family: var(--sans);
+}
+#ann-shared-fab:hover {
+  background: var(--ann-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(79,70,229,0.5);
+}
+#ann-shared-fab:active { transform: scale(0.95); }
+#ann-shared-fab.ann-hidden { display: none; }
+#ann-shared-fab-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--ink, #1c1916);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 11px;
+  padding: 2px 6px;
+  min-width: 18px;
+  display: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+#ann-shared-fab-badge.on { display: block; }
+
+/* ── MOBILE: bottom sheet ───────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  #ann-panel {
+    top: auto; bottom: 0; left: 0; right: 0;
+    width: 100%;
+    height: 72vh;
+    border-left: none;
+    border-top: 1px solid var(--border, #e2ddd6);
+    border-radius: 14px 14px 0 0;
+    transform: translateY(100%);
+  }
+  #ann-panel.open { transform: translateY(0); }
+}

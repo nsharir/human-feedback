@@ -42,8 +42,10 @@ setTimeout(() => {
     assert(!!document.getElementById('ann-panel'),       'side panel mounted');
     assert(!!document.getElementById('ann-dialog'),      'comment dialog mounted');
     assert(!!document.getElementById('ann-copy-btn'),    'copy-prompt button present');
-    assert(!!document.getElementById('ann-clear-btn'),   'clear button present');
+    assert(!!document.getElementById('ann-clear'),       'clear button present (shared AnnPanel)');
     assert(!!document.getElementById('ann-preview-overlay'), 'preview overlay present');
+    assert(document.getElementById('ann-panel').classList.contains('ann-panel'),
+           'side panel uses shared AnnPanel module (has .ann-panel class)');
 
     // Simulate clicking a target element on the page
     const target = document.querySelector('h1');

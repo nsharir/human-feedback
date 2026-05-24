@@ -22,6 +22,8 @@ const path = require('path');
 const SRC_DIR    = path.join(__dirname, '..', 'src');
 const OUT_DIR    = path.join(__dirname, '..', 'lib', 'templates');
 const INCLUDE_RE = /(?:\/\*\s*@include\s+([^\s*]+)\s*\*\/|<!--\s*@include\s+([^\s]+)\s*-->)/g;
+// @includeString: inline a file as a JS string literal (backtick-quoted, escaped)
+const INCLUDE_STR_RE = /\/\*\s*@includeString\s+([^\s*]+)\s*\*\//g;
 
 const targets = [
   { src: 'tools/annotator/annotator.js',     out: 'annotator-script.js' },
@@ -45,6 +47,15 @@ function resolveIncludes(content, currentPath, visited) {
     throw new Error('Circular @include detected at: ' + currentPath);
   }
   visited.add(currentPath);
+
+  // First pass: @includeString → backtick-quoted, escaped JS string
+  content = content.replace(INCLUDE_STR_RE, function (_, p) {
+    var raw = read(p);
+    return '`' + raw
+      .replace(/\\/g, '\\\\')
+      .replace(/`/g, '\\`')
+      .replace(/\$\{/g, '\\${') + '`';
+  });
 
   return content.replace(INCLUDE_RE, function (_, jsPath, htmlPath) {
     const includePath = jsPath || htmlPath;
