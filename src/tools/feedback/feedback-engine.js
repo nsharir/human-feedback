@@ -156,6 +156,7 @@
       }
 
       case 'select': {
+        const allowOther = q.other !== false; // default ON for radio/checkbox/select
         const sel = mk('select', 'q-select');
         const ph = document.createElement('option');
         ph.value = ''; ph.textContent = 'Choose an option…'; ph.disabled = true; ph.selected = true;
@@ -165,12 +166,12 @@
           o.value = opt; o.textContent = opt;
           sel.appendChild(o);
         });
-        if (q.other) {
+        if (allowOther) {
           const o = document.createElement('option');
           o.value = '__other__'; o.textContent = 'Other…';
           sel.appendChild(o);
         }
-        const otherInput = q.other
+        const otherInput = allowOther
           ? mk('input', 'q-other-input', { type: 'text', placeholder: 'Please specify…' })
           : null;
         sel.addEventListener('change', function () {
@@ -303,7 +304,8 @@
     let otherActive = false;
     let otherText = '';
 
-    const otherInput = q.other
+    const allowOther = q.other !== false; // default ON for radio/checkbox
+    const otherInput = allowOther
       ? mk('input', 'q-other-input', { type: 'text', placeholder: 'Please specify…' })
       : null;
 
@@ -345,7 +347,7 @@
       group.appendChild(div);
     });
 
-    if (q.other) {
+    if (allowOther) {
       const otherDiv = mk('div', 'q-option' + (isCheckbox ? ' checkbox' : ''));
       otherDiv.innerHTML = '<div class="q-option-mark"></div><span class="q-option-label">Other…</span>';
       otherDiv.addEventListener('click', function () {
