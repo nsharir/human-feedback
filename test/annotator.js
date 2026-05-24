@@ -79,7 +79,7 @@ setTimeout(() => {
     const promptText = document.getElementById('ann-preview-textarea').value;
     assert(promptText.includes('Annotation #1'),       'prompt lists annotation #1');
     assert(promptText.includes('too generic'),         'prompt includes comment text');
-    assert(promptText.includes('CSS Selector:'),       'prompt includes CSS selector');
+    assert(promptText.includes('Selector:'),           'prompt includes selector');
 
     // Panel listing
     document.getElementById('ann-panel-btn').click();
