@@ -1,120 +1,93 @@
-# Closing the Loop: How I Made My AI Agents Actually Listen to Me
+# Stop Explaining Yourself to Your AI Agent: Fix the Feedback Loop
 
-*A small CLI tool, a few HTML files, and a much faster human-agent feedback loop.*
+*The agent isn't slow. You are. Here's how to stop being the bottleneck.*
 
 ---
 
-I've been working with AI coding agents — Claude Code, Cursor, Codex, Hermes — every day for the past year. And the most frustrating part isn't what you'd expect.
+Ever felt tired of giving feedback to an AI agent?
 
-It's not hallucinations. It's not context windows. It's not even cost.
+Reading a plan, checking a mockup, answering a list of questions — and then realizing the feedback is harder than the actual work?
 
-**It's that I can't give them feedback fast enough.**
+The agent isn't slow. The agent isn't even wrong, mostly. But you, the human, are now the bottleneck. You're reading a spec and trying to describe which paragraph you disagree with. You're staring at a mockup and typing "the button in the top-right of the second row" because there's no other way to point. You're answering "just a few clarifying questions" for the fourth time today.
 
-## The painful loop
+**The thinking part is easy. The delivering-the-thinking-back-to-the-agent part is what's killing you.**
 
-Here's what a typical interaction looks like when an agent produces something substantial — a design doc, a UI mockup, a refactoring plan:
+That's the loop I wanted to fix.
 
-1. Agent: "Here's the spec I drafted. Want me to proceed?"
-2. Me: *opens the file, reads it carefully*
-3. Me: "Yes, but on line 47 — I don't think we need PGP at v1. Also the priority of the AI features should be higher. And the wording in section 3 is too aggressive."
-4. Agent: *makes changes*
-5. Me: *re-reads, finds three more things*
-6. Repeat 4–7 times.
+## What human-feedback is
 
-Every round trip is me **typing prose to describe locations in a document**. "The paragraph about authentication." "The third bullet under the API section." "The button in the top right of the mockup."
+[`human-feedback`](https://github.com/nsharir/human-feedback) is a small CLI that turns any agent output into a reviewable, annotatable HTML file. It handles three kinds of agent output:
 
-I'm a senior engineer. I shouldn't be writing coordinates as prose.
+- **Markdown specs and plans** — become a rendered document with Google-Docs-style highlighting and comments. Each annotation gets a floating ID label (A1, A2...) so you and the agent can refer to it precisely.
+- **HTML mockups** — become click-to-annotate prototypes. Click on any element, leave a comment, and the CSS selector is captured automatically. No more "the button on the top-left."
+- **Questionnaires** (a tiny JSON schema) — become real forms with text fields, dropdowns, multi-select, ratings, file uploads. The agent asks structured questions, you answer structurally. No more wall-of-prose Q&A.
 
-## What I actually want
+All three tools end the same way: you click **Copy Prompt**, and a structured natural-language prompt — written so any agent can parse it — lands on your clipboard. Paste it back. The agent knows exactly which line, which element, which answer each comment refers to.
 
-What I wanted was something like Google Docs comments, but for whatever the agent just produced — markdown, HTML, anything. Highlight the text. Type a comment. Hand the structured feedback back.
+No server. No accounts. No OAuth. No webhooks. The "backend" is your clipboard. Every output is a single self-contained HTML file you can open offline, share over Slack, or commit to a repo.
 
-The constraints:
+## The part that matters: you don't run it
 
-- **No server.** I don't want to spin up infrastructure for this.
-- **No integrations.** No accounts, no OAuth, no webhooks.
-- **Works with any agent harness.** Claude Code, Cursor, Codex, Hermes — same UX.
-- **Output the agent can actually parse.** Not screenshots. Not vague messages.
+Here's the thing that changes how you should think about this:
 
-So I built it.
+**You don't run the CLI. The agent does.**
 
-## human-feedback
+`human-feedback install` adds a skill to your agent harness — Claude Code, Cursor, Codex, Hermes. You do this once. From that moment on, whenever you type `/human-feedback` (or just say "let me review that"), the agent automatically picks up the latest artifact it produced — the markdown spec it just drafted, the HTML mockup it just built, or the questions it needs answered — compiles it into a reviewable file, and hands you a link.
 
-[`human-feedback`](https://github.com/nsharir/human-feedback) is a tiny CLI. It compiles your agent's output — `.md`, `.html`, or a questionnaire `.json` — into a **self-contained HTML file** with a feedback layer baked in. The human opens it in a browser, gives feedback inline, and copies a structured prompt back to the agent.
+You annotate and paste back. The agent continues with precise, structured feedback.
 
-Three tools, one command:
+The friction of "remember to run a tool" would have killed it, so I removed that friction entirely. You install it once. You never touch the CLI again. It's just there, quietly wiring itself between the agent and you.
 
-```bash
-# Wrap a markdown spec
-human-feedback compile spec.md -o spec.review.html
+## What it looks like in practice
 
-# Wrap an HTML mockup
-human-feedback compile mockup.html -o mockup.review.html
+### The agent asks you what you want
 
-# Bake a questionnaire
-human-feedback compile questions.json -o intake.html
-```
-
-That's it. No server, no API key, no signup.
-
-## The three-stage loop in practice
-
-The way I use it most often is a three-stage loop that maps to how real product work happens.
-
-### Stage 1: Pin down requirements before any drafting
-
-I don't want the agent to start writing code or specs based on what it *thinks* I want. So I have it generate a questionnaire first — multi-format inputs covering audience, platforms, priorities, deadlines, constraints.
-
-The human (me, or a stakeholder) fills it out in the browser, and the agent gets a structured answer back covering everything it needs to know.
+Instead of dumping a paragraph of questions into chat, the agent collects everything it needs into a structured form: typed inputs, dropdowns, priorities, deadlines, constraints. You fill it in your browser. Copy. Paste back. Every answer is labeled and typed — no ambiguity.
 
 ![Feedback questioner demo](https://raw.githubusercontent.com/nsharir/human-feedback/main/examples/demos/feedback.gif)
 
-### Stage 2: Annotate the functional spec
+### The agent drafts a spec
 
-The agent drafts a spec from those answers. I open the rendered markdown in a browser, highlight any sentence, and leave a comment. Each annotation gets a floating ID label (A1, A2, …) — same UX as Google Docs.
-
-When I'm done, I click "Copy Prompt" and paste a structured natural-language prompt back to the agent. The prompt tells the agent exactly which line each comment refers to, what the original text said, and what I want changed.
+The agent writes 150 lines of markdown. Instead of reading a wall of text in chat, it opens in your browser as a rendered document with a comment layer baked in. Highlight any sentence, type a comment, get floating A1, A2... labels. When you're done, "Copy Prompt" gives the agent a structured message: which line, what it said, what you want changed.
 
 ![Markdown annotator demo](https://raw.githubusercontent.com/nsharir/human-feedback/main/examples/demos/md-annotator.gif)
 
-### Stage 3: Critique the mockup
+### The agent ships a UI mockup
 
-For UI work, the agent ships an HTML mockup. I open it, **click on any element**, and leave a comment. CSS selectors are captured automatically so the agent knows exactly what I was pointing at.
+The agent renders HTML. You open it, click on any element, and leave a comment. The CSS selector goes with it. The agent sees exactly what you were pointing at — no spatial prose, no guessing.
 
 ![HTML annotator demo](https://raw.githubusercontent.com/nsharir/human-feedback/main/examples/demos/html-annotator.gif)
 
-## Why this accelerates the loop
+## Why this changes the loop
 
-Three things change once you stop typing coordinates as prose:
+Three things shift the moment you stop typing coordinates as prose:
 
-- **Round-trip time per review drops dramatically.** I'm not describing locations; I'm highlighting and commenting. The bottleneck moves from "express the feedback" back to "decide on the feedback."
-- **Round-trips per draft go down.** When the agent gets a structured prompt referencing specific lines, it's far less likely to misinterpret what I meant. Two iterations instead of five.
-- **Cognitive load drops.** I'm reading critically, not playing coordinate-translator. That's the real unlock.
+- **Round-trip time per review drops dramatically.** You're not describing locations; you're highlighting and commenting. The bottleneck moves back to "decide on the feedback" — where your brain should be.
+- **Round-trips per draft go down.** Structured prompts referencing specific lines and selectors are far less prone to misinterpretation. Two iterations instead of five.
+- **Cognitive load drops.** You're reading critically, not translating spatial reasoning into prose. That's the real unlock.
 
-The win isn't UX cleverness. It's that **structured feedback is just easier for the agent to act on than prose**. The agent doesn't have to guess which paragraph I meant. The address is in the prompt.
+The win isn't UX cleverness. It's that **structured feedback is just easier for the agent to act on than prose**. The address is in the prompt.
 
-## The implementation philosophy
+## Implementation philosophy
 
-Three principles, in case anyone wants to build something similar:
+Three principles, for anyone curious about building something similar:
 
-1. **No server.** Everything compiles to a single self-contained HTML file. The "backend" is the clipboard.
-2. **One output format.** Every tool emits the same structured natural-language prompt. The agent can parse it the same way every time.
-3. **Native agent integration.** A single `human-feedback install` command adds the `/human-feedback` command to Claude Code, Cursor, Codex, or Hermes — the user triggers it when they want to give feedback.
-
-The whole thing is ~3,000 lines of vanilla JS. No framework. No build pipeline beyond a simple file-inliner.
+1. **No server.** Every output is a single self-contained HTML file. The "backend" is the clipboard.
+2. **One output format.** Every tool emits the same structured natural-language prompt. The agent parses it the same way every time.
+3. **Wires itself in.** `human-feedback install` adds the skill to your harness once. After that, you forget the tool exists — which is exactly what good tools do.
 
 ## Try it
 
+One command, then forget about it:
+
 ```bash
 npm install -g @nsharir/human-feedback
-human-feedback install   # interactive setup for your harness
+human-feedback install   # interactive — pick your harness
 ```
 
-Or one-shot:
+Next time your agent drafts a spec, renders a mockup, or asks you a list of questions — type `/human-feedback`. It compiles the latest artifact, opens the reviewable version, and you highlight, comment, and paste back.
 
-```bash
-npx @nsharir/human-feedback compile some-spec.md -o review.html
-```
+No more typing "the paragraph about authentication."
 
 Repo: [github.com/nsharir/human-feedback](https://github.com/nsharir/human-feedback)
 
