@@ -323,13 +323,31 @@ const VERBOSE = process.env.AGENT_FEEDBACK_VERBOSE !== '0';
 
 const fileUrl = 'file://' + outputPath;
 
+// Hermes WebUI auto-renders `MEDIA:<path>` tokens inline. For .html outputs
+// (which is what we always produce — questionnaires and review wrappers
+// both end in .html / .feedback.html / .review.html / .annotated.html),
+// emitting the MEDIA token in the agent's reply causes WebUI to embed the
+// wrapped surface in a sandboxed iframe directly inside the chat bubble —
+// no clickable link needed, no browser navigation, no `file://` security
+// blocks. Other harnesses (Claude Code, Cursor, Codex) ignore the token
+// because they're terminal-based and have no markdown renderer with this
+// convention. We emit it in the agent-instruction so the model includes
+// it verbatim in its reply.
+const isHermes  = norm.harness === 'hermes';
+const isHtmlOut = /\.html?$/i.test(outputPath);
+const mediaToken = (isHermes && isHtmlOut) ? `MEDIA:${outputPath}` : null;
+
 const openedLine = openResult.opened
   ? `It has already been opened in the user's default browser — do NOT instruct them to open it manually.`
-  : `Reply to the user with a clickable link to the wrapped file so they can open it:\n  ${fileUrl}\nDo NOT auto-open it. Wait for their response.`;
+  : (mediaToken
+      ? `Include this token VERBATIM in your reply so the WebUI embeds the wrapped surface inline:\n  ${mediaToken}\nAlso share the file:// link as a fallback:\n  ${fileUrl}\nDo NOT auto-open it. Wait for the user's response.`
+      : `Reply to the user with a clickable link to the wrapped file so they can open it:\n  ${fileUrl}\nDo NOT auto-open it. Wait for their response.`);
 
 const quietMsg = openResult.opened
   ? `[agent-feedback] wrapped + opened ${rel(outputPath)}`
-  : `[agent-feedback] wrapped ${rel(norm.filePath)} → ${fileUrl} — share this link with the user`;
+  : (mediaToken
+      ? `[agent-feedback] wrapped ${rel(norm.filePath)} → include ${mediaToken} in reply (WebUI renders it inline); fallback link: ${fileUrl}`
+      : `[agent-feedback] wrapped ${rel(norm.filePath)} → ${fileUrl} — share this link with the user`);
 
 const verboseMsg = [
   `[agent-feedback] Wrapped ${rel(norm.filePath)} as a ${kind}: ${rel(outputPath)}`,

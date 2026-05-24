@@ -98,6 +98,56 @@ console.log('\n=== Post-write hook tests ===\n');
     'does not re-wrap an already-wrapped .feedback.html');
 }
 
+// ── 4b. Hermes harness: agent message embeds a MEDIA:<path> token ─────────
+// WebUI auto-renders MEDIA:<path> as a sandboxed iframe for .html outputs,
+// so the user sees the wrapped surface inline in the chat. The hook should
+// instruct the agent to include the token verbatim in its reply.
+{
+  const dir = tmpDir();
+  const src = path.join(dir, 'questions.json');
+  fs.writeFileSync(src, JSON.stringify({
+    title: 'Hermes MEDIA test',
+    questions: [{ id: 'q1', text: 'hi?', type: 'text' }],
+  }));
+
+  const out = path.join(dir, 'questions.feedback.html');
+  const r = runHook(src, { CI: '' });
+  assert(r.status === 0, 'hermes hook exits 0');
+  assert(r.parsed && r.parsed.message && r.parsed.message.includes('MEDIA:' + out),
+    'hermes message embeds MEDIA:<output-path> token');
+  assert(r.parsed && /file:\/\//.test(r.parsed.message),
+    'hermes message still carries the file:// fallback link');
+}
+
+// ── 4c. Non-Hermes harness: MEDIA: token is NOT emitted ───────────────────
+// Claude Code / Cursor / Codex are terminal-based and have no MEDIA: token
+// convention. The hook must keep the file:// link path unchanged for them.
+{
+  const dir = tmpDir();
+  const src = path.join(dir, 'questions.json');
+  fs.writeFileSync(src, JSON.stringify({
+    title: 'Non-hermes',
+    questions: [{ id: 'q1', text: '?', type: 'text' }],
+  }));
+
+  const r = spawnSync('node', [HOOK], {
+    input: JSON.stringify({ harness: 'claude-code', tool: 'write_file', file_path: src }),
+    encoding: 'utf8',
+    timeout: 20000,
+    env: { ...process.env, CI: '' },
+  });
+  let parsed = null; try { parsed = JSON.parse(r.stdout || '{}'); } catch {}
+  // Claude Code's adapter writes to `agentMessage` rather than `message`,
+  // but the underlying instruction we care about is the same — just check
+  // whichever field carried the agent-facing payload.
+  const msg = (parsed && (parsed.message || parsed.agentMessage)) || '';
+  assert(r.status === 0, 'non-hermes hook exits 0');
+  assert(msg && !msg.includes('MEDIA:'),
+    'non-hermes message does NOT include a MEDIA: token');
+  assert(/file:\/\//.test(msg),
+    'non-hermes message still carries the file:// link');
+}
+
 // ── 4b. Whitelist enforcement: plain .md without -review is NOT wrapped ──
 {
   const dir = tmpDir();

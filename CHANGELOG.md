@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added — Hermes WebUI inline embedding via `MEDIA:` token (v1.7.2)
+
+- When the post-write hook fires on the **Hermes** harness and the wrapped output is an `.html` file (always the case — questionnaires and review wrappers compile to `.feedback.html` / `.review.html` / `.annotated.html`), the agent-facing instruction now tells the model to include a `MEDIA:<absolute-output-path>` token verbatim in its reply.
+- Why: Hermes WebUI's chat renderer recognizes the `MEDIA:<path>` convention and embeds the referenced file inline in a sandboxed iframe. The user sees the questionnaire / annotator surface directly in the chat bubble — no clickable link to chase, no `file://` navigation (which modern browsers block from `https://` / `localhost` pages anyway).
+- The `file://` link is still emitted alongside the `MEDIA:` token as a fallback for users on harnesses or builds that do not honor the convention.
+- Non-Hermes harnesses (Claude Code, Cursor, Codex) are unaffected — they get the same `file://` link they got before, with no `MEDIA:` token (terminal-based; the token would be meaningless noise).
+- The rule-injection text (`lib/rule-injection.js`) and the Hermes memory-fallback rule (`lib/installer.js`) are both updated so the agent learns the convention at session start, not just when the hook fires.
+- Tests: `test/post-write-hook.js` gains coverage that Hermes events embed `MEDIA:<output-path>` while non-Hermes events do not.
+
 ### Added — `install --hermes` now writes the rule into Hermes `MEMORY.md` (v1.7.1)
 
 - The Hermes installer now appends a single managed memory entry to Hermes' `MEMORY.md` (project scope: `./.hermes/memories/MEMORY.md`, global scope: `~/.hermes/memories/MEMORY.md`). The entry is a short prose version of the >1-question + `-review` rules.
