@@ -14,7 +14,7 @@ No server. No accounts. No browser extension. Just a single command: `/human-fee
 
 **End-to-end walkthrough** — from intent capture to mockup feedback, with narration:
 
-https://github.com/user-attachments/assets/982e3634-de48-4745-b29e-ce2cd60665b7
+https://github.com/user-attachments/assets/73058dc7-7a15-4014-b69a-ef864e024e79
 
 ### The agent asks you what you want
 
