@@ -16,7 +16,7 @@ html, body { height: 100%; }
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--serif);
+  font-family: var(--sans);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -38,9 +38,9 @@ header {
   z-index: 100;
 }
 .logo {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.12em;
   color: #f0ece4;
   display: flex;
@@ -61,7 +61,7 @@ header {
   flex-shrink: 0;
 }
 .header-sub {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 11px;
   color: rgba(240, 236, 228, 0.5);
   margin-left: 6px;
@@ -78,7 +78,7 @@ header {
   gap: 10px;
   flex-shrink: 0;
 }
-#progress-label { font-family: var(--mono); font-size: 11px; color: rgba(240, 236, 228, 0.6); }
+#progress-label { font-family: var(--sans); font-size: 11px; color: rgba(240, 236, 228, 0.6); }
 #progress-label b { color: var(--accent2); font-weight: 600; }
 
 @media (max-width: 600px) { .header-sub { display: none; } }
@@ -123,14 +123,14 @@ main {
   background: var(--surface);
 }
 #empty-state h2 {
+  font-family: var(--display);
   font-size: 24px;
-  font-weight: 500;
-  font-style: italic;
+  font-weight: 600;
   color: var(--ink);
   letter-spacing: -0.01em;
 }
 #empty-state p {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   color: var(--ink3);
   line-height: 1.7;
@@ -146,7 +146,7 @@ main {
   box-shadow: var(--shadow);
 }
 .schema-label {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 10px;
   color: var(--accent);
   letter-spacing: 0.1em;
@@ -171,7 +171,7 @@ main {
 
 #q-title-block { margin-bottom: 32px; }
 #q-context-label {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 10px;
   color: var(--accent);
   letter-spacing: 0.12em;
@@ -179,15 +179,15 @@ main {
   margin-bottom: 8px;
 }
 #q-title {
+  font-family: var(--display);
   font-size: 28px;
-  font-weight: 500;
-  font-style: italic;
+  font-weight: 600;
   line-height: 1.2;
   color: var(--ink);
   letter-spacing: -0.01em;
 }
 #q-description {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   color: var(--ink3);
   margin-top: 10px;
@@ -219,7 +219,7 @@ main {
 .q-card.focused::before  { background: var(--accent2); }
 
 .q-num {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 10px;
   color: var(--ink3);
   letter-spacing: 0.08em;
@@ -263,7 +263,7 @@ main {
   margin-bottom: 4px;
 }
 .q-hint {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 11px;
   color: var(--ink3);
   margin-bottom: 14px;
@@ -277,7 +277,7 @@ main {
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
   color: var(--ink);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 13px;
   padding: 10px 14px;
   outline: none;
@@ -289,7 +289,7 @@ main {
   box-shadow: 0 0 0 3px var(--accent-lt);
   background: var(--surface);
 }
-.q-textarea { min-height: 90px; resize: vertical; line-height: 1.6; font-family: var(--mono); }
+.q-textarea { min-height: 90px; resize: vertical; line-height: 1.6; font-family: var(--sans); }
 .q-select {
   cursor: pointer;
   appearance: none;
@@ -338,7 +338,7 @@ main {
 .q-option.selected .q-option-mark { border-color: var(--accent); background: var(--accent); }
 .q-option.selected .q-option-mark::after { content: '✓'; font-size: 10px; color: #fff; font-weight: bold; }
 .q-option-label {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   color: var(--ink);
   line-height: 1.4;
@@ -352,7 +352,7 @@ main {
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
   color: var(--ink);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   padding: 8px 12px;
   outline: none;
@@ -374,7 +374,7 @@ main {
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink3);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.12s;
@@ -386,19 +386,19 @@ main {
 .q-scale-btn:hover { border-color: var(--accent); color: var(--ink); }
 .q-scale-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 .q-scale-labels { display: flex; justify-content: space-between; margin-top: 6px; }
-.q-scale-labels span { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
+.q-scale-labels span { font-family: var(--sans); font-size: 10px; color: var(--ink3); }
 
 /* Range */
 .q-range-wrap { display: flex; flex-direction: column; gap: 6px; }
 .q-range-value-row { display: flex; align-items: baseline; gap: 4px; }
 .q-range-value {
-  font-family: var(--mono);
+  font-family: var(--display);
   font-size: 24px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--accent);
   line-height: 1;
 }
-.q-range-unit { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+.q-range-unit { font-family: var(--sans); font-size: 12px; color: var(--ink3); }
 
 input[type=range].q-range {
   -webkit-appearance: none;
@@ -429,7 +429,7 @@ input[type=range].q-range::-moz-range-thumb {
   border: 2px solid var(--surface);
 }
 .q-range-bounds { display: flex; justify-content: space-between; }
-.q-range-bounds span { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
+.q-range-bounds span { font-family: var(--sans); font-size: 10px; color: var(--ink3); }
 
 /* Boolean */
 .q-bool { display: flex; gap: 8px; }
@@ -440,7 +440,7 @@ input[type=range].q-range::-moz-range-thumb {
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink3);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 13px;
   cursor: pointer;
   text-align: center;
@@ -461,7 +461,7 @@ input[type=range].q-range::-moz-range-thumb {
   font-weight: 500;
 }
 
-input[type=date].q-input { font-family: var(--mono); }
+input[type=date].q-input { font-family: var(--sans); }
 
 /* Image upload */
 .q-image-section {
@@ -470,7 +470,7 @@ input[type=date].q-input { font-family: var(--mono); }
   border-top: 1px dashed var(--border2);
 }
 .q-image-label {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 10px;
   color: var(--ink3);
   letter-spacing: 0.06em;
@@ -499,7 +499,7 @@ input[type=date].q-input { font-family: var(--mono); }
   width: 100%; height: 100%;
 }
 .q-image-drop-text {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 11px;
   color: var(--ink3);
   pointer-events: none;
@@ -516,7 +516,7 @@ input[type=date].q-input { font-family: var(--mono); }
 }
 .q-image-preview.visible { display: block; }
 .q-image-clear {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 10px;
   color: var(--red);
   background: none;
@@ -541,7 +541,7 @@ input[type=date].q-input { font-family: var(--mono); }
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -570,7 +570,7 @@ input[type=date].q-input { font-family: var(--mono); }
   color: var(--ink2);
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   padding: 11px 18px;
   cursor: pointer;
@@ -579,7 +579,7 @@ input[type=date].q-input { font-family: var(--mono); }
 }
 .btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
 
-#req-note { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+#req-note { font-family: var(--sans); font-size: 11px; color: var(--ink3); }
 #req-note b { color: var(--red); font-weight: 500; }
 @media (max-width: 600px) {
   #form-footer { flex-direction: column; align-items: stretch; }
@@ -609,13 +609,13 @@ input[type=date].q-input { font-family: var(--mono); }
   color: var(--green);
 }
 #success-state h2 {
+  font-family: var(--display);
   font-size: 24px;
-  font-weight: 500;
-  font-style: italic;
+  font-weight: 600;
   color: var(--ink);
 }
 #success-state p {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   color: var(--ink3);
   line-height: 1.7;

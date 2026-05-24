@@ -24,7 +24,9 @@
 
   /* Type */
   --serif:     'Fraunces', Georgia, serif;
-  --mono:      'DM Mono', monospace;
+  --sans:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --display:   'Rubik', 'Inter', -apple-system, system-ui, sans-serif;
+  --mono:      'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Shape */
   --radius:    10px;
