@@ -1,6 +1,6 @@
 {
   "name": "@nsharir/agent-feedback",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Close the loop on AI agent output — wrap .md / .html / .json files with interactive feedback surfaces, native hook plugins for Claude Code, Cursor, Codex, and Hermes.",
   "main": "lib/compiler.js",
   "bin": {

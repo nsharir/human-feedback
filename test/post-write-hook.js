@@ -99,3 +99,79 @@ console.log('\n=== Post-write hook tests ===\n');
 }
 
 console.log('\n=== Post-write hook tests complete ===\n');
+
+// ── 5. Rule-injection events ──────────────────────────────────────────────
+// Verify the SessionStart / UserPromptSubmit / beforeSubmitPrompt / Hermes
+// pre_llm_call paths emit the >1-question rule text in the correct shape
+// for each harness.
+
+console.log('\n=== Rule-injection event tests ===\n');
+
+function runHookWithEvent(event, extraEnv = {}) {
+  const env = { ...process.env, ...extraEnv };
+  if (!('CI' in extraEnv)) env.CI = '1';
+  const r = spawnSync('node', [HOOK], {
+    input: JSON.stringify(event),
+    encoding: 'utf8',
+    timeout: 10000,
+    env,
+  });
+  let parsed = null;
+  try { parsed = JSON.parse(r.stdout || '{}'); } catch {}
+  return { status: r.status, parsed };
+}
+
+// Claude Code SessionStart
+{
+  const r = runHookWithEvent({ hook_event_name: 'SessionStart', session_id: 'abc' });
+  assert(r.status === 0, 'SessionStart: exits 0');
+  const ac = r.parsed?.hookSpecificOutput?.additionalContext || '';
+  assert(/>1-question rule/.test(ac), 'SessionStart: emits rule text in additionalContext');
+  assert(r.parsed?.hookSpecificOutput?.hookEventName === 'SessionStart',
+    'SessionStart: echoes hookEventName');
+}
+
+// Claude Code UserPromptSubmit
+{
+  const r = runHookWithEvent({ hook_event_name: 'UserPromptSubmit', session_id: 'abc' });
+  assert(r.status === 0, 'UserPromptSubmit: exits 0');
+  const ac = r.parsed?.hookSpecificOutput?.additionalContext || '';
+  assert(/questions\.json/.test(ac), 'UserPromptSubmit: rule mentions questions.json');
+}
+
+// Cursor beforeSubmitPrompt
+{
+  const r = runHookWithEvent({
+    hook_event_name: 'beforeSubmitPrompt',
+    conversation_id: 'c1',
+    generation_id: 'g1',
+  });
+  assert(r.status === 0, 'beforeSubmitPrompt: exits 0');
+  assert(/>1-question rule/.test(r.parsed?.agentMessage || ''),
+    'beforeSubmitPrompt: rule text in agentMessage');
+}
+
+// Hermes pre_llm_call
+{
+  const r = runHookWithEvent({ harness: 'hermes', event: 'pre_llm_call' });
+  assert(r.status === 0, 'Hermes pre_llm_call: exits 0');
+  assert(/>1-question rule/.test(r.parsed?.message || ''),
+    'Hermes pre_llm_call: rule text in message');
+}
+
+// Disabled — no rule injection
+{
+  const r = runHookWithEvent(
+    { hook_event_name: 'SessionStart' },
+    { AGENT_FEEDBACK_DISABLED: '1' },
+  );
+  assert(r.status === 0, 'SessionStart + DISABLED=1: exits 0');
+  // When disabled at SessionStart, the hook falls through to the file-wrap
+  // path; since there's no file_path, that path emits an empty ack. Confirm
+  // we did NOT emit the rule text.
+  const ac = r.parsed?.hookSpecificOutput?.additionalContext || r.parsed?.agentMessage || r.parsed?.message || '';
+  assert(!/>1-question rule/.test(ac),
+    'AGENT_FEEDBACK_DISABLED=1 suppresses rule injection');
+}
+
+console.log('\n=== Rule-injection event tests complete ===\n');

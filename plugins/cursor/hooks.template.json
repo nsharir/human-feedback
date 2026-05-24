@@ -1,6 +1,12 @@
 {
   "version": 1,
   "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "agent-feedback __hook",
+        "timeout": 10
+      }
+    ],
     "afterFileEdit": [
       {
         "command": "agent-feedback __hook",

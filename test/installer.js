@@ -37,12 +37,29 @@ try {
   // Install each
   const r1 = installer.install('claude-code', 'project');
   assert(r1.changed && fs.existsSync(path.join(tmp, '.claude', 'settings.json')), 'installs Claude Code config');
+  {
+    const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.claude', 'settings.json'), 'utf8'));
+    assert(Array.isArray(cfg.hooks.PostToolUse) && cfg.hooks.PostToolUse.length === 1, 'Claude Code: PostToolUse group');
+    assert(Array.isArray(cfg.hooks.SessionStart) && cfg.hooks.SessionStart.length === 1, 'Claude Code: SessionStart group (rule injection)');
+    assert(Array.isArray(cfg.hooks.UserPromptSubmit) && cfg.hooks.UserPromptSubmit.length === 1, 'Claude Code: UserPromptSubmit group (rule injection)');
+  }
 
   const r2 = installer.install('cursor', 'project');
   assert(r2.changed && fs.existsSync(path.join(tmp, '.cursor', 'hooks.json')), 'installs Cursor config');
+  {
+    const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.cursor', 'hooks.json'), 'utf8'));
+    assert(Array.isArray(cfg.hooks.afterFileEdit) && cfg.hooks.afterFileEdit.length === 1, 'Cursor: afterFileEdit group');
+    assert(Array.isArray(cfg.hooks.beforeSubmitPrompt) && cfg.hooks.beforeSubmitPrompt.length === 1, 'Cursor: beforeSubmitPrompt group (rule injection)');
+  }
 
   const r3 = installer.install('codex', 'project');
   assert(r3.changed && fs.existsSync(path.join(tmp, '.codex', 'hooks.json')), 'installs Codex config');
+  {
+    const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.codex', 'hooks.json'), 'utf8'));
+    assert(Array.isArray(cfg.hooks.PostToolUse) && cfg.hooks.PostToolUse.length === 1, 'Codex: PostToolUse group');
+    assert(Array.isArray(cfg.hooks.SessionStart) && cfg.hooks.SessionStart.length === 1, 'Codex: SessionStart group (rule injection)');
+    assert(Array.isArray(cfg.hooks.UserPromptSubmit) && cfg.hooks.UserPromptSubmit.length === 1, 'Codex: UserPromptSubmit group (rule injection)');
+  }
 
   const r4 = installer.install('hermes', 'project');
   assert(r4.changed && fs.existsSync(path.join(tmp, '.hermes', 'plugins', 'agent_feedback', '__init__.py')), 'installs Hermes plugin');

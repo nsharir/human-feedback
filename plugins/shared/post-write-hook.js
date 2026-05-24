@@ -19,6 +19,8 @@ const fs   = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
+const { RULE_TEXT } = require(path.join(__dirname, '..', '..', 'lib', 'rule-injection.js'));
+
 // ── Read stdin (all harnesses send JSON via stdin) ──────────────────────────
 let raw = '';
 try {
@@ -34,6 +36,42 @@ try {
 } catch (e) {
   // Malformed JSON — silently allow agent to continue
   process.exit(0);
+}
+
+// ── Rule-injection branch ───────────────────────────────────────────────────
+// When the harness fires SessionStart / UserPromptSubmit / beforeSubmitPrompt,
+// we don't have a file to wrap — we just want to push the >1-question rule
+// into the agent's context. Recognize those events early and respond before
+// the file-wrap normalize step runs.
+//
+// Each harness's hook config (installed by `agent-feedback install`) routes
+// these events to the same `agent-feedback __hook` binary, so we branch here.
+
+if (process.env.AGENT_FEEDBACK_DISABLED !== '1') {
+  const evName = event.hook_event_name || '';
+  // Claude Code & Codex: SessionStart, UserPromptSubmit
+  if (evName === 'SessionStart' || evName === 'UserPromptSubmit') {
+    // Harness is Claude-Code-shaped (both Claude Code and Codex use the same
+    // additionalContext shape for these events).
+    process.stdout.write(JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: evName,
+        additionalContext: RULE_TEXT,
+      },
+    }));
+    process.exit(0);
+  }
+  // Cursor: beforeSubmitPrompt (fires before each user prompt is submitted)
+  if (evName === 'beforeSubmitPrompt') {
+    process.stdout.write(JSON.stringify({ agentMessage: RULE_TEXT }));
+    process.exit(0);
+  }
+  // Hermes pre_llm_call branch — the Python plugin posts {harness:'hermes',
+  // event:'pre_llm_call'} when it wants the rule text returned.
+  if (event.harness === 'hermes' && event.event === 'pre_llm_call') {
+    process.stdout.write(JSON.stringify({ message: RULE_TEXT }));
+    process.exit(0);
+  }
 }
 
 // ── Normalize the event across harnesses ────────────────────────────────────

@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added — system-prompt rule injection across all harnesses
+- **The >1-question rule now reaches the agent at session start, not just after it writes a file.** Each harness's hook config gains additional managed groups that route the agent's native context-injection events to the shared `agent-feedback __hook` binary:
+  - **Claude Code:** `SessionStart` + `UserPromptSubmit` → `hookSpecificOutput.additionalContext`
+  - **Codex:** `SessionStart` + `UserPromptSubmit` → `hookSpecificOutput.additionalContext`
+  - **Cursor:** `beforeSubmitPrompt` → `agentMessage`
+  - **Hermes:** new `pre_llm_call` hook in the Python plugin → ephemeral context on the first LLM call of each session (idempotent per session for prompt-cache safety; re-armed on `on_session_reset`)
+- No project markdown files (`CLAUDE.md` / `AGENTS.md` / `.cursorrules` / `.cursor/rules/`) are touched — the rule is injected through each agent's runtime context channel only.
+- New `lib/rule-injection.js` exports `RULE_TEXT` — single source of truth for the >1-question contract; the shared hook script reads from it.
+- Added test coverage: `test/post-write-hook.js` now exercises all four rule-injection paths and the `AGENT_FEEDBACK_DISABLED=1` opt-out. `test/installer.js` verifies the new groups are written and removed cleanly.
+
+### Fixed
+- **Hermes plugin was never actually loading.** The previous `__init__.py` exported a `__plugin__` dict but Hermes' plugin loader calls a top-level `register(ctx)` function. The plugin now exposes `register(ctx)` that wires the three hooks (`post_tool_call`, `pre_llm_call`, `on_session_reset`); legacy callable aliases are kept for any out-of-tree importers.
+- Added `plugin.yaml` alongside `plugin.json` for Hermes' YAML-based manifest loader.
+
+## [1.4.0]
+
 ### Added
 - **Auto-open wrapped files in the user's default browser** after the hook compiles them (`open` on macOS, `start` on Windows, `xdg-open` on Linux). Closes the last manual step in the feedback loop — agents no longer need to remember to share or open the file. Works across all four harnesses (Hermes / Claude Code / Cursor / Codex). Opt out with `AGENT_FEEDBACK_AUTO_OPEN=0`. Auto-skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
 - Agent-facing hook message updated to instruct the agent to stop and wait for the user's response, rather than continuing with dependent tool calls.
