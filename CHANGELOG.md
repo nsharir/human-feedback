@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added — Hermes-only workspace path rule: write artifacts under `<workspace>/.hermes/plans/` (v1.7.3)
+
+- The rule injected into Hermes' `pre_llm_call` and the managed `MEMORY.md` entry now instruct the agent to write `questions*.json` and `<topic>-review.md` / `-review.html` files under `<workspace>/.hermes/plans/<filename>`, where `<workspace>` is the absolute path from the most recent `[Workspace::v1: /abs/path]` tag on the user's message.
+- This stops the agent from dumping review artifacts into `/tmp`, into the repo root next to user code, or under `$HOME` — they should live next to the project they refer to, where they survive context switches and are easy for the user to find.
+- The addendum is **Hermes-only**: Claude Code, Cursor, and Codex don't have the `[Workspace::v1: ...]` convention so they keep the cross-harness rule unchanged.
+- Implementation: new `HERMES_ADDENDUM` constant in `lib/rule-injection.js` appended to `RULE_TEXT` only in the Hermes `pre_llm_call` branch of the post-write hook. The Hermes `MEMORY.md` rule in `lib/installer.js` carries the same instruction so the rule survives even when the plugin hook is silent (WebUI plugin discovery, `plugins.enabled` excluding agent_feedback, etc.).
+- Tests: positive assertions that the Hermes channels include `Workspace::v1` and `.hermes/plans/`; negative assertion that non-Hermes `SessionStart` does NOT include the addendum.
+
 ### Added — Hermes WebUI inline embedding via `MEDIA:` token (v1.7.2)
 
 - When the post-write hook fires on the **Hermes** harness and the wrapped output is an `.html` file (always the case — questionnaires and review wrappers compile to `.feedback.html` / `.review.html` / `.annotated.html`), the agent-facing instruction now tells the model to include a `MEDIA:<absolute-output-path>` token verbatim in its reply.

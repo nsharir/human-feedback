@@ -19,7 +19,7 @@ const fs   = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const { RULE_TEXT } = require(path.join(__dirname, '..', '..', 'lib', 'rule-injection.js'));
+const { RULE_TEXT, HERMES_ADDENDUM } = require(path.join(__dirname, '..', '..', 'lib', 'rule-injection.js'));
 
 // ── Read stdin (all harnesses send JSON via stdin) ──────────────────────────
 let raw = '';
@@ -67,9 +67,11 @@ if (process.env.AGENT_FEEDBACK_DISABLED !== '1') {
     process.exit(0);
   }
   // Hermes pre_llm_call branch — the Python plugin posts {harness:'hermes',
-  // event:'pre_llm_call'} when it wants the rule text returned.
+  // event:'pre_llm_call'} when it wants the rule text returned. Hermes is
+  // the only harness that gets the workspace-path addendum (others have no
+  // [Workspace::v1: ...] convention).
   if (event.harness === 'hermes' && event.event === 'pre_llm_call') {
-    process.stdout.write(JSON.stringify({ message: RULE_TEXT }));
+    process.stdout.write(JSON.stringify({ message: RULE_TEXT + HERMES_ADDENDUM }));
     process.exit(0);
   }
 }

@@ -72,6 +72,8 @@ try {
     assert(mem.includes('agent-feedback:managed-rule:begin'), 'Hermes: memory rule begin marker written');
     assert(mem.includes('agent-feedback:managed-rule:end'),   'Hermes: memory rule end marker written');
     assert(mem.includes('questions*.json'),                   'Hermes: memory rule body contains the >1-question contract');
+    assert(mem.includes('.hermes/plans/'),                    'Hermes: memory rule body instructs writing under .hermes/plans/');
+    assert(mem.includes('Workspace::v1'),                     'Hermes: memory rule body references the Workspace::v1 tag');
     assert(r4.memory && r4.memory.wrote === true,             'Hermes: install result reports memory.wrote=true');
   }
 

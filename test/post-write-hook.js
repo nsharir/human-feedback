@@ -242,6 +242,21 @@ function runHookWithEvent(event, extraEnv = {}) {
   assert(r.status === 0, 'Hermes pre_llm_call: exits 0');
   assert(/>1-question rule/.test(r.parsed?.message || ''),
     'Hermes pre_llm_call: rule text in message');
+  // Workspace-path addendum is Hermes-only.
+  assert(/Workspace::v1/.test(r.parsed?.message || ''),
+    'Hermes pre_llm_call: includes Workspace::v1 addendum');
+  assert(/\.hermes\/plans\//.test(r.parsed?.message || ''),
+    'Hermes pre_llm_call: instructs writing into .hermes/plans/');
+}
+
+// ── Non-Hermes harnesses do NOT get the workspace addendum ────────────────
+{
+  const r = runHookWithEvent({ hook_event_name: 'SessionStart' });
+  const ac = r.parsed?.hookSpecificOutput?.additionalContext || '';
+  assert(!/Workspace::v1/.test(ac),
+    'SessionStart (Claude Code): does NOT include Hermes Workspace::v1 addendum');
+  assert(!/\.hermes\/plans\//.test(ac),
+    'SessionStart (Claude Code): does NOT mention .hermes/plans/');
 }
 
 // Disabled — no rule injection
