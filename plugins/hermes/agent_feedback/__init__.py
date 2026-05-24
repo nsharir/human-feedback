@@ -1,7 +1,7 @@
 """
 agent-feedback Hermes plugin
 
-Listens for post_tool_call events. When the agent writes a .md / .html file,
+Listens for post_tool_call events. When the agent writes a .md / .html / .json file,
 invokes the shared Node hook script to wrap it with the feedback framework.
 
 Install location:  ~/.hermes/plugins/agent_feedback/

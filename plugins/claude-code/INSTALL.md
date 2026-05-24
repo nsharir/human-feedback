@@ -1,6 +1,6 @@
 # Claude Code plugin
 
-Installs a `PostToolUse` hook into Claude Code that automatically wraps any `.md` / `.html` file the agent writes with the **agent-feedback framework**. `.json` files are intentionally NOT wrapped — they're reserved for the questionnaire workflow (see the [Agent contract](../../README.md#agent-contract-questionnaires)).
+Installs a `PostToolUse` hook into Claude Code that automatically wraps any `.md` / `.html` / `.json` file the agent writes with the **agent-feedback framework**.
 
 ## Install (recommended)
 
@@ -42,7 +42,7 @@ The `__agent_feedback_managed__` marker lets the uninstaller find and remove thi
 
 After every `Write` / `Edit` / `MultiEdit` / `Create` tool call:
 1. Reads the file path from the event
-2. Checks if it's a `.md` or `.html` file (skips `.review.html` / `.feedback.html` / `.annotated.html` to avoid loops). `.json` files are skipped entirely — they're reserved for the agent's questionnaire workflow (see [Agent contract](../../README.md#agent-contract-questionnaires)).
+2. Checks if it's a `.md`, `.html`, or `.json` file (skips `.review.html` / `.feedback.html` / `.annotated.html` to avoid loops, and config files like `package.json` / `tsconfig.json`)
 3. Runs `agent-feedback compile <file> -o <file>.{review,annotated,feedback}.html --force`
 4. Returns an `additionalContext` to the agent telling it to share the wrapped file with the user instead of the raw source
 

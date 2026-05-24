@@ -5,14 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Changed (BREAKING)
-- **`.json` files are no longer auto-wrapped by the post-write hook.** The hook now wraps only `.md` / `.markdown` / `.html` / `.htm`. `.json` is reserved exclusively for the agent's questionnaire workflow — agents should run `agent-feedback compile questions.json -o intake.html` manually when they have multiple questions for the user. The previous behavior (auto-wrapping any non-config `.json` as a feedback form) was ambiguous and conflated runtime data files with intentional question batches.
-- **Hook now reminds the agent of the questionnaire contract on every wrap.** The verbose post-wrap message appended to the agent's context now includes a short "use questions.json if you have >1 question" reminder, so the rule propagates to the agent without modifying any user-visible files (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, etc. are never touched).
 - **Output format unified to a single free-text prompt across all three tools.** The feedback questioner previously copied a JSON payload (`{"_type": "agent_feedback_response", …}`); it now copies the same structured natural-language prompt used by the annotator and md-annotator. Agents that parsed the old JSON shape must switch to reading the prompt text. See README → *Output prompt* for the new format.
 - Removed the **Copy JSON** button from the shared annotation panel — Copy Prompt is now the only output.
 
 ### Added
-- **README "Agent contract: questionnaires" section** documenting the >1-question rule + schema.
-- Per-harness `INSTALL.md` files updated to call out `.json` exclusion and link to the agent contract.
 - `src/shared/build-prompt.js` — single `buildAgentPrompt({ tool, source, items })` helper consumed by all three tools so the output shape is identical by construction.
 - `scripts/record-demo.js` + `examples/demos/md-annotator.gif` — scripted Playwright + ffmpeg demo recorder (reusable for html-annotator and feedback). Recording requires Playwright (any 1.5x+) and ffmpeg available on `PATH`; neither is an npm dependency of this repo. Run with `NODE_PATH=/path/to/playwright/node_modules node scripts/record-demo.js md-annotator`.
 

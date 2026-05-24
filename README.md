@@ -30,40 +30,9 @@ npx @nsharir/agent-feedback compile input.json -o form.html
 
 ---
 
-## Agent contract: questionnaires
-
-`agent-feedback` is **the** way for an AI agent to ask a human multiple questions at once.
-
-**The rule (every harness that has the hook installed will repeat this to the agent):**
-
-> If you need to ask the user **more than one question** before continuing, do NOT ask inline.
-> Write a `questions.json` matching the schema below and run
-> `agent-feedback compile questions.json -o intake.html`, then share `intake.html` with the user.
-> Wait for their pasted answers. **Single yes/no or quick confirmations stay inline.**
-
-Schema:
-
-```json
-{
-  "title": "What I need to know",
-  "description": "Optional context shown to the user above the form",
-  "questions": [
-    { "id": "q1", "text": "Your question?", "type": "text",     "hint": "optional helper text" },
-    { "id": "q2", "text": "Pick one",       "type": "radio",    "options": ["A", "B", "C"] },
-    { "id": "q3", "text": "All that apply", "type": "checkbox", "options": ["X", "Y"], "required": true }
-  ]
-}
-```
-
-The hook reminds the agent of this contract every time it auto-wraps a `.md` or `.html`, so the agent's behavior converges on the right pattern without you having to touch `CLAUDE.md`, `AGENTS.md`, or any user-visible config.
-
----
-
 ## Auto-wrap your agent's output (one command)
 
-Once installed, hook `agent-feedback` into your agent harness so it **automatically wraps every `.md` / `.html` file the agent produces** with the feedback framework — no manual `agent-feedback compile` calls needed.
-
-> **`.json` files are NOT auto-wrapped.** They're reserved for the agent's questionnaire workflow — see [Agent contract](#agent-contract-questionnaires) below.
+Once installed, hook `agent-feedback` into your agent harness so it **automatically wraps every `.md` / `.html` / `.json` file the agent produces** with the feedback framework — no manual `agent-feedback compile` calls needed.
 
 ```bash
 npx @nsharir/agent-feedback install
@@ -116,7 +85,7 @@ input file  +  embedded template  →  standalone HTML
 |---|---|---|
 | `.html` / `.htm` | **HTML Annotator** | Your page with click-to-annotate + text-selection UI |
 | `.md` / `.markdown` | **Markdown Annotator** | Your markdown rendered as a preview with annotation controls |
-| `.json` | **Agent Feedback** (manual only — see [Agent contract](#agent-contract-questionnaires)) | A form the human fills in; structured answers copy to clipboard |
+| `.json` | **Agent Feedback** | A form the human fills in; structured answers copy to clipboard |
 
 ### `agent-feedback compile <input> -o <output>`
 
