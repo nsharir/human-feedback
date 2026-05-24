@@ -298,6 +298,14 @@ The hook **never blocks the agent**. It runs after the write completes, wraps th
 export AGENT_FEEDBACK_DISABLED=1
 ```
 
+**Disable auto-open (still compile, just don't launch the browser):**
+
+```bash
+export AGENT_FEEDBACK_AUTO_OPEN=0
+```
+
+Auto-open is automatically skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
+
 **Quieter agent messages:**
 
 ```bash

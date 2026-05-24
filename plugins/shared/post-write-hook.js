@@ -211,6 +211,48 @@ if (result.status !== 0) {
   process.exit(0);
 }
 
+// ── Auto-open the wrapped file in the user's default browser ──────────────
+// This closes the last manual step in the feedback loop: the agent no longer
+// has to remember to share or open the file — the user sees it pop up as soon
+// as the agent writes the source. Opt out with AGENT_FEEDBACK_AUTO_OPEN=0.
+//
+// For .json (feedback forms) auto-open is especially important: the form IS
+// the agent's question to the user. We default to opening for ALL wrapped
+// types so behavior is consistent across harnesses (Hermes / Claude Code /
+// Cursor / Codex) and operating systems.
+function openInBrowser(filePath) {
+  if (process.env.AGENT_FEEDBACK_AUTO_OPEN === '0') return { opened: false, reason: 'disabled' };
+  // CI / headless guard — skip when no display is available
+  if (process.env.CI === 'true' || process.env.CI === '1') return { opened: false, reason: 'ci' };
+  if (process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
+    return { opened: false, reason: 'headless' };
+  }
+
+  let cmd, args;
+  if (process.platform === 'darwin') {
+    cmd = 'open'; args = [filePath];
+  } else if (process.platform === 'win32') {
+    // `start` is a cmd.exe builtin; first quoted arg is the window title
+    cmd = 'cmd'; args = ['/c', 'start', '""', filePath];
+  } else {
+    cmd = 'xdg-open'; args = [filePath];
+  }
+
+  try {
+    // Detach so we don't block the hook on the browser launching
+    const child = require('child_process').spawn(cmd, args, {
+      detached: true,
+      stdio: 'ignore',
+    });
+    child.unref();
+    return { opened: true };
+  } catch (e) {
+    return { opened: false, reason: e.message };
+  }
+}
+
+const openResult = openInBrowser(outputPath);
+
 // ── Build the agent message ────────────────────────────────────────────────
 const rel = (p) => {
   try { return path.relative(process.cwd(), p) || p; } catch { return p; }
@@ -223,14 +265,24 @@ const kind = (ext === '.json') ? 'feedback form'
 
 const VERBOSE = process.env.AGENT_FEEDBACK_VERBOSE !== '0';
 
-const quietMsg = `[agent-feedback] wrapped ${rel(norm.filePath)} → ${rel(outputPath)}`;
+const openedLine = openResult.opened
+  ? `It has already been opened in the user's default browser — do NOT instruct them to open it manually.`
+  : `Auto-open was skipped (${openResult.reason || 'unknown'}); ask the user to open ${rel(outputPath)} in a browser.`;
+
+const quietMsg = openResult.opened
+  ? `[agent-feedback] wrapped + opened ${rel(outputPath)}`
+  : `[agent-feedback] wrapped ${rel(norm.filePath)} → ${rel(outputPath)} (not opened: ${openResult.reason || 'unknown'})`;
+
 const verboseMsg = [
   `[agent-feedback] Wrapped ${rel(norm.filePath)} as a ${kind}: ${rel(outputPath)}`,
   ``,
-  `Next step: share the wrapped file (${rel(outputPath)}) with the user instead of the raw source.`,
-  `They can open it in a browser to give inline feedback. When they paste their response back,`,
-  `the prompt will be a structured free-text doc starting with "The user …" — each "## Item N"`,
-  `section has the user's comment plus the context the agent needs to act on it.`,
+  openedLine,
+  ``,
+  `When the user pastes their response back, the prompt will be a structured`,
+  `free-text doc starting with "The user …" — each "## Item N" section has the`,
+  `user's comment plus the context the agent needs to act on it.`,
+  `Until then, stop and wait for the user's response — do not continue with`,
+  `tool calls that depend on their answers.`,
 ].join('\n');
 
 ack(VERBOSE ? verboseMsg : quietMsg, norm.harness);

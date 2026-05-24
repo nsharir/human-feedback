@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "node build/build.js",
-    "test": "npm run build && node test/run.js && node test/annotator.js && node test/md-annotator.js && node test/installer.js",
+    "test": "npm run build && node test/run.js && node test/annotator.js && node test/md-annotator.js && node test/installer.js && node test/post-write-hook.js",
     "prepack": "npm run build",
     "compile:examples": "node scripts/compile-examples.js"
   },

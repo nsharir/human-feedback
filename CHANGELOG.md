@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Auto-open wrapped files in the user's default browser** after the hook compiles them (`open` on macOS, `start` on Windows, `xdg-open` on Linux). Closes the last manual step in the feedback loop — agents no longer need to remember to share or open the file. Works across all four harnesses (Hermes / Claude Code / Cursor / Codex). Opt out with `AGENT_FEEDBACK_AUTO_OPEN=0`. Auto-skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
+- Agent-facing hook message updated to instruct the agent to stop and wait for the user's response, rather than continuing with dependent tool calls.
+
 ### Changed (BREAKING)
 - **Output format unified to a single free-text prompt across all three tools.** The feedback questioner previously copied a JSON payload (`{"_type": "agent_feedback_response", …}`); it now copies the same structured natural-language prompt used by the annotator and md-annotator. Agents that parsed the old JSON shape must switch to reading the prompt text. See README → *Output prompt* for the new format.
 - Removed the **Copy JSON** button from the shared annotation panel — Copy Prompt is now the only output.
