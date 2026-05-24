@@ -229,9 +229,8 @@ const verboseMsg = [
   ``,
   `Next step: share the wrapped file (${rel(outputPath)}) with the user instead of the raw source.`,
   `They can open it in a browser to give inline feedback. When they paste their response back,`,
-  ext === '.json'
-    ? `parse the JSON payload (look for "_type": "agent_feedback_response") and continue from there.`
-    : `the prompt will contain numbered annotations with selectors or line numbers — address each one in your next edit.`,
+  `the prompt will be a structured free-text doc starting with "The user …" — each "## Item N"`,
+  `section has the user's comment plus the context the agent needs to act on it.`,
 ].join('\n');
 
 ack(VERBOSE ? verboseMsg : quietMsg, norm.harness);

@@ -70,7 +70,9 @@
     var showFab        = opts.showFab !== false;
     var fabIcon        = opts.fabIcon || '💬';
     var title          = opts.title  || 'Annotations';
-    var showJsonButton = opts.showJsonButton !== false;
+    // showJsonButton is deprecated — JSON output has been removed. The option
+    // is accepted for backwards compatibility but ignored.
+    var showJsonButton = false;
     var emptyText      = opts.emptyText || 'No annotations yet.<br/>Highlight text or click an element to start.';
     var confirmDelete  = opts.confirmDelete || 'Delete this annotation? This cannot be undone.';
     var confirmClear   = opts.confirmClear;

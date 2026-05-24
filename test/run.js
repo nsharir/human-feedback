@@ -98,13 +98,13 @@ function assert(cond, msg) {
   const overlay = doc.getElementById('preview-overlay');
   assert(overlay.classList.contains('open'), 'Preview dialog opened');
 
-  // 10. Textarea contains expected JSON
+  // 10. Textarea contains expected free-text prompt
   const textarea = doc.getElementById('preview-textarea');
-  const payload = JSON.parse(textarea.value);
-  assert(payload._type === 'agent_feedback_response', 'Payload _type correct');
-  assert(payload.answers.radio.answer === 'Y', `Radio answer correct (got ${payload.answers.radio.answer})`);
-  assert(Array.isArray(payload.answers.checks.answer), 'Checks answer is array');
-  assert(payload.answers.checks.answer.includes('B'), `Checks contains B`);
+  const promptText = textarea.value;
+  assert(/The user completed a questionnaire/.test(promptText), 'Prompt opens with feedback intro');
+  assert(/## Item 1/.test(promptText), 'Prompt is structured with numbered items');
+  assert(/Comment: Y/.test(promptText), 'Radio answer Y appears in prompt');
+  assert(/B/.test(promptText), 'Checkbox answer B appears in prompt');
 
   // 11. Textarea is editable
   const newText = 'edited test';
@@ -117,7 +117,7 @@ function assert(cond, msg) {
   doc.getElementById('preview-reset').click();
   await ready();
   assert(textarea.value !== newText, 'Reset restored pristine prompt');
-  assert(textarea.value.includes('agent_feedback_response'), 'Reset value contains payload');
+  assert(/The user completed a questionnaire/.test(textarea.value), 'Reset value contains prompt intro');
 
   // Cleanup
   fs.unlinkSync(inputJson);

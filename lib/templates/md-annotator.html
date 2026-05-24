@@ -283,11 +283,11 @@ body {
 }
 
 /* Markdown rendered styles */
-#preview h1 { font-family: var(--display); font-size: 2.2em; font-weight: 700; margin: 0 0 0.3em; line-height: 1.2; color: var(--ink); }
-#preview h2 { font-family: var(--display); font-size: 1.5em; font-weight: 600; margin: 1.6em 0 0.4em; color: var(--ink); border-bottom: 1px solid var(--rule); padding-bottom: 0.2em; }
-#preview h3 { font-family: var(--display); font-size: 1.15em; font-weight: 500; margin: 1.4em 0 0.3em; color: var(--ink2); }
-#preview h4, #preview h5 { font-size: 1em; font-family: var(--display); font-weight: 600; margin: 1.2em 0 0.3em; color: var(--ink2); letter-spacing: 0.02em; }
-#preview p { font-size: 1.05em; line-height: 1.75; margin: 0 0 1em; color: var(--ink2); }
+#preview h1 { font-family: var(--display); font-size: 1.7em; font-weight: 700; margin: 0 0 0.3em; line-height: 1.2; color: var(--ink); }
+#preview h2 { font-family: var(--display); font-size: 1.25em; font-weight: 600; margin: 1.4em 0 0.35em; color: var(--ink); border-bottom: 1px solid var(--rule); padding-bottom: 0.2em; }
+#preview h3 { font-family: var(--display); font-size: 1.0em; font-weight: 600; margin: 1.2em 0 0.25em; color: var(--ink2); }
+#preview h4, #preview h5 { font-size: 0.92em; font-family: var(--display); font-weight: 600; margin: 1em 0 0.25em; color: var(--ink2); letter-spacing: 0.02em; }
+#preview p { font-size: 0.92em; line-height: 1.7; margin: 0 0 0.9em; color: var(--ink2); }
 #preview a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 #preview strong { font-weight: bold; color: var(--ink); }
 #preview em { font-style: italic; }
@@ -740,11 +740,12 @@ body {
 #comment-pop {
   position: fixed;
   z-index: 9998;
-  background: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px;
   width: 280px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 12px 40px rgba(17, 24, 39, 0.18);
   display: none;
   flex-direction: column;
   gap: 10px;
@@ -753,15 +754,16 @@ body {
 #comment-pop .pop-label {
   font-family: var(--sans);
   font-size: 10px;
-  color: #666;
+  color: var(--ink3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 #comment-pop .pop-preview {
   font-family: var(--mono);
   font-size: 10px;
-  color: #aaa;
-  background: #1e1e1e;
+  color: var(--ink2);
+  background: var(--bg);
+  border: 1px solid var(--rule);
   border-radius: 5px;
   padding: 6px 8px;
   overflow: hidden;
@@ -772,12 +774,12 @@ body {
 #comment-pop textarea {
   width: 100%;
   min-height: 72px;
-  background: #1e1e1e;
-  border: 1px solid #333;
+  background: #ffffff;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: #e8e8e0;
+  color: var(--ink);
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: 13px;
   padding: 8px;
   resize: none;
   outline: none;
@@ -792,14 +794,14 @@ body {
   padding: 6px 14px;
   border-radius: 5px;
   cursor: pointer;
-  border: 1px solid #444;
-  background: none;
-  color: #aaa;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink2);
   transition: all 0.13s;
 }
-.pop-btn:hover { border-color: #888; color: #fff; }
+.pop-btn:hover { border-color: var(--border2); color: var(--ink); background: var(--bg); }
 .pop-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.pop-btn.primary:hover { background: var(--accent-hover); }
+.pop-btn.primary:hover { background: var(--accent-hover); color: #fff; }
 
 /* Mobile bottom sheet */
 @media (pointer: coarse) {
@@ -1351,6 +1353,99 @@ const PreviewDialog = (function () {
 })();
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   Shared agent-prompt builder — used by all three tools so the "Copy Prompt"
+   output is consistent (free text only, no JSON).
+
+   Exposes: window.buildAgentPrompt({ tool, source, items, intro })
+
+     tool   — 'annotator' | 'md-annotator' | 'feedback'
+     source — descriptive filename / title shown to the agent (optional)
+     intro  — optional override for the leading sentence
+     items  — Array of:
+                {
+                  heading:   'Item label (e.g. "Annotation #1 — Element")',
+                  typeLabel: optional secondary label,
+                  lineRef:   optional line reference (md tool),
+                  selector:  optional CSS selector (html tool),
+                  snippet:   optional quoted source snippet,
+                  comment:   the user's comment/answer (REQUIRED),
+                }
+
+   Returns a string like:
+
+     The user reviewed <document kind> and provided the following feedback.
+
+     Source: <filename>
+     Total items: N
+     Generated: <ISO timestamp>
+
+     ---
+
+     ## Item 1 — <heading>
+     <details>
+     Comment: <body>
+
+     ---
+
+     ...
+
+     Please address each item above.
+   ───────────────────────────────────────────────────────────────────────────── */
+(function (root) {
+  var DEFAULT_INTRO = {
+    'annotator':    'The user reviewed a draft HTML page and provided the following feedback.',
+    'md-annotator': 'The user reviewed the document and provided the following feedback.',
+    'feedback':     'The user completed a questionnaire and provided the following feedback.',
+  };
+
+  function buildAgentPrompt(opts) {
+    opts = opts || {};
+    var tool   = opts.tool || 'feedback';
+    var source = opts.source || '';
+    var items  = Array.isArray(opts.items) ? opts.items : [];
+    var intro  = opts.intro || DEFAULT_INTRO[tool] || DEFAULT_INTRO.feedback;
+
+    var lines = [intro, ''];
+    if (source) lines.push('Source: ' + source);
+    lines.push('Total items: ' + items.length);
+    lines.push('Generated: ' + new Date().toISOString());
+    lines.push('', '---');
+
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i] || {};
+      var headBits = ['## Item ' + (i + 1)];
+      if (it.heading) headBits.push('— ' + it.heading);
+      lines.push('', headBits.join(' '));
+
+      if (it.typeLabel) lines.push('Type: ' + it.typeLabel);
+      if (it.lineRef)   lines.push('Line: '  + it.lineRef);
+      if (it.selector)  lines.push('Selector: ' + it.selector);
+
+      if (it.snippet) {
+        var snip = String(it.snippet);
+        if (snip.indexOf('\n') >= 0) {
+          lines.push('Context:', '```', snip, '```');
+        } else {
+          lines.push('Context: "' + snip + '"');
+        }
+      }
+
+      var comment = it.comment == null ? '' : String(it.comment);
+      lines.push('Comment: ' + comment);
+      lines.push('', '---');
+    }
+
+    lines.push('', 'Please address each item above.');
+    return lines.join('\n');
+  }
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { buildAgentPrompt: buildAgentPrompt };
+  }
+  if (root) root.buildAgentPrompt = buildAgentPrompt;
+}(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this)));
+
+/* ─────────────────────────────────────────────────────────────────────────────
    Shared annotation panel + FAB (UI only).
 
    Exposes a single global: window.AnnPanel
@@ -1422,7 +1517,9 @@ const PreviewDialog = (function () {
     var showFab        = opts.showFab !== false;
     var fabIcon        = opts.fabIcon || '💬';
     var title          = opts.title  || 'Annotations';
-    var showJsonButton = opts.showJsonButton !== false;
+    // showJsonButton is deprecated — JSON output has been removed. The option
+    // is accepted for backwards compatibility but ignored.
+    var showJsonButton = false;
     var emptyText      = opts.emptyText || 'No annotations yet.<br/>Highlight text or click an element to start.';
     var confirmDelete  = opts.confirmDelete || 'Delete this annotation? This cannot be undone.';
     var confirmClear   = opts.confirmClear;
@@ -2124,25 +2221,16 @@ function buildPayload() {
 
 function buildPromptText() {
   if (!annotations.length) return '';
-  const lines = [
-    'The following are annotations on a Markdown document.',
-    'Each annotation references the original markdown source and includes a comment.',
-    '', `Document excerpt (first 400 chars of markdown):`,
-    '```', rawMarkdown.slice(0, 400) + (rawMarkdown.length > 400 ? '\n…' : ''), '```',
-    '', `Total annotations: ${annotations.length}`, '', '---'
-  ];
-  annotations.forEach(a => {
-    lines.push('');
-    lines.push(`### Annotation ${a.labelText || ('A' + a.id)} — ${a.type === 'text' ? 'Text Selection' : 'Block Element'}`);
-    if (a.mdRef.lineStart) lines.push(`Line: ${a.mdRef.label}`);
-    lines.push(`Markdown source reference:`);
-    lines.push('```markdown', a.mdRef.content, '```');
-    lines.push(`Comment: ${a.comment}`);
-    lines.push('---');
+  return buildAgentPrompt({
+    tool: 'md-annotator',
+    source: (window.__AFB_SOURCE_FILENAME__ || 'markdown document'),
+    items: annotations.map(a => ({
+      heading: (a.labelText || ('A' + a.id)) + ' — ' + (a.type === 'text' ? 'Text Selection' : 'Block Element'),
+      lineRef: a.mdRef && a.mdRef.label || null,
+      snippet: a.mdRef && a.mdRef.content || null,
+      comment: a.comment || ''
+    }))
   });
-  lines.push('', 'Structured JSON payload:', '```json', JSON.stringify(buildPayload(), null, 2), '```');
-  lines.push('', 'Please address each annotation with respect to the markdown source above.');
-  return lines.join('\n');
 }
 
 // ── Open the shared preview dialog (provided by shared/preview.js) ─────────

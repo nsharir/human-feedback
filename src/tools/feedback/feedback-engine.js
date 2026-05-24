@@ -449,18 +449,44 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function buildPromptString() {
+    const cfg = config || { questions: [] };
+    return buildAgentPrompt({
+      tool: 'feedback',
+      source: cfg.title || 'questionnaire',
+      items: (cfg.questions || []).map(function (q) {
+        const a = answers[q.id] || {};
+        const v = a.value;
+        let answerText;
+        if (v == null || v === '') {
+          answerText = '(no answer)';
+        } else if (Array.isArray(v)) {
+          answerText = v.length ? v.join(', ') : '(no answer)';
+        } else if (typeof v === 'boolean') {
+          answerText = v ? 'Yes' : 'No';
+        } else {
+          answerText = String(v);
+        }
+        if (a.imageBase64) answerText += ' [image attached: ' + (a.imageName || 'image') + ']';
+        return {
+          heading: q.text,
+          typeLabel: q.type || 'text',
+          comment: answerText
+        };
+      })
+    });
+  }
+
   previewBtn.addEventListener('click', function () {
-    const payload = buildPayload();
     PreviewDialog.open({
-      payload: JSON.stringify(payload, null, 2),
+      payload: buildPromptString(),
       onCopySuccess: showSuccess
     });
   });
 
   $('copy-again-btn').addEventListener('click', function () {
-    const payload = buildPayload();
     PreviewDialog.open({
-      payload: JSON.stringify(payload, null, 2),
+      payload: buildPromptString(),
       onCopySuccess: showSuccess
     });
   });

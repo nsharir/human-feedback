@@ -48,13 +48,13 @@ function assert(cond, msg) {
 
   // Side panel exists with shared buttons
   assert(!!document.getElementById('ann-copy-prompt'), 'Copy Prompt button exists in shared panel');
-  assert(!!document.getElementById('ann-copy-json'),   'Copy JSON button exists in shared panel');
+  assert(!!document.getElementById('ann-copy-prompt'), 'Copy Prompt button exists in shared panel');
   assert(!!document.getElementById('ann-clear'),       'Clear All button exists in shared panel');
   assert(!!document.getElementById('ann-panel'),       'Shared side panel exists');
 
   // Button labels
   assert(/Copy Prompt/.test(document.getElementById('ann-copy-prompt').textContent), 'Copy Prompt has correct label');
-  assert(/Copy JSON/.test(document.getElementById('ann-copy-json').textContent),     'Copy JSON has correct label');
+  assert(/Copy Prompt/.test(document.getElementById('ann-copy-prompt').textContent), 'Copy Prompt has correct label');
 
   // Markdown rendered (auto-loaded from fixture)
   const preview = document.getElementById('preview');

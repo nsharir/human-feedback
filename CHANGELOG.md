@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed (BREAKING)
+- **Output format unified to a single free-text prompt across all three tools.** The feedback questioner previously copied a JSON payload (`{"_type": "agent_feedback_response", …}`); it now copies the same structured natural-language prompt used by the annotator and md-annotator. Agents that parsed the old JSON shape must switch to reading the prompt text. See README → *Output prompt* for the new format.
+- Removed the **Copy JSON** button from the shared annotation panel — Copy Prompt is now the only output.
+
+### Added
+- `src/shared/build-prompt.js` — single `buildAgentPrompt({ tool, source, items })` helper consumed by all three tools so the output shape is identical by construction.
+
+### Fixed
+- Light-mode the md-annotator comment popover (was dark on dark).
+- Shrink md-annotator preview body and headings by ~15–20% for better page density.
+
 ## [1.3.0] — 2026-05-24
 
 ### Added

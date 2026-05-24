@@ -14,6 +14,7 @@
 
   // Inline the shared AnnPanel CSS + JS (resolved at build time).
   window.__ANN_PANEL_CSS__ = /* @includeString shared/ann-panel.css */;
+  /* @include shared/build-prompt.js */
   /* @include shared/ann-panel.js */
 
   // ─── State ────────────────────────────────────────────────────────────────
@@ -35,14 +36,14 @@
   const style = document.createElement('style');
   style.textContent = `
     :root {
-      --ann-bg: #0f0f13;
-      --ann-surface: #1a1a24;
-      --ann-border: #2e2e40;
-      --ann-accent: #7c6fff;
-      --ann-text: #e8e8f0;
-      --ann-muted: #666680;
+      --ann-bg: #ffffff;
+      --ann-surface: #f7f8fa;
+      --ann-border: #e6e8ec;
+      --ann-accent: #4f46e5;
+      --ann-text: #1a1a1a;
+      --ann-muted: #6b7280;
       --ann-radius: 12px;
-      --ann-font: 'DM Mono', 'Fira Code', monospace;
+      --ann-font: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     }
 
     /* ── FAB (mobile) ── */
@@ -849,19 +850,16 @@
   // ─── Prompt ───────────────────────────────────────────────────────────────
   function buildPrompt() {
     if (!annotations.length) return '// No annotations yet.';
-    const lines = [
-      'Below are annotations on an HTML document. Each annotation refers to a specific element or text selection.',
-      '', `Total annotations: ${annotations.length}`, '', '---'
-    ];
-    annotations.forEach(a => {
-      lines.push('', `### Annotation #${a.id} — ${a.type === 'text' ? 'Text Selection' : 'Element'}`);
-      lines.push(`CSS Selector: ${a.selector}`);
-      if (a.type === 'element' && a.outerHTML) lines.push(`Element tag: ${a.outerHTML}`);
-      if (a.textSnippet) lines.push(`Context: "${a.textSnippet}"`);
-      lines.push(`Comment: ${a.comment}`, '---');
+    return buildAgentPrompt({
+      tool: 'annotator',
+      source: (document.title || 'HTML page'),
+      items: annotations.map(a => ({
+        heading: 'Annotation #' + a.id + ' — ' + (a.type === 'text' ? 'Text Selection' : 'Element'),
+        selector: a.selector || null,
+        snippet: a.textSnippet || (a.type === 'element' ? a.outerHTML : null),
+        comment: a.comment || ''
+      }))
     });
-    lines.push('', 'Please address each annotation above in context of the HTML structure.');
-    return lines.join('\n');
   }
 
   let pristinePrompt = '';

@@ -4,14 +4,14 @@
 
 When an AI agent produces output — a document, a plan, a UI, a dataset — the human needs a way to respond with precise, structured feedback. Not a chat message. Not a vague thumbs up. **Real inline feedback that the agent can act on.**
 
-`agent-feedback` compiles your content into self-contained HTML tools the human opens in a browser, annotates or answers, then copies a structured payload back to the agent. No server. No special tooling. No integrations to set up.
+`agent-feedback` compiles your content into self-contained HTML tools the human opens in a browser, annotates or answers, then copies a structured **free-text prompt** back to the agent. No server. No special tooling. No integrations to set up.
 
 ```
 Agent produces output
   → agent-feedback compiles it into an HTML file
   → Human opens file, gives feedback
-  → Human copies JSON / prompt
-  → Agent reads payload, continues
+  → Human copies a prompt
+  → Agent reads the prompt, continues
 ```
 
 ---
@@ -177,7 +177,7 @@ Comment: Add a curl example here
 
 ### Agent Feedback
 
-Replaces the `QUESTIONS = null` placeholder with your JSON config. The output is a complete form the user fills in and submits — answers copy to clipboard as a typed JSON payload.
+Replaces the `QUESTIONS = null` placeholder with your JSON config. The output is a complete form the user fills in and submits — answers copy to clipboard as a structured natural-language prompt (see [Output prompt](#output-prompt) below).
 
 **Input:** a `.json` file matching the schema below
 **Output:** `feedback.html` with questions baked in
@@ -226,26 +226,35 @@ agent-feedback compile sprint-questions.json -o sprint-form.html
 | `"allowImage": true` | Adds an image upload zone below the question (any type) |
 | `"required": true` | Submit stays disabled until this question is answered |
 
-#### Output payload
+#### Output prompt
 
-When the human submits, this JSON is copied to their clipboard:
+When the human submits, a structured **natural-language prompt** is copied to their clipboard. The format is identical across all three tools so the agent can parse it the same way every time:
 
-```json
-{
-  "_type": "agent_feedback_response",
-  "title": "Session title",
-  "answered_at": "2026-05-24T10:00:00.000Z",
-  "answers": {
-    "q1": {
-      "question": "Your question?",
-      "type": "textarea",
-      "answer": "The user's answer"
-    }
-  }
-}
+```
+The user completed a questionnaire and provided the following feedback.
+
+Source: Session title
+Total items: 2
+Generated: 2026-05-24T10:00:00.000Z
+
+---
+
+## Item 1 — Your question?
+Type: textarea
+Comment: The user's answer
+
+---
+
+## Item 2 — Another question?
+Type: radio
+Comment: Option A
+
+---
+
+Please address each item above.
 ```
 
-The `_type` field lets agents reliably detect and parse the response.
+The leading sentence varies by tool (`completed a questionnaire`, `reviewed the document`, `reviewed a draft HTML page`) so the agent knows what kind of feedback it received. Item bodies always include the relevant context (line numbers for markdown, CSS selectors for HTML, question types for forms) followed by `Comment:` with the user's input.
 
 ---
 
@@ -380,8 +389,8 @@ The built templates are committed to git so `npm install` works without a build 
 1. Agent needs information before proceeding
 2. Agent writes questions.json targeting exactly what it needs
 3. Agent: agent-feedback compile questions.json -o intake.html
-4. Human fills in the form, copies JSON payload
-5. Agent parses _type: "agent_feedback_response", extracts answers
+4. Human fills in the form, copies the prompt
+5. Agent reads the structured prompt, extracts answers
 6. Agent continues with full context — no back-and-forth
 ```
 
