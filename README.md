@@ -8,7 +8,7 @@ When an AI agent produces output — a document, a plan, a UI, a dataset — the
 
 ```
 Agent produces output
-  → afb compiles it into an HTML file
+  → agent-feedback compiles it into an HTML file
   → Human opens file, gives feedback
   → Human copies JSON / prompt
   → Agent reads payload, continues
@@ -32,7 +32,7 @@ npx @nsharir/agent-feedback compile input.json -o form.html
 
 ## Auto-wrap your agent's output (one command)
 
-Once installed, hook `agent-feedback` into your agent harness so it **automatically wraps every `.md` / `.html` / `.json` file the agent produces** with the feedback framework — no manual `afb compile` calls needed.
+Once installed, hook `agent-feedback` into your agent harness so it **automatically wraps every `.md` / `.html` / `.json` file the agent produces** with the feedback framework — no manual `agent-feedback compile` calls needed.
 
 ```bash
 npx @nsharir/agent-feedback install
@@ -87,17 +87,17 @@ input file  +  embedded template  →  standalone HTML
 | `.md` / `.markdown` | **Markdown Annotator** | Your markdown rendered as a preview with annotation controls |
 | `.json` | **Agent Feedback** | A form the human fills in; structured answers copy to clipboard |
 
-### `afb compile <input> -o <output>`
+### `agent-feedback compile <input> -o <output>`
 
 ```bash
 # Wrap a static HTML page with annotation controls
-afb compile page.html -o page.annotated.html
+agent-feedback compile page.html -o page.annotated.html
 
 # Bake a markdown file into a rendered, annotatable preview
-afb compile docs.md -o docs-review.html
+agent-feedback compile docs.md -o docs-review.html
 
 # Bake a questions JSON into an agent-feedback form
-afb compile questions.json -o feedback.html
+agent-feedback compile questions.json -o feedback.html
 ```
 
 | Flag | Description |
@@ -106,7 +106,7 @@ afb compile questions.json -o feedback.html
 | `--tool <name>` | Override: `annotator` \| `md-annotator` \| `feedback` |
 | `--force` | Overwrite output if it already exists |
 
-### `afb info <file>`
+### `agent-feedback info <file>`
 
 Detect which tool would be used for a file without compiling.
 
@@ -134,7 +134,7 @@ Inlines the annotation script into any static HTML page. The human opens it and 
 **Output:** same HTML with annotator injected before `</body>`
 
 ```bash
-afb compile landing.html -o landing.annotated.html
+agent-feedback compile landing.html -o landing.annotated.html
 ```
 
 **How the human annotates:**
@@ -161,7 +161,7 @@ Bakes a `.md` file into a self-contained HTML viewer. Annotations reference back
 **Output:** `md-annotator.html` with markdown auto-loaded on open
 
 ```bash
-afb compile docs/api.md -o review/api-review.html
+agent-feedback compile docs/api.md -o review/api-review.html
 ```
 
 Generated prompt format:
@@ -183,7 +183,7 @@ Replaces the `QUESTIONS = null` placeholder with your JSON config. The output is
 **Output:** `feedback.html` with questions baked in
 
 ```bash
-afb compile sprint-questions.json -o sprint-form.html
+agent-feedback compile sprint-questions.json -o sprint-form.html
 ```
 
 #### JSON schema
@@ -251,7 +251,7 @@ The `_type` field lets agents reliably detect and parse the response.
 
 ## How the hooks work
 
-A single shared Node.js script (`plugins/shared/post-write-hook.js`) handles all four harnesses. Each harness's config registers the same `afb __hook` command, which reads the harness-specific event JSON via stdin, normalizes it, and decides whether to wrap the written file.
+A single shared Node.js script (`plugins/shared/post-write-hook.js`) handles all four harnesses. Each harness's config registers the same `agent-feedback __hook` command, which reads the harness-specific event JSON via stdin, normalizes it, and decides whether to wrap the written file.
 
 The hook **never blocks the agent**. It runs after the write completes, wraps the file, and emits a non-blocking message telling the agent about the wrapped output. If anything fails, the agent continues with the raw file.
 
@@ -356,7 +356,7 @@ The built templates are committed to git so `npm install` works without a build 
 
 ```
 1. Agent generates or modifies an HTML page
-2. Agent: afb compile page.html -o page.review.html
+2. Agent: agent-feedback compile page.html -o page.review.html
 3. Agent asks human: "Open page.review.html, annotate anything
    that needs changing, then copy the prompt and paste it back."
 4. Human annotates → copies prompt
@@ -368,7 +368,7 @@ The built templates are committed to git so `npm install` works without a build 
 
 ```
 1. Agent writes a markdown document
-2. Agent: afb compile doc.md -o doc.review.html
+2. Agent: agent-feedback compile doc.md -o doc.review.html
 3. Human opens file, annotates sections by line number
 4. Agent receives prompt with line-referenced comments
 5. Agent edits the specific lines and recompiles
@@ -379,7 +379,7 @@ The built templates are committed to git so `npm install` works without a build 
 ```
 1. Agent needs information before proceeding
 2. Agent writes questions.json targeting exactly what it needs
-3. Agent: afb compile questions.json -o intake.html
+3. Agent: agent-feedback compile questions.json -o intake.html
 4. Human fills in the form, copies JSON payload
 5. Agent parses _type: "agent_feedback_response", extracts answers
 6. Agent continues with full context — no back-and-forth

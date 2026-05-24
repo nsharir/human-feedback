@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.3.0] — 2026-05-24
 
 ### Added
-- **Native harness plugins** — `afb install` patches hook configs for Claude Code, Cursor (1.7+), Codex CLI, and Hermes Agent (0.9+).
+- **Native harness plugins** — `agent-feedback install` patches hook configs for Claude Code, Cursor (1.7+), Codex CLI, and Hermes Agent (0.9+).
 - **Single shared hook script** (`plugins/shared/post-write-hook.js`) handles event normalization across all four harnesses.
 - New CLI commands: `install`, `uninstall`, `doctor`, and the hidden `__hook` subcommand invoked by hook configs.
 - New env vars: `AGENT_FEEDBACK_DISABLED=1` to bypass the hook, `AGENT_FEEDBACK_VERBOSE=0` for quieter agent messages.

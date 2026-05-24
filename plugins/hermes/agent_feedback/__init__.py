@@ -23,10 +23,9 @@ def _resolve_node_hook():
     env_path = os.environ.get("AGENT_FEEDBACK_HOOK_PATH")
     if env_path and os.path.exists(env_path):
         return env_path
-    # 2. Use `afb` or `agent-feedback` from PATH if available
-    for name in ("afb", "agent-feedback"):
-        if shutil.which(name):
-            return None  # signal to use the named binary
+    # 2. Use `agent-feedback` from PATH if available
+    if shutil.which("agent-feedback"):
+        return None  # signal to use the named binary
     return None
 
 
@@ -60,8 +59,7 @@ def post_tool_call(context):
         if hook_path:
             cmd = ["node", hook_path]
         else:
-            # Try afb first, fall back to agent-feedback
-            binary = shutil.which("afb") or shutil.which("agent-feedback") or "afb"
+            binary = shutil.which("agent-feedback") or "agent-feedback"
             cmd = [binary, "__hook"]
 
         result = subprocess.run(

@@ -55,18 +55,18 @@ program
   .description(pkg.description)
   .addHelpText('after', `
 ${pc.bold('Examples:')}
-  ${pc.dim('# Auto-detect tool from extension (use either `afb` or `agent-feedback`)')}
-  $ afb compile page.html      -o page.annotated.html
-  $ afb compile docs.md        -o docs-review.html
-  $ afb compile questions.json -o feedback.html
+  ${pc.dim('# Auto-detect tool from extension')}
+  $ agent-feedback compile page.html      -o page.annotated.html
+  $ agent-feedback compile docs.md        -o docs-review.html
+  $ agent-feedback compile questions.json -o feedback.html
 
   ${pc.dim('# Install hooks into your agent harness (auto-wraps every file the agent writes)')}
-  $ afb install                ${pc.dim('# interactive — detects what is present')}
-  $ afb install --claude-code  ${pc.dim('# targeted')}
-  $ afb install --all          ${pc.dim('# every detected harness')}
+  $ agent-feedback install                ${pc.dim('# interactive — detects what is present')}
+  $ agent-feedback install --claude-code  ${pc.dim('# targeted')}
+  $ agent-feedback install --all          ${pc.dim('# every detected harness')}
 
   ${pc.dim('# Override tool detection')}
-  $ afb compile input.html --tool annotator -o out.html
+  $ agent-feedback compile input.html --tool annotator -o out.html
 
 ${pc.bold('Supported tools:')}
   ${pc.cyan('annotator')}     .html / .htm        Wraps a static HTML page with the annotation UI

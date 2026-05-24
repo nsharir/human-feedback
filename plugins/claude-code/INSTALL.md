@@ -28,7 +28,7 @@ The installer appends a single hook entry to your existing `settings.json`, pres
         "matcher": "Write|Edit|MultiEdit|NotebookEdit|Create",
         "__agent_feedback_managed__": true,
         "hooks": [
-          { "type": "command", "command": "afb __hook", "timeout": 20 }
+          { "type": "command", "command": "agent-feedback __hook", "timeout": 20 }
         ]
       }
     ]
@@ -43,7 +43,7 @@ The `__agent_feedback_managed__` marker lets the uninstaller find and remove thi
 After every `Write` / `Edit` / `MultiEdit` / `Create` tool call:
 1. Reads the file path from the event
 2. Checks if it's a `.md`, `.html`, or `.json` file (skips `.review.html` / `.feedback.html` / `.annotated.html` to avoid loops, and config files like `package.json` / `tsconfig.json`)
-3. Runs `afb compile <file> -o <file>.{review,annotated,feedback}.html --force`
+3. Runs `agent-feedback compile <file> -o <file>.{review,annotated,feedback}.html --force`
 4. Returns an `additionalContext` to the agent telling it to share the wrapped file with the user instead of the raw source
 
 ## Manual install
@@ -57,7 +57,7 @@ If the automatic installer can't run, add this to `.claude/settings.json` by han
       {
         "matcher": "Write|Edit|MultiEdit|NotebookEdit|Create",
         "hooks": [
-          { "type": "command", "command": "afb __hook", "timeout": 20 }
+          { "type": "command", "command": "agent-feedback __hook", "timeout": 20 }
         ]
       }
     ]

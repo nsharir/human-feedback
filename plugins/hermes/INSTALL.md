@@ -31,7 +31,7 @@ agent_feedback/
 
 After every Hermes write/edit/create tool call:
 1. The Python plugin reads the file path from the tool's arguments
-2. Invokes the shared Node hook script via `afb __hook`
+2. Invokes the shared Node hook script via `agent-feedback __hook`
 3. Receives the structured message and returns it to Hermes as a `system_message` injected into the next LLM call
 
 ## Manual install

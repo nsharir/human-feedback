@@ -177,16 +177,13 @@ const outputPath = deriveOutput(norm.filePath);
 
 // ── Resolve the CLI binary ────────────────────────────────────────────────
 // The hook is invoked from within the @nsharir/agent-feedback install, so the
-// 'afb' (or 'agent-feedback') binary is on PATH. Fall back to invoking the
+// 'agent-feedback' binary is on PATH. Fall back to invoking the
 // local CLI directly.
 function resolveToolkit() {
   const whichCmd = process.platform === 'win32' ? 'where' : 'which';
-  // Try `afb` first (short form, what hook configs invoke)
-  for (const name of ['afb', 'agent-feedback']) {
-    const w = spawnSync(whichCmd, [name], { encoding: 'utf8' });
-    if (w.status === 0 && w.stdout.trim()) {
-      return [name, []];
-    }
+  const w = spawnSync(whichCmd, ['agent-feedback'], { encoding: 'utf8' });
+  if (w.status === 0 && w.stdout.trim()) {
+    return ['agent-feedback', []];
   }
   // Fall back to invoking the local CLI relative to this file
   const local = path.resolve(__dirname, '..', '..', 'bin', 'cli.js');

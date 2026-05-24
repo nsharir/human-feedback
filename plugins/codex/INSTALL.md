@@ -26,7 +26,7 @@ npx @nsharir/agent-feedback uninstall --codex
         "matcher": "^(Write|Edit|apply_patch|create_file|str_replace)$",
         "__agent_feedback_managed__": true,
         "hooks": [
-          { "type": "command", "command": "afb __hook", "timeout": 20 }
+          { "type": "command", "command": "agent-feedback __hook", "timeout": 20 }
         ]
       }
     ]
@@ -39,7 +39,7 @@ npx @nsharir/agent-feedback uninstall --codex
 After every Codex write/edit/patch tool call:
 1. Reads the file path from `tool_input`
 2. Checks if it's a `.md`, `.html`, or `.json` file
-3. Runs `afb compile <file> -o <file>.{review,annotated,feedback}.html --force`
+3. Runs `agent-feedback compile <file> -o <file>.{review,annotated,feedback}.html --force`
 4. Returns an `additionalContext` so the agent shares the wrapped file with the user
 
 ## Manual install
@@ -52,7 +52,7 @@ matcher = "^(Write|Edit|apply_patch|create_file|str_replace)$"
 
 [[hooks.PostToolUse.hooks]]
 type    = "command"
-command = "afb __hook"
+command = "agent-feedback __hook"
 timeout = 20
 ```
 
@@ -60,4 +60,4 @@ Restart Codex. Verify with `codex hooks` (lists active hooks).
 
 ## Trust requirements
 
-Codex requires project-local hooks to be **trusted** before they run. After installing, you'll be prompted on first use to trust `afb __hook`. Approve it to enable the hook.
+Codex requires project-local hooks to be **trusted** before they run. After installing, you'll be prompted on first use to trust `agent-feedback __hook`. Approve it to enable the hook.

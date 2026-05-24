@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afb __hook",
+            "command": "agent-feedback __hook",
             "timeout": 20
           }
         ]
