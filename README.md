@@ -302,13 +302,13 @@ The hook **never blocks the agent**. It runs after the write completes, wraps th
 export AGENT_FEEDBACK_DISABLED=1
 ```
 
-**Disable auto-open (still compile, just don't launch the browser):**
+**Auto-open is OFF by default as of v1.7.0.** The hook compiles the file and includes a `file://` link in the agent's reply — the user clicks to open it. To re-enable automatic browser launch:
 
 ```bash
-export AGENT_FEEDBACK_AUTO_OPEN=0
+export AGENT_FEEDBACK_AUTO_OPEN=1
 ```
 
-Auto-open is automatically skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
+Auto-open (when enabled) is automatically skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
 
 **Quieter agent messages:**
 

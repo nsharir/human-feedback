@@ -272,17 +272,12 @@ if (result.status !== 0) {
   process.exit(0);
 }
 
-// ── Auto-open the wrapped file in the user's default browser ──────────────
-// This closes the last manual step in the feedback loop: the agent no longer
-// has to remember to share or open the file — the user sees it pop up as soon
-// as the agent writes the source. Opt out with AGENT_FEEDBACK_AUTO_OPEN=0.
-//
-// For .json (feedback forms) auto-open is especially important: the form IS
-// the agent's question to the user. We default to opening for ALL wrapped
-// types so behavior is consistent across harnesses (Hermes / Claude Code /
-// Cursor / Codex) and operating systems.
+// ── Auto-open is OPT-IN (changed in v1.7.0) ───────────────────────────────
+// Previously auto-opened by default; users found the browser pop disruptive.
+// Now the agent shares a file:// link in its reply and the user clicks to
+// open it themselves. Re-enable auto-open with AGENT_FEEDBACK_AUTO_OPEN=1.
 function openInBrowser(filePath) {
-  if (process.env.AGENT_FEEDBACK_AUTO_OPEN === '0') return { opened: false, reason: 'disabled' };
+  if (process.env.AGENT_FEEDBACK_AUTO_OPEN !== '1') return { opened: false, reason: 'opt-in' };
   // CI / headless guard — skip when no display is available
   if (process.env.CI === 'true' || process.env.CI === '1') return { opened: false, reason: 'ci' };
   if (process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
@@ -326,13 +321,15 @@ const kind = (ext === '.json') ? 'feedback form'
 
 const VERBOSE = process.env.AGENT_FEEDBACK_VERBOSE !== '0';
 
+const fileUrl = 'file://' + outputPath;
+
 const openedLine = openResult.opened
   ? `It has already been opened in the user's default browser — do NOT instruct them to open it manually.`
-  : `Auto-open was skipped (${openResult.reason || 'unknown'}); ask the user to open ${rel(outputPath)} in a browser.`;
+  : `Reply to the user with a clickable link to the wrapped file so they can open it:\n  ${fileUrl}\nDo NOT auto-open it. Wait for their response.`;
 
 const quietMsg = openResult.opened
   ? `[agent-feedback] wrapped + opened ${rel(outputPath)}`
-  : `[agent-feedback] wrapped ${rel(norm.filePath)} → ${rel(outputPath)} (not opened: ${openResult.reason || 'unknown'})`;
+  : `[agent-feedback] wrapped ${rel(norm.filePath)} → ${fileUrl} — share this link with the user`;
 
 const verboseMsg = [
   `[agent-feedback] Wrapped ${rel(norm.filePath)} as a ${kind}: ${rel(outputPath)}`,

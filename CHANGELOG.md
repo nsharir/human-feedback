@@ -4,7 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Added — review-artifact rule + opt-in `-review` suffix whitelist
+### Changed — auto-open is now OPT-IN; agent shares a `file://` link instead (v1.7.0)
+
+- The post-write hook no longer launches a browser by default. After wrapping, it emits a `file://` link in the agent's reply message; the user clicks the link to open the review surface / questionnaire. This removes the disruptive browser pop when the agent finishes writing.
+- Re-enable the old auto-launch behavior with `AGENT_FEEDBACK_AUTO_OPEN=1` (was `=0` to disable, before).
+- Injected rule text updated: the canonical reply lines are now `"questionnaire ready ✓ — open: <file://link> — waiting on your response."` and `"review ready ✓ — open: <file://link> — waiting on your response."` — both relay the wrapped file's link verbatim.
+- Test `test/post-write-hook.js` updated to assert the message carries a `file://...` link and does NOT claim the file was opened, in the default no-AUTO_OPEN-flag path.
+
+### Added — "Other" free-text option enabled by default on choice questions (v1.6.1)
+
+- `radio`, `checkbox`, and `select` question types now include an "Other…" option with a free-text input by default. Previously this required opt-in via `"other": true` in the question JSON.
+- Opt out per-question with `"other": false`.
+
+### Added — review-artifact rule + opt-in `-review` suffix whitelist (v1.6.0)
 
 - The injected system-prompt rule now covers **two** contracts in one block: the existing >1-question rule AND a new review-artifact rule. Agents are told that any file the user must review must be named `<topic>-review.md` / `<topic>-review.html` — the hook auto-compiles + auto-opens it, and the agent replies only `review opened ✓ — waiting on your response.` and stops.
 - `shouldWrap` is now an explicit **whitelist**: only `*-review.md`, `*-review.html`, and `questions*.json` get wrapped. Everything else — `README.md`, `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, source code, arbitrary scratch markdown — passes through silently. This stops the hook from popping a browser every time the agent writes a routine `.md`.

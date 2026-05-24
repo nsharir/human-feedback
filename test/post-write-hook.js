@@ -4,11 +4,9 @@
  *
  * Verifies:
  *  1. Hook compiles .json → .feedback.html
- *  2. AGENT_FEEDBACK_AUTO_OPEN=0 short-circuits the browser launch
- *     (we don't try to launch a real browser in CI — we just confirm
- *      the agent message reports "Auto-open was skipped (disabled)")
- *  3. CI=1 also skips auto-open
- *  4. AGENT_FEEDBACK_DISABLED=1 skips the whole wrap
+ *  2. Default behavior (v1.7+): auto-open is OFF by default; agent message
+ *     contains a file:// link instead of auto-launching a browser.
+ *  3. AGENT_FEEDBACK_DISABLED=1 skips the whole wrap
  */
 
 const fs            = require('fs');
@@ -54,22 +52,24 @@ console.log('\n=== Post-write hook tests ===\n');
   const r = runHook(src);
   assert(r.status === 0, 'hook exits 0 for valid .json');
   assert(fs.existsSync(path.join(dir, 'questions.feedback.html')), 'compiles questions.json → .feedback.html');
-  assert(r.parsed && /Auto-open was skipped \(ci\)/.test(r.parsed.message || ''),
-    'CI=1 reports auto-open skipped with reason=ci');
+  assert(r.parsed && /file:\/\//.test(r.parsed.message || ''),
+    'agent message contains a file:// link to the wrapped output');
 }
 
-// ── 2. AGENT_FEEDBACK_AUTO_OPEN=0 reports reason=disabled ─────────────────
+// ── 2. Default: auto-open OFF; message includes the file:// link ──────────
 {
   const dir = tmpDir();
   const src = path.join(dir, 'spec-review.md');
   fs.writeFileSync(src, '# hi\n\nbody\n');
 
-  // Unset CI so the disabled branch is exercised independently
-  const r = runHook(src, { AGENT_FEEDBACK_AUTO_OPEN: '0', CI: '' });
+  // Unset CI so the default opt-in branch is exercised independently
+  const r = runHook(src, { CI: '' });
   assert(r.status === 0, 'hook exits 0 for valid -review.md');
   assert(fs.existsSync(path.join(dir, 'spec-review.review.html')), 'compiles -review.md → .review.html');
-  assert(r.parsed && /Auto-open was skipped \(disabled\)/.test(r.parsed.message || ''),
-    'AGENT_FEEDBACK_AUTO_OPEN=0 reports auto-open skipped with reason=disabled');
+  assert(r.parsed && /file:\/\/.*spec-review\.review\.html/.test(r.parsed.message || ''),
+    'default (no AUTO_OPEN=1) emits file:// link in agent message');
+  assert(r.parsed && !/already been opened/.test(r.parsed.message || ''),
+    'default does NOT claim the file was opened');
 }
 
 // ── 3. AGENT_FEEDBACK_DISABLED=1 skips the entire wrap ───────────────────
