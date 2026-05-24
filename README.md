@@ -20,9 +20,7 @@ Agent produces output
 
 **End-to-end walkthrough** — from intent capture to mockup feedback, with narration:
 
-<video src="https://github.com/nsharir/agent-feedback/raw/main/examples/demos/e2e-walkthrough.mp4" controls width="720"></video>
-
-> _Video doesn't render on npm/some markdown viewers — [watch on GitHub](https://github.com/nsharir/agent-feedback/blob/main/examples/demos/e2e-walkthrough.mp4)._
+https://github.com/user-attachments/assets/982e3634-de48-4745-b29e-ce2cd60665b7
 
 A typical 3-stage agent loop: gather requirements → review the draft spec → critique the mockup.
 
