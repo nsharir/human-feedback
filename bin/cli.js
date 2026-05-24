@@ -343,28 +343,15 @@ program
       const globDetected = d[key].global;
       const projInstalled = installer.isInstalled(key, 'project');
       const globInstalled = installer.isInstalled(key, 'global');
-      const projLegacy = installer.hasLegacyHooks(key, 'project');
-      const globLegacy = installer.hasLegacyHooks(key, 'global');
 
       const projStatus = projInstalled ? pc.green('✓ installed')
-                       : projLegacy    ? pc.yellow('⚠ legacy hooks')
                        : projDetected  ? pc.dim('not installed')
                        : pc.dim('·');
       const globStatus = globInstalled ? pc.green('✓ installed')
-                       : globLegacy    ? pc.yellow('⚠ legacy hooks')
                        : globDetected  ? pc.dim('not installed')
                        : pc.dim('·');
 
       console.log(`  ${pc.cyan(label.padEnd(14))}  project ${projStatus}   global ${globStatus}`);
-    }
-
-    // Check for any legacy hooks and suggest cleanup
-    const anyLegacy = Object.keys(HARNESS_FLAGS).some(k =>
-      installer.hasLegacyHooks(k, 'project') || installer.hasLegacyHooks(k, 'global')
-    );
-    if (anyLegacy) {
-      console.log('');
-      console.log(`  ${sym.warn} ${pc.yellow('Legacy v1.x hooks detected.')} Run ${pc.bold('human-feedback install')} to upgrade.`);
     }
 
     console.log('');

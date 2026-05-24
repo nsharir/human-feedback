@@ -142,54 +142,6 @@ try {
   assert(u4.changed === true, 'Hermes: uninstall reports changed');
   assert(!fs.existsSync(path.join(tmp, '.hermes', 'skills', 'human-feedback')), 'Hermes: skill directory removed');
 
-  // ── Legacy hook migration ─────────────────────────────────────────────────
-  // Simulate a v1.x hook-based install and verify the new installer cleans it up
-  {
-    const settingsPath = path.join(tmp, '.claude', 'settings.json');
-    const legacyCfg = {
-      userCustom: { preserved: true },
-      hooks: {
-        PostToolUse: [{ __agent_feedback_managed__: true, hooks: [{ type: 'command', command: 'agent-feedback __hook' }] }],
-        SessionStart: [{ __agent_feedback_managed__: true, hooks: [{ type: 'command', command: 'agent-feedback __hook' }] }],
-        PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'echo hi' }] }],
-      },
-    };
-    fs.writeFileSync(settingsPath, JSON.stringify(legacyCfg, null, 2));
-
-    assert(installer.hasLegacyHooks('claude-code', 'project') === true, 'Legacy: detects old hooks');
-
-    // Installing the new skill should also clean up legacy hooks
-    installer.install('claude-code', 'project');
-    const after = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-    assert(after.userCustom?.preserved === true, 'Legacy: user config preserved');
-    assert(after.hooks?.PreToolUse?.length === 1, 'Legacy: user hooks preserved');
-    assert(!after.hooks?.PostToolUse, 'Legacy: managed PostToolUse removed');
-    assert(!after.hooks?.SessionStart, 'Legacy: managed SessionStart removed');
-    assert(installer.hasLegacyHooks('claude-code', 'project') === false, 'Legacy: no more legacy hooks');
-    assert(fs.existsSync(ccTarget), 'Legacy: new skill file installed alongside cleanup');
-  }
-
-  // Legacy Hermes cleanup: old Python plugin + MEMORY.md
-  {
-    const pluginDir = path.join(tmp, '.hermes', 'plugins', 'agent_feedback');
-    fs.mkdirSync(pluginDir, { recursive: true });
-    fs.writeFileSync(path.join(pluginDir, '.agent_feedback_managed'), '1\n');
-    fs.writeFileSync(path.join(pluginDir, '__init__.py'), '# old plugin');
-
-    const memDir = path.join(tmp, '.hermes', 'memories');
-    fs.mkdirSync(memDir, { recursive: true });
-    fs.writeFileSync(path.join(memDir, 'MEMORY.md'),
-      'user note\n§\n<!-- agent-feedback:managed-rule:begin -->\nold rule\n<!-- agent-feedback:managed-rule:end -->\n');
-
-    installer.install('hermes', 'project');
-    assert(!fs.existsSync(pluginDir), 'Legacy Hermes: old plugin directory removed');
-    {
-      const mem = fs.readFileSync(path.join(memDir, 'MEMORY.md'), 'utf8');
-      assert(!mem.includes('agent-feedback:managed-rule'), 'Legacy Hermes: managed memory rule removed');
-      assert(mem.includes('user note'), 'Legacy Hermes: user memory entries preserved');
-    }
-  }
-
   console.log('\n=== Installer tests complete ===\n');
 } finally {
   process.chdir(origCwd);

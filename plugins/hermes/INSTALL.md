@@ -42,10 +42,6 @@ get feedback on the mockup
 
 Copy `human-feedback.skill.md` from this directory to `.hermes/skills/human-feedback/SKILL.md`.
 
-## Upgrading from v1.x
-
-Running `install` automatically removes the old Python plugin directory (`.hermes/plugins/agent_feedback/`) and the managed `MEMORY.md` entry.
-
 ## Requires
 
 - Hermes Agent 0.9 or later
