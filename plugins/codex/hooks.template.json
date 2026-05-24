@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^(Write|Edit|apply_patch|create_file|str_replace)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afb __hook",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

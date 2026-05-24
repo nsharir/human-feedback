@@ -1,0 +1,36 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Shared design tokens — used by all three tools.
+   Each tool overrides --accent / --accent2 to its own brand color.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surface palette (warm neutral) */
+  --bg:        #f5f2ed;
+  --surface:   #ffffff;
+  --surface2:  #f0ece5;
+  --border:    #e2ddd6;
+  --border2:   #d0c9bf;
+
+  /* Ink */
+  --ink:       #1c1916;
+  --ink2:      #4a4540;
+  --ink3:      #9a9088;
+
+  /* Semantic */
+  --green:     #1a7a4a;
+  --green-lt:  #edf7f2;
+  --red:       #c0392b;
+  --red-lt:    #fdf0ef;
+
+  /* Type */
+  --serif:     'Fraunces', Georgia, serif;
+  --mono:      'DM Mono', monospace;
+
+  /* Shape */
+  --radius:    10px;
+  --radius-sm: 6px;
+
+  /* Shadow */
+  --shadow:    0 1px 3px rgba(28, 25, 22, 0.08), 0 4px 16px rgba(28, 25, 22, 0.06);
+  --shadow-md: 0 2px 8px rgba(28, 25, 22, 0.10), 0 8px 32px rgba(28, 25, 22, 0.08);
+}

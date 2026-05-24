@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Agent Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+<!-- @include shared/tokens.css -->
+<!-- @include tools/feedback/feedback.css -->
+<!-- @include shared/preview-dialog.css -->
+<!-- @include shared/toast.css -->
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">?</div>
+    AGENT FEEDBACK
+  </div>
+  <span class="header-sub" id="header-sub">awaiting questions</span>
+  <div class="header-meta">
+    <span id="progress-label" style="display:none;">Q <b id="answered-count">0</b> / <b id="total-count">0</b></span>
+  </div>
+</header>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main>
+
+  <!-- EMPTY STATE -->
+  <div id="empty-state">
+    <div class="empty-icon">◈</div>
+    <h2>No questions loaded</h2>
+    <p>This page is waiting for an agent to inject a <code style="background:var(--surface);padding:1px 5px;border-radius:3px;border:1px solid var(--border);">QUESTIONS</code> JSON block.</p>
+    <div class="schema-box">
+      <div class="schema-label">── JSON schema ──</div>
+      <pre><span class="kw">{</span>
+  <span class="key">"title"</span>: <span class="str">"Session title"</span>,
+  <span class="key">"description"</span>: <span class="str">"Context for the user"</span>,
+  <span class="key">"questions"</span>: <span class="kw">[</span>
+    <span class="kw">{</span>
+      <span class="key">"id"</span>: <span class="str">"q1"</span>,
+      <span class="key">"text"</span>: <span class="str">"Your question"</span>,
+      <span class="key">"type"</span>: <span class="str">"radio"</span>,
+      <span class="key">"options"</span>: <span class="kw">[</span><span class="str">"A"</span>, <span class="str">"B"</span><span class="kw">]</span>,
+      <span class="key">"other"</span>: <span class="kw">true</span>,
+      <span class="key">"allowImage"</span>: <span class="kw">true</span>,
+      <span class="key">"required"</span>: <span class="kw">true</span>
+    <span class="kw">}</span>
+  <span class="kw">]</span>
+<span class="kw">}</span>
+
+<span class="cmt">── Types ────────────────────────────────────────</span>
+<span class="str">"text"</span>      single-line input
+<span class="str">"textarea"</span>  multi-line input
+<span class="str">"radio"</span>     pick one         (needs options[])
+<span class="str">"checkbox"</span>  pick many        (needs options[])
+<span class="str">"select"</span>    dropdown         (needs options[])
+<span class="str">"boolean"</span>   Yes / No
+<span class="str">"scale"</span>     discrete buttons (min, max, minLabel, maxLabel)
+<span class="str">"range"</span>     slider           (min, max, step, unit)
+<span class="str">"date"</span>      date picker
+
+<span class="cmt">── Modifiers (any type) ─────────────────────────</span>
+<span class="str">"other": true</span>       adds "Other…" + free text  (radio/checkbox/select)
+<span class="str">"allowImage": true</span>  enables image attachment</pre>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div id="q-form">
+    <div id="q-title-block">
+      <div id="q-context-label">Agent Feedback</div>
+      <div id="q-title"></div>
+      <div id="q-description"></div>
+    </div>
+    <div id="q-list"></div>
+    <div id="form-footer">
+      <button class="btn-primary" id="preview-btn" disabled>Preview &amp; Copy ↗</button>
+      <span id="req-note"></span>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="success-state">
+    <div class="success-ring">✓</div>
+    <h2>Feedback copied</h2>
+    <p>Paste this back to the agent — it will parse the JSON and continue from your answers.</p>
+    <div class="success-actions">
+      <button class="btn-primary" id="copy-again-btn">⎘ Copy again</button>
+      <button class="btn-secondary" id="edit-again-btn">← Edit answers</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Shared preview dialog -->
+<!-- @include shared/preview-dialog.html -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  AGENT: Replace the null below with your JSON config.
+// ═══════════════════════════════════════════════════════════
+const QUESTIONS = null;
+
+/* @include shared/escape-html.js */
+/* @include shared/toast.js */
+/* @include shared/clipboard.js */
+/* @include shared/preview.js */
+/* @include tools/feedback/feedback-engine.js */
+</script>
+</body>
+</html>

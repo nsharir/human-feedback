@@ -1,0 +1,70 @@
+{
+  "title": "Product Discovery — New Feature Request",
+  "description": "The agent has drafted an initial feature proposal. Before writing any code, it needs your input across several dimensions: user context, priorities, constraints, and visual references.",
+  "questions": [
+    {
+      "id": "role",
+      "text": "What is your role on this project?",
+      "type": "radio",
+      "options": ["Product Manager", "Engineering Lead", "Designer", "Founder / Stakeholder"],
+      "other": true,
+      "required": true
+    },
+    {
+      "id": "feature_summary",
+      "text": "Describe the feature you want built in your own words.",
+      "type": "textarea",
+      "hint": "Ignore technical constraints for now — focus on what the user would experience.",
+      "required": true
+    },
+    {
+      "id": "platforms",
+      "text": "Which platforms must this ship on?",
+      "type": "checkbox",
+      "options": ["Web app", "iOS", "Android", "Desktop", "Public API"],
+      "required": true
+    },
+    {
+      "id": "priority",
+      "text": "How urgent is this relative to other backlog work?",
+      "type": "scale",
+      "min": 1,
+      "max": 10,
+      "minLabel": "Can wait",
+      "maxLabel": "Blocking us",
+      "required": true
+    },
+    {
+      "id": "confidence",
+      "text": "How confident are you in the requirements?",
+      "type": "range",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%"
+    },
+    {
+      "id": "target_date",
+      "text": "Is there a hard deadline?",
+      "type": "date"
+    },
+    {
+      "id": "blocking_release",
+      "text": "Is this blocking an upcoming release?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "id": "visual_reference",
+      "text": "Attach a sketch or mockup if you have one.",
+      "type": "textarea",
+      "hint": "Describe what you're attaching, or leave blank.",
+      "allowImage": true
+    },
+    {
+      "id": "open_questions",
+      "text": "What unknowns are you most worried about?",
+      "type": "textarea"
+    }
+  ]
+}

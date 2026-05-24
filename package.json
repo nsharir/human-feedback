@@ -1,0 +1,54 @@
+{
+  "name": "@nsharir/agent-feedback",
+  "version": "1.4.0",
+  "description": "Close the loop on AI agent output — wrap .md / .html / .json files with interactive feedback surfaces, native hook plugins for Claude Code, Cursor, Codex, and Hermes.",
+  "main": "lib/compiler.js",
+  "bin": {
+    "agent-feedback": "./bin/cli.js",
+    "afb": "./bin/cli.js"
+  },
+  "scripts": {
+    "build": "node build/build.js",
+    "test": "npm run build && node test/run.js && node test/installer.js",
+    "prepack": "npm run build",
+    "compile:examples": "node scripts/compile-examples.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "src/",
+    "build/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "agent",
+    "ai",
+    "feedback",
+    "annotator",
+    "markdown",
+    "human-in-the-loop",
+    "cli",
+    "claude",
+    "anthropic"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nsharir/agent-feedback.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nsharir/agent-feedback/issues"
+  },
+  "homepage": "https://github.com/nsharir/agent-feedback#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.0"
+  }
+}

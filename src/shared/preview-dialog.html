@@ -1,0 +1,20 @@
+<!-- Preview dialog — included into every tool. Wired up by shared/preview.js -->
+<div id="preview-overlay">
+  <div id="preview-dialog">
+    <div class="preview-header">
+      <div>
+        <h3>Preview &amp; Edit</h3>
+        <p>Edit the output below before copying. The agent expects valid content.</p>
+      </div>
+      <button class="preview-close" id="preview-close" aria-label="Close">✕</button>
+    </div>
+    <textarea id="preview-textarea" spellcheck="false"></textarea>
+    <div class="preview-footer">
+      <span class="preview-footer-info" id="preview-info">— bytes</span>
+      <div class="preview-footer-actions">
+        <button class="btn-preview-secondary" id="preview-reset">↺ Reset</button>
+        <button class="btn-preview-primary" id="preview-copy">⎘ Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+</div>

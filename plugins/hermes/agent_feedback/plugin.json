@@ -1,0 +1,10 @@
+{
+  "name": "agent_feedback",
+  "version": "1.0.0",
+  "description": "Auto-wraps agent-produced .md / .html / .json files with the agent-feedback framework",
+  "author": "nsharir",
+  "hooks": ["post_tool_call"],
+  "requires": {
+    "node": ">=18"
+  }
+}

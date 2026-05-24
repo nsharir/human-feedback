@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Create",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afb __hook",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

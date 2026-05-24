@@ -1,0 +1,1642 @@
+<!-- Built by build/build.js — do not edit directly. Edit sources in src/ and run `npm run build`. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Agent Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ─────────────────────────────────────────────────────────────────────────────
+   Shared design tokens — used by all three tools.
+   Each tool overrides --accent / --accent2 to its own brand color.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surface palette (warm neutral) */
+  --bg:        #f5f2ed;
+  --surface:   #ffffff;
+  --surface2:  #f0ece5;
+  --border:    #e2ddd6;
+  --border2:   #d0c9bf;
+
+  /* Ink */
+  --ink:       #1c1916;
+  --ink2:      #4a4540;
+  --ink3:      #9a9088;
+
+  /* Semantic */
+  --green:     #1a7a4a;
+  --green-lt:  #edf7f2;
+  --red:       #c0392b;
+  --red-lt:    #fdf0ef;
+
+  /* Type */
+  --serif:     'Fraunces', Georgia, serif;
+  --mono:      'DM Mono', monospace;
+
+  /* Shape */
+  --radius:    10px;
+  --radius-sm: 6px;
+
+  /* Shadow */
+  --shadow:    0 1px 3px rgba(28, 25, 22, 0.08), 0 4px 16px rgba(28, 25, 22, 0.06);
+  --shadow-md: 0 2px 8px rgba(28, 25, 22, 0.10), 0 8px 32px rgba(28, 25, 22, 0.08);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Feedback tool — tool-specific styles
+   Accent: terracotta amber
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --accent:        #b45309;
+  --accent2:       #d97706;
+  --accent-hover:  #92410a;
+  --accent-lt:     #fef3e2;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+header {
+  background: var(--ink);
+  color: #f0ece4;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--accent);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #f0ece4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.logo-mark {
+  width: 26px; height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.header-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgba(240, 236, 228, 0.5);
+  margin-left: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.header-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+#progress-label { font-family: var(--mono); font-size: 11px; color: rgba(240, 236, 228, 0.6); }
+#progress-label b { color: var(--accent2); font-weight: 600; }
+
+@media (max-width: 600px) { .header-sub { display: none; } }
+
+#progress-bar-wrap { height: 2px; background: var(--border); flex-shrink: 0; }
+#progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  width: 0%;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+main {
+  flex: 1;
+  padding: 56px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+@media (max-width: 600px) { main { padding: 28px 16px 60px; } }
+
+/* Empty state */
+#empty-state {
+  max-width: 600px;
+  width: 100%;
+  margin-top: 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.empty-icon {
+  width: 72px; height: 72px;
+  border: 1.5px solid var(--border2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--ink3);
+  background: var(--surface);
+}
+#empty-state h2 {
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+#empty-state p {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink3);
+  line-height: 1.7;
+  max-width: 420px;
+}
+.schema-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  width: 100%;
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+.schema-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.schema-box pre {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink2);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.schema-box .key { color: var(--accent); }
+.schema-box .str { color: var(--green); }
+.schema-box .kw  { color: var(--ink); font-weight: 500; }
+.schema-box .cmt { color: var(--ink3); }
+
+/* Form */
+#q-form { width: 100%; max-width: 720px; display: none; flex-direction: column; }
+
+#q-title-block { margin-bottom: 32px; }
+#q-context-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+#q-title {
+  font-size: 28px;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+#q-description {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink3);
+  margin-top: 10px;
+  line-height: 1.7;
+}
+
+/* Card */
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.q-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--border2);
+  transition: background 0.18s;
+}
+.q-card.answered::before { background: var(--accent); }
+.q-card.focused          { border-color: var(--border2); box-shadow: var(--shadow-md); }
+.q-card.focused::before  { background: var(--accent2); }
+
+.q-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.q-tag {
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--border);
+  color: var(--ink3);
+}
+.q-tag.required { background: var(--red-lt); color: var(--red); }
+.q-type-tag {
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  background: var(--accent-lt);
+  color: var(--accent);
+}
+.q-check {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.q-card.answered .q-check { opacity: 1; }
+
+.q-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.q-hint {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+/* Inputs */
+.q-input, .q-textarea, .q-select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+}
+.q-input:focus, .q-textarea:focus, .q-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-lt);
+  background: var(--surface);
+}
+.q-textarea { min-height: 90px; resize: vertical; line-height: 1.6; font-family: var(--mono); }
+.q-select {
+  cursor: pointer;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink2) 50%),
+    linear-gradient(135deg, var(--ink2) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+@media (max-width: 600px) {
+  .q-input, .q-textarea, .q-select { font-size: 16px; }
+}
+
+/* Options */
+.q-options { display: flex; flex-direction: column; gap: 7px; }
+.q-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  background: var(--bg);
+}
+.q-option:hover { border-color: var(--border2); background: var(--surface2); }
+.q-option.selected { border-color: var(--accent); background: var(--accent-lt); }
+
+.q-option-mark {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--border2);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  background: var(--surface);
+}
+.q-option.checkbox .q-option-mark { border-radius: 4px; }
+.q-option.selected .q-option-mark { border-color: var(--accent); background: var(--accent); }
+.q-option.selected .q-option-mark::after { content: '✓'; font-size: 10px; color: #fff; font-weight: bold; }
+.q-option-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.q-other-input {
+  margin-top: 8px;
+  margin-left: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 12px;
+  outline: none;
+  width: calc(100% - 40px);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: none;
+}
+.q-other-input.visible { display: block; }
+.q-other-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-lt); }
+@media (max-width: 600px) { .q-other-input { font-size: 16px; } }
+
+/* Scale */
+.q-scale { display: flex; gap: 6px; flex-wrap: wrap; }
+.q-scale-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 6px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink3);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-scale-btn:hover { border-color: var(--accent); color: var(--ink); }
+.q-scale-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.q-scale-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+.q-scale-labels span { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
+
+/* Range */
+.q-range-wrap { display: flex; flex-direction: column; gap: 6px; }
+.q-range-value-row { display: flex; align-items: baseline; gap: 4px; }
+.q-range-value {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1;
+}
+.q-range-unit { font-family: var(--mono); font-size: 12px; color: var(--ink3); }
+
+input[type=range].q-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+  margin: 8px 0;
+}
+input[type=range].q-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 4px rgba(28, 25, 22, 0.25);
+}
+input[type=range].q-range::-moz-range-thumb {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--surface);
+}
+.q-range-bounds { display: flex; justify-content: space-between; }
+.q-range-bounds span { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
+
+/* Boolean */
+.q-bool { display: flex; gap: 8px; }
+.q-bool-btn {
+  flex: 1;
+  padding: 11px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink3);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-bool-btn:hover { color: var(--ink); background: var(--surface2); }
+.q-bool-btn.selected-yes {
+  border-color: var(--green);
+  background: var(--green-lt);
+  color: var(--green);
+  font-weight: 500;
+}
+.q-bool-btn.selected-no {
+  border-color: var(--red);
+  background: var(--red-lt);
+  color: var(--red);
+  font-weight: 500;
+}
+
+input[type=date].q-input { font-family: var(--mono); }
+
+/* Image upload */
+.q-image-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border2);
+}
+.q-image-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.q-image-label span { color: var(--accent); font-weight: 500; }
+.q-image-drop {
+  border: 1.5px dashed var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  background: var(--bg);
+}
+.q-image-drop:hover { border-color: var(--accent); background: var(--accent-lt); }
+.q-image-drop.dragover { border-color: var(--accent); background: var(--accent-lt); }
+.q-image-drop.has-image { border-style: solid; border-color: var(--accent); padding: 8px; }
+.q-image-drop input[type=file] {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer;
+  width: 100%; height: 100%;
+}
+.q-image-drop-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  pointer-events: none;
+  line-height: 1.6;
+}
+.q-image-drop-text b { color: var(--ink); font-weight: 500; }
+.q-image-preview {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  display: none;
+  pointer-events: none;
+  max-height: 200px;
+  object-fit: contain;
+}
+.q-image-preview.visible { display: block; }
+.q-image-clear {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--red);
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 6px;
+  padding: 0;
+  display: none;
+}
+.q-image-clear.visible { display: block; }
+
+/* Footer */
+#form-footer {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 12px 22px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn-secondary {
+  background: none;
+  color: var(--ink2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+#req-note { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+#req-note b { color: var(--red); font-weight: 500; }
+@media (max-width: 600px) {
+  #form-footer { flex-direction: column; align-items: stretch; }
+  .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+}
+
+/* Success */
+#success-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+  max-width: 520px;
+  margin-top: 60px;
+  width: 100%;
+}
+.success-ring {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--green-lt);
+  border: 2px solid var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--green);
+}
+#success-state h2 {
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+}
+#success-state p {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink3);
+  line-height: 1.7;
+}
+.success-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Preview dialog — shared component across all tools.
+   The host tool must provide --accent and --accent-hover.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+#preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 25, 22, 0.55);
+  z-index: 9998;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+}
+#preview-overlay.open { display: flex; }
+
+#preview-dialog {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.preview-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.preview-header h3 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.preview-header p {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  margin: 0;
+  line-height: 1.5;
+}
+.preview-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--ink3);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.preview-close:hover { background: var(--surface2); color: var(--ink); }
+
+#preview-textarea {
+  flex: 1;
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 20px 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink2);
+  background: var(--bg);
+  resize: none;
+  line-height: 1.65;
+  min-height: 320px;
+}
+@media (max-width: 600px) {
+  #preview-textarea { font-size: 14px; }
+}
+
+.preview-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  flex-wrap: wrap;
+}
+.preview-footer-info {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+}
+.preview-footer-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Reused button styles for preview footer */
+.btn-preview-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-preview-primary:hover { background: var(--accent-hover, var(--accent)); }
+.btn-preview-secondary {
+  background: none;
+  color: var(--ink2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-preview-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* Manual-copy hint banner shown when both auto-copy strategies fail */
+#manual-copy-hint {
+  background: var(--red-lt);
+  border-top: 1px solid var(--red);
+  border-bottom: 1px solid var(--red);
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 10px 22px;
+  text-align: center;
+  line-height: 1.5;
+}
+#manual-copy-hint b { font-weight: 500; }
+
+/* Toast styles — shared */
+#toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: #f0ece4;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px 22px;
+  border-radius: 22px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.22s;
+  z-index: 99999;
+  white-space: nowrap;
+  border: 1px solid #333;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#toast.success {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+#toast.error {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">?</div>
+    AGENT FEEDBACK
+  </div>
+  <span class="header-sub" id="header-sub">awaiting questions</span>
+  <div class="header-meta">
+    <span id="progress-label" style="display:none;">Q <b id="answered-count">0</b> / <b id="total-count">0</b></span>
+  </div>
+</header>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main>
+
+  <!-- EMPTY STATE -->
+  <div id="empty-state">
+    <div class="empty-icon">◈</div>
+    <h2>No questions loaded</h2>
+    <p>This page is waiting for an agent to inject a <code style="background:var(--surface);padding:1px 5px;border-radius:3px;border:1px solid var(--border);">QUESTIONS</code> JSON block.</p>
+    <div class="schema-box">
+      <div class="schema-label">── JSON schema ──</div>
+      <pre><span class="kw">{</span>
+  <span class="key">"title"</span>: <span class="str">"Session title"</span>,
+  <span class="key">"description"</span>: <span class="str">"Context for the user"</span>,
+  <span class="key">"questions"</span>: <span class="kw">[</span>
+    <span class="kw">{</span>
+      <span class="key">"id"</span>: <span class="str">"q1"</span>,
+      <span class="key">"text"</span>: <span class="str">"Your question"</span>,
+      <span class="key">"type"</span>: <span class="str">"radio"</span>,
+      <span class="key">"options"</span>: <span class="kw">[</span><span class="str">"A"</span>, <span class="str">"B"</span><span class="kw">]</span>,
+      <span class="key">"other"</span>: <span class="kw">true</span>,
+      <span class="key">"allowImage"</span>: <span class="kw">true</span>,
+      <span class="key">"required"</span>: <span class="kw">true</span>
+    <span class="kw">}</span>
+  <span class="kw">]</span>
+<span class="kw">}</span>
+
+<span class="cmt">── Types ────────────────────────────────────────</span>
+<span class="str">"text"</span>      single-line input
+<span class="str">"textarea"</span>  multi-line input
+<span class="str">"radio"</span>     pick one         (needs options[])
+<span class="str">"checkbox"</span>  pick many        (needs options[])
+<span class="str">"select"</span>    dropdown         (needs options[])
+<span class="str">"boolean"</span>   Yes / No
+<span class="str">"scale"</span>     discrete buttons (min, max, minLabel, maxLabel)
+<span class="str">"range"</span>     slider           (min, max, step, unit)
+<span class="str">"date"</span>      date picker
+
+<span class="cmt">── Modifiers (any type) ─────────────────────────</span>
+<span class="str">"other": true</span>       adds "Other…" + free text  (radio/checkbox/select)
+<span class="str">"allowImage": true</span>  enables image attachment</pre>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div id="q-form">
+    <div id="q-title-block">
+      <div id="q-context-label">Agent Feedback</div>
+      <div id="q-title"></div>
+      <div id="q-description"></div>
+    </div>
+    <div id="q-list"></div>
+    <div id="form-footer">
+      <button class="btn-primary" id="preview-btn" disabled>Preview &amp; Copy ↗</button>
+      <span id="req-note"></span>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="success-state">
+    <div class="success-ring">✓</div>
+    <h2>Feedback copied</h2>
+    <p>Paste this back to the agent — it will parse the JSON and continue from your answers.</p>
+    <div class="success-actions">
+      <button class="btn-primary" id="copy-again-btn">⎘ Copy again</button>
+      <button class="btn-secondary" id="edit-again-btn">← Edit answers</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Shared preview dialog -->
+<!-- Preview dialog — included into every tool. Wired up by shared/preview.js -->
+<div id="preview-overlay">
+  <div id="preview-dialog">
+    <div class="preview-header">
+      <div>
+        <h3>Preview &amp; Edit</h3>
+        <p>Edit the output below before copying. The agent expects valid content.</p>
+      </div>
+      <button class="preview-close" id="preview-close" aria-label="Close">✕</button>
+    </div>
+    <textarea id="preview-textarea" spellcheck="false"></textarea>
+    <div class="preview-footer">
+      <span class="preview-footer-info" id="preview-info">— bytes</span>
+      <div class="preview-footer-actions">
+        <button class="btn-preview-secondary" id="preview-reset">↺ Reset</button>
+        <button class="btn-preview-primary" id="preview-copy">⎘ Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  AGENT: Replace the null below with your JSON config.
+// ═══════════════════════════════════════════════════════════
+const QUESTIONS = null;
+
+/* Shared escapeHtml utility */
+function escapeHtml(s) {
+  if (typeof s !== 'string') return String(s);
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Toast notification — shared across all tools.
+   Requires a #toast element in the DOM and matching CSS.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+function showToast(msg, kind) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.className = '';
+  if (kind) toast.classList.add(kind);
+  const raf = typeof requestAnimationFrame === 'function'
+    ? requestAnimationFrame
+    : function (fn) { return setTimeout(fn, 16); };
+  raf(function () { toast.classList.add('show'); });
+  setTimeout(function () { toast.classList.remove('show'); }, 2400);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Clipboard — 3-tier fallback strategy.
+
+   Returns 'auto' if the text was copied automatically (success),
+   or 'manual' if the caller must fall back to user-initiated copy.
+
+   Tier 1: navigator.clipboard.writeText  (requires secure context)
+   Tier 2: document.execCommand('copy')   (deprecated, broad fallback)
+   Tier 3: caller selects a visible textarea + shows shortcut hint
+   ───────────────────────────────────────────────────────────────────────────── */
+
+async function copyToClipboardSafe(text) {
+  // Tier 1: modern clipboard API
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return 'auto';
+    } catch (e) {
+      console.warn('clipboard API failed:', e);
+    }
+  }
+  // Tier 2: execCommand fallback
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    ta.remove();
+    if (ok) return 'auto';
+  } catch (e) {
+    console.warn('execCommand fallback failed:', e);
+  }
+  // Tier 3: manual — caller handles selection + user-facing hint
+  return 'manual';
+}
+
+/* Show a manual-copy hint inside the preview dialog.
+   Auto-selects the textarea and tells the user which keyboard shortcut to press. */
+function showManualCopyHint() {
+  const textarea = document.getElementById('preview-textarea');
+  if (!textarea) return;
+  textarea.focus();
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+
+  const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  const shortcut = isMac ? '⌘ + C' : 'Ctrl + C';
+
+  let hint = document.getElementById('manual-copy-hint');
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.id = 'manual-copy-hint';
+    textarea.parentElement.insertBefore(hint, textarea);
+  }
+  hint.innerHTML = '<b>Browser blocked automatic copy.</b><br/>Text is selected below — press <b>' + shortcut + '</b> to copy manually.';
+}
+
+function clearManualCopyHint() {
+  const hint = document.getElementById('manual-copy-hint');
+  if (hint) hint.remove();
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Preview dialog controller — shared across all three tools.
+
+   Public API (assumes preview-dialog.html + preview-dialog.css + clipboard.js
+   + toast.js have all been included in the page):
+
+     PreviewDialog.open({ payload, onCopySuccess? })   open with pristine payload
+     PreviewDialog.close()                              close it
+     PreviewDialog.isOpen()                             boolean
+
+   The dialog manages its own reset, copy, and manual-fallback logic.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+const PreviewDialog = (function () {
+  let pristine = '';
+  let onCopySuccess = null;
+  let initialized = false;
+
+  function el(id) { return document.getElementById(id); }
+
+  function updateInfo() {
+    const text = el('preview-textarea').value;
+    const bytes = new Blob([text]).size;
+    const kb = bytes >= 1024 ? (bytes / 1024).toFixed(1) + ' KB' : bytes + ' bytes';
+    const info = el('preview-info');
+    if (info) info.textContent = kb;
+  }
+
+  function open(opts) {
+    initialize();
+    pristine = opts.payload;
+    onCopySuccess = opts.onCopySuccess || null;
+    clearManualCopyHint();
+    el('preview-textarea').value = pristine;
+    el('preview-overlay').classList.add('open');
+    updateInfo();
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    clearManualCopyHint();
+    el('preview-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function isOpen() {
+    const overlay = el('preview-overlay');
+    return overlay && overlay.classList.contains('open');
+  }
+
+  async function doCopy() {
+    const text = el('preview-textarea').value;
+    const result = await copyToClipboardSafe(text);
+    if (result === 'auto') {
+      showToast('✓ Copied to clipboard!', 'success');
+      close();
+      if (typeof onCopySuccess === 'function') onCopySuccess();
+    } else {
+      showManualCopyHint();
+    }
+  }
+
+  function initialize() {
+    if (initialized) return;
+    initialized = true;
+    el('preview-close').addEventListener('click', close);
+    el('preview-overlay').addEventListener('click', function (e) {
+      if (e.target.id === 'preview-overlay') close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+    el('preview-textarea').addEventListener('input', updateInfo);
+    el('preview-reset').addEventListener('click', function () {
+      el('preview-textarea').value = pristine;
+      updateInfo();
+      showToast('↺ Reset to generated output');
+    });
+    el('preview-copy').addEventListener('click', doCopy);
+  }
+
+  return { open, close, isOpen };
+})();
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Feedback engine — renders questions from the QUESTIONS config and collects
+   answers. Uses PreviewDialog (shared) for the copy step.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+(function () {
+  const $ = function (id) { return document.getElementById(id); };
+
+  const emptyState     = $('empty-state');
+  const qForm          = $('q-form');
+  const successState   = $('success-state');
+  const qList          = $('q-list');
+  const qTitle         = $('q-title');
+  const qDesc          = $('q-description');
+  const previewBtn     = $('preview-btn');
+  const progressBar    = $('progress-bar');
+  const progressLabel  = $('progress-label');
+  const answeredCount  = $('answered-count');
+  const totalCount     = $('total-count');
+  const headerSub      = $('header-sub');
+
+  let config  = null;
+  let answers = {};
+
+  function init() {
+    if (!QUESTIONS) return;
+    try {
+      config = typeof QUESTIONS === 'string' ? JSON.parse(QUESTIONS) : QUESTIONS;
+      if (!config.questions || !config.questions.length) return;
+      buildForm();
+    } catch (e) {
+      console.error('QUESTIONS parse error:', e);
+    }
+  }
+
+  function buildForm() {
+    emptyState.style.display = 'none';
+    qForm.style.display = 'flex';
+    progressLabel.style.display = '';
+    qTitle.textContent     = config.title || 'Please answer the following';
+    qDesc.textContent      = config.description || '';
+    qDesc.style.display    = config.description ? '' : 'none';
+    headerSub.textContent  = config.title || 'questions loaded';
+    totalCount.textContent = config.questions.length;
+    qList.innerHTML = '';
+    config.questions.forEach(function (q, i) { buildCard(q, i); });
+    updateProgress();
+    checkSubmit();
+  }
+
+  function buildCard(q, idx) {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.dataset.id = q.id;
+    const isReq = q.required === true;
+    const typeLabel = q.type || 'text';
+
+    card.innerHTML =
+      '<div class="q-num">' +
+        '<span>Q' + (idx + 1) + '</span>' +
+        '<span class="q-tag ' + (isReq ? 'required' : '') + '">' + (isReq ? 'required' : 'optional') + '</span>' +
+        '<span class="q-type-tag">' + typeLabel + '</span>' +
+        '<span class="q-check">✓</span>' +
+      '</div>' +
+      '<div class="q-text">' + escapeHtml(q.text) + '</div>' +
+      (q.hint ? '<div class="q-hint">' + escapeHtml(q.hint) + '</div>' : '') +
+      '<div class="q-input-wrap"></div>' +
+      (q.allowImage ? buildImageSection(q.id) : '');
+
+    const wrap = card.querySelector('.q-input-wrap');
+    renderInput(q, wrap, card);
+    if (q.allowImage) attachImageHandler(card, q.id);
+
+    qList.appendChild(card);
+  }
+
+  function buildImageSection(id) {
+    return '' +
+      '<div class="q-image-section">' +
+        '<div class="q-image-label">📎 <span>Attach image</span> (optional)</div>' +
+        '<div class="q-image-drop" id="img-drop-' + id + '">' +
+          '<input type="file" accept="image/*" id="img-input-' + id + '"/>' +
+          '<div class="q-image-drop-text"><b>Click to upload</b> or drag & drop<br/>PNG, JPG, GIF, WebP</div>' +
+          '<img class="q-image-preview" id="img-preview-' + id + '" alt="preview"/>' +
+        '</div>' +
+        '<button class="q-image-clear" id="img-clear-' + id + '" type="button">✕ Remove image</button>' +
+      '</div>';
+  }
+
+  function attachImageHandler(card, id) {
+    const input    = card.querySelector('#img-input-' + id);
+    const drop     = card.querySelector('#img-drop-' + id);
+    const preview  = card.querySelector('#img-preview-' + id);
+    const clearBtn = card.querySelector('#img-clear-' + id);
+    const dropText = drop.querySelector('.q-image-drop-text');
+
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        const base64 = ev.target.result;
+        preview.src = base64;
+        preview.classList.add('visible');
+        drop.classList.add('has-image');
+        dropText.style.display = 'none';
+        clearBtn.classList.add('visible');
+        if (!answers[id]) answers[id] = { value: null };
+        answers[id].imageBase64 = base64;
+        answers[id].imageName   = file.name;
+        updateAnswerCard(id, card);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    input.addEventListener('change', function () { loadFile(input.files[0]); });
+    drop.addEventListener('dragover',  function (e) { e.preventDefault(); drop.classList.add('dragover'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('dragover'); });
+    drop.addEventListener('drop',      function (e) {
+      e.preventDefault();
+      drop.classList.remove('dragover');
+      loadFile(e.dataTransfer.files[0]);
+    });
+    clearBtn.addEventListener('click', function () {
+      input.value = '';
+      preview.src = '';
+      preview.classList.remove('visible');
+      drop.classList.remove('has-image');
+      dropText.style.display = '';
+      clearBtn.classList.remove('visible');
+      if (answers[id]) {
+        delete answers[id].imageBase64;
+        delete answers[id].imageName;
+      }
+      updateAnswerCard(id, card);
+    });
+  }
+
+  function renderInput(q, wrap, card) {
+    const id = q.id;
+
+    switch (q.type) {
+
+      case 'textarea': {
+        const el = mk('textarea', 'q-textarea', { placeholder: q.placeholder || 'Type your answer…' });
+        el.addEventListener('input', function () { setValue(id, el.value.trim(), card); });
+        el.addEventListener('focus', function () { card.classList.add('focused'); });
+        el.addEventListener('blur',  function () { card.classList.remove('focused'); });
+        wrap.appendChild(el);
+        break;
+      }
+
+      case 'radio':
+      case 'checkbox': {
+        buildOptions(q, q.type, id, card, wrap);
+        break;
+      }
+
+      case 'select': {
+        const sel = mk('select', 'q-select');
+        const ph = document.createElement('option');
+        ph.value = ''; ph.textContent = 'Choose an option…'; ph.disabled = true; ph.selected = true;
+        sel.appendChild(ph);
+        (q.options || []).forEach(function (opt) {
+          const o = document.createElement('option');
+          o.value = opt; o.textContent = opt;
+          sel.appendChild(o);
+        });
+        if (q.other) {
+          const o = document.createElement('option');
+          o.value = '__other__'; o.textContent = 'Other…';
+          sel.appendChild(o);
+        }
+        const otherInput = q.other
+          ? mk('input', 'q-other-input', { type: 'text', placeholder: 'Please specify…' })
+          : null;
+        sel.addEventListener('change', function () {
+          if (sel.value === '__other__') {
+            if (otherInput) {
+              otherInput.classList.add('visible');
+              otherInput.focus();
+            }
+            setValue(id, otherInput && otherInput.value.trim() ? 'Other: ' + otherInput.value.trim() : null, card);
+          } else {
+            if (otherInput) otherInput.classList.remove('visible');
+            setValue(id, sel.value, card);
+          }
+        });
+        if (otherInput) {
+          otherInput.addEventListener('input', function () {
+            const v = otherInput.value.trim();
+            setValue(id, v ? 'Other: ' + v : null, card);
+          });
+        }
+        sel.addEventListener('focus', function () { card.classList.add('focused'); });
+        sel.addEventListener('blur',  function () { card.classList.remove('focused'); });
+        wrap.appendChild(sel);
+        if (otherInput) wrap.appendChild(otherInput);
+        break;
+      }
+
+      case 'scale': {
+        const min = q.min != null ? q.min : 1;
+        const max = q.max != null ? q.max : 10;
+        const btnRow = mk('div', 'q-scale');
+        for (let v = min; v <= max; v++) {
+          (function (val) {
+            const btn = mk('button', 'q-scale-btn');
+            btn.type = 'button';
+            btn.textContent = val;
+            btn.addEventListener('click', function () {
+              btnRow.querySelectorAll('.q-scale-btn').forEach(function (b) { b.classList.remove('selected'); });
+              btn.classList.add('selected');
+              setValue(id, val, card);
+            });
+            btnRow.appendChild(btn);
+          })(v);
+        }
+        const labels = mk('div', 'q-scale-labels');
+        labels.innerHTML = '<span>' + escapeHtml(q.minLabel || String(min)) + '</span><span>' + escapeHtml(q.maxLabel || String(max)) + '</span>';
+        wrap.appendChild(btnRow);
+        wrap.appendChild(labels);
+        break;
+      }
+
+      case 'range': {
+        const min  = q.min  != null ? q.min  : 0;
+        const max  = q.max  != null ? q.max  : 100;
+        const step = q.step != null ? q.step : 1;
+        const unit = q.unit != null ? q.unit : '';
+        const rangeWrap = mk('div', 'q-range-wrap');
+        const valRow    = mk('div', 'q-range-value-row');
+        const valDisplay= mk('div', 'q-range-value');
+        valDisplay.textContent = min;
+        const unitLabel = mk('div', 'q-range-unit');
+        unitLabel.textContent = unit;
+        valRow.appendChild(valDisplay);
+        valRow.appendChild(unitLabel);
+
+        const slider = mk('input', 'q-range');
+        slider.type = 'range';
+        slider.min = min; slider.max = max; slider.step = step;
+        slider.value = min;
+        slider.addEventListener('input', function () {
+          valDisplay.textContent = slider.value;
+          setValue(id, Number(slider.value), card);
+        });
+
+        const bounds = mk('div', 'q-range-bounds');
+        bounds.innerHTML = '<span>' + min + unit + '</span><span>' + max + unit + '</span>';
+        rangeWrap.appendChild(valRow);
+        rangeWrap.appendChild(slider);
+        rangeWrap.appendChild(bounds);
+        wrap.appendChild(rangeWrap);
+
+        setValue(id, min, card);
+        break;
+      }
+
+      case 'boolean': {
+        const row = mk('div', 'q-bool');
+        ['Yes', 'No'].forEach(function (val) {
+          const btn = mk('button', 'q-bool-btn');
+          btn.type = 'button';
+          btn.textContent = val;
+          btn.addEventListener('click', function () {
+            row.querySelectorAll('.q-bool-btn').forEach(function (b) { b.className = 'q-bool-btn'; });
+            btn.classList.add(val === 'Yes' ? 'selected-yes' : 'selected-no');
+            setValue(id, val === 'Yes', card);
+          });
+          row.appendChild(btn);
+        });
+        wrap.appendChild(row);
+        break;
+      }
+
+      case 'date': {
+        const el = mk('input', 'q-input');
+        el.type = 'date';
+        el.addEventListener('change', function () { setValue(id, el.value || null, card); });
+        el.addEventListener('focus',  function () { card.classList.add('focused'); });
+        el.addEventListener('blur',   function () { card.classList.remove('focused'); });
+        wrap.appendChild(el);
+        break;
+      }
+
+      case 'text':
+      default: {
+        const el = mk('input', 'q-input', { type: 'text', placeholder: q.placeholder || 'Type your answer…' });
+        el.addEventListener('input', function () { setValue(id, el.value.trim(), card); });
+        el.addEventListener('focus', function () { card.classList.add('focused'); });
+        el.addEventListener('blur',  function () { card.classList.remove('focused'); });
+        wrap.appendChild(el);
+        break;
+      }
+    }
+  }
+
+  function buildOptions(q, kind, id, card, wrap) {
+    const group = mk('div', 'q-options');
+    const isCheckbox = kind === 'checkbox';
+    const selected = new Set();
+    let radioValue = null;
+    let otherActive = false;
+    let otherText = '';
+
+    const otherInput = q.other
+      ? mk('input', 'q-other-input', { type: 'text', placeholder: 'Please specify…' })
+      : null;
+
+    function commitValue() {
+      if (isCheckbox) {
+        const arr = Array.from(selected);
+        if (otherActive && otherText) arr.push('Other: ' + otherText);
+        setValue(id, arr.length ? arr : null, card);
+      } else {
+        if (otherActive) {
+          setValue(id, otherText ? 'Other: ' + otherText : null, card);
+        } else {
+          setValue(id, radioValue, card);
+        }
+      }
+    }
+
+    (q.options || []).forEach(function (opt) {
+      const div = mk('div', 'q-option' + (isCheckbox ? ' checkbox' : ''));
+      div.innerHTML = '<div class="q-option-mark"></div><span class="q-option-label">' + escapeHtml(opt) + '</span>';
+      div.addEventListener('click', function () {
+        if (isCheckbox) {
+          if (selected.has(opt)) {
+            selected.delete(opt);
+            div.classList.remove('selected');
+          } else {
+            selected.add(opt);
+            div.classList.add('selected');
+          }
+        } else {
+          group.querySelectorAll('.q-option').forEach(function (el) { el.classList.remove('selected'); });
+          div.classList.add('selected');
+          radioValue = opt;
+          otherActive = false;
+          if (otherInput) otherInput.classList.remove('visible');
+        }
+        commitValue();
+      });
+      group.appendChild(div);
+    });
+
+    if (q.other) {
+      const otherDiv = mk('div', 'q-option' + (isCheckbox ? ' checkbox' : ''));
+      otherDiv.innerHTML = '<div class="q-option-mark"></div><span class="q-option-label">Other…</span>';
+      otherDiv.addEventListener('click', function () {
+        if (isCheckbox) {
+          otherActive = !otherActive;
+          otherDiv.classList.toggle('selected', otherActive);
+          if (otherActive) {
+            otherInput.classList.add('visible');
+            setTimeout(function () { otherInput.focus(); }, 50);
+          } else {
+            otherInput.classList.remove('visible');
+            otherText = '';
+            otherInput.value = '';
+          }
+        } else {
+          group.querySelectorAll('.q-option').forEach(function (el) { el.classList.remove('selected'); });
+          otherDiv.classList.add('selected');
+          radioValue = null;
+          otherActive = true;
+          otherInput.classList.add('visible');
+          setTimeout(function () { otherInput.focus(); }, 50);
+        }
+        commitValue();
+      });
+      group.appendChild(otherDiv);
+
+      otherInput.addEventListener('input', function () {
+        otherText = otherInput.value.trim();
+        commitValue();
+      });
+    }
+
+    wrap.appendChild(group);
+    if (otherInput) wrap.appendChild(otherInput);
+  }
+
+  function setValue(id, val, card) {
+    if (!answers[id]) answers[id] = {};
+    answers[id].value = val;
+    updateAnswerCard(id, card);
+  }
+
+  function isAnswered(a) {
+    if (!a) return false;
+    if (a.imageBase64) return true;
+    const v = a.value;
+    if (v === null || v === undefined || v === '') return false;
+    if (Array.isArray(v) && v.length === 0) return false;
+    return true;
+  }
+
+  function updateAnswerCard(id, card) {
+    card.classList.toggle('answered', isAnswered(answers[id]));
+    updateProgress();
+    checkSubmit();
+  }
+
+  function updateProgress() {
+    const total = (config && config.questions) ? config.questions.length : 0;
+    const done  = Object.keys(answers).filter(function (id) { return isAnswered(answers[id]); }).length;
+    progressBar.style.width = total ? (done / total) * 100 + '%' : '0%';
+    answeredCount.textContent = done;
+  }
+
+  function checkSubmit() {
+    const required = (config && config.questions || []).filter(function (q) { return q.required; });
+    const allDone  = required.every(function (q) { return isAnswered(answers[q.id]); });
+    previewBtn.disabled = !allDone;
+    const remaining = required.filter(function (q) { return !isAnswered(answers[q.id]); }).length;
+    $('req-note').innerHTML = remaining > 0
+      ? '<b>' + remaining + '</b> required ' + (remaining === 1 ? 'question' : 'questions') + ' remaining'
+      : '<span style="color:var(--green);">✓ All required questions answered</span>';
+  }
+
+  function buildPayload() {
+    const payload = {
+      _type: 'agent_feedback_response',
+      title: config && config.title || null,
+      answered_at: new Date().toISOString(),
+      answers: {}
+    };
+    (config && config.questions || []).forEach(function (q) {
+      const a = answers[q.id] || {};
+      const entry = {
+        question: q.text,
+        type: q.type || 'text',
+        answer: a.value !== undefined ? a.value : null
+      };
+      if (a.imageBase64) {
+        entry.image = { name: a.imageName || 'image', data: a.imageBase64 };
+      }
+      payload.answers[q.id] = entry;
+    });
+    return payload;
+  }
+
+  function showSuccess() {
+    qForm.style.display = 'none';
+    successState.style.display = 'flex';
+    progressBar.style.width = '100%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  previewBtn.addEventListener('click', function () {
+    const payload = buildPayload();
+    PreviewDialog.open({
+      payload: JSON.stringify(payload, null, 2),
+      onCopySuccess: showSuccess
+    });
+  });
+
+  $('copy-again-btn').addEventListener('click', function () {
+    const payload = buildPayload();
+    PreviewDialog.open({
+      payload: JSON.stringify(payload, null, 2),
+      onCopySuccess: showSuccess
+    });
+  });
+
+  $('edit-again-btn').addEventListener('click', function () {
+    successState.style.display = 'none';
+    qForm.style.display = 'flex';
+  });
+
+  function mk(tag, cls, attrs) {
+    const el = document.createElement(tag);
+    if (cls) el.className = cls;
+    if (attrs) Object.keys(attrs).forEach(function (k) { el[k] = attrs[k]; });
+    return el;
+  }
+
+  init();
+})();
+
+</script>
+</body>
+</html>

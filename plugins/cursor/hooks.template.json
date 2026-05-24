@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "afb __hook",
+        "timeout": 20
+      }
+    ]
+  }
+}

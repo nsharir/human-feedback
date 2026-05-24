@@ -1,0 +1,34 @@
+/* Toast styles — shared */
+#toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: #f0ece4;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px 22px;
+  border-radius: 22px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.22s;
+  z-index: 99999;
+  white-space: nowrap;
+  border: 1px solid #333;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#toast.success {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+#toast.error {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+}

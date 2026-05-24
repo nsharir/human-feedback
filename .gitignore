@@ -1,0 +1,24 @@
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.tgz
+.env
+.env.local
+.idea/
+.vscode/
+coverage/
+
+# Built examples (regenerated)
+examples/built/
+
+# Test artifacts
+test/out.html
+test/fixture.json
+
+# Stray harness installs from local testing — never commit
+/.claude/
+/.cursor/
+/.codex/
+/.hermes/
