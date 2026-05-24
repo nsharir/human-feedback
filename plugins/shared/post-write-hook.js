@@ -140,14 +140,14 @@ function shouldWrap(filePath) {
   // Skip if the user opted out
   if (process.env.AGENT_FEEDBACK_DISABLED === '1') return false;
   const ext = path.extname(filePath).toLowerCase();
-  if (ext !== '.md' && ext !== '.markdown' && ext !== '.html' && ext !== '.htm' && ext !== '.json') return false;
+  // Only .md / .html are auto-wrapped. .json is NEVER auto-wrapped — agents
+  // should use it manually via `agent-feedback compile questions.json` when
+  // they have multiple questions for the human (see "Agent contract" in README).
+  if (ext !== '.md' && ext !== '.markdown' && ext !== '.html' && ext !== '.htm') return false;
   // Skip already-compiled files (avoid wrap loops)
   if (/\.(review|feedback|annotated)\.html?$/i.test(filePath)) return false;
   // Skip files in node_modules / dist / build / .git
   if (/[\/\\](node_modules|dist|build|coverage|\.git)[\/\\]/.test(filePath)) return false;
-  // Skip package.json, tsconfig.json, and other config-y JSON
-  const base = path.basename(filePath).toLowerCase();
-  if (ext === '.json' && /^(package|package-lock|tsconfig|jsconfig|composer|cargo|pyproject|.eslintrc|.prettierrc)/.test(base)) return false;
   // Only wrap files that actually exist on disk (the hook runs AFTER the write,
   // so the file should be present)
   if (!fs.existsSync(filePath)) return false;
@@ -217,8 +217,7 @@ const rel = (p) => {
 };
 
 const ext  = path.extname(norm.filePath).toLowerCase();
-const kind = (ext === '.json') ? 'feedback form'
-           : (ext === '.html' || ext === '.htm') ? 'annotation wrapper'
+const kind = (ext === '.html' || ext === '.htm') ? 'annotation wrapper'
            : 'review document';
 
 const VERBOSE = process.env.AGENT_FEEDBACK_VERBOSE !== '0';
@@ -231,6 +230,14 @@ const verboseMsg = [
   `They can open it in a browser to give inline feedback. When they paste their response back,`,
   `the prompt will be a structured free-text doc starting with "The user …" — each "## Item N"`,
   `section has the user's comment plus the context the agent needs to act on it.`,
+  ``,
+  `── agent-feedback questionnaire contract ──`,
+  `If you need to ask the user MORE THAN ONE question before continuing, do NOT ask inline.`,
+  `Write a questions.json matching the schema:`,
+  `  { "title": "...", "description": "...",`,
+  `    "questions": [ { "id": "q1", "text": "…?", "type": "text|radio|checkbox", "hint": "…" } ] }`,
+  `then run:  agent-feedback compile questions.json -o intake.html`,
+  `and share intake.html with the user. Single yes/no questions stay inline.`,
 ].join('\n');
 
 ack(VERBOSE ? verboseMsg : quietMsg, norm.harness);

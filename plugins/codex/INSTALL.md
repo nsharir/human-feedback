@@ -1,6 +1,6 @@
 # Codex plugin
 
-Installs a `PostToolUse` hook into Codex CLI that automatically wraps any `.md` / `.html` / `.json` file the agent writes with the **agent-feedback framework**.
+Installs a `PostToolUse` hook into Codex CLI that automatically wraps any `.md` / `.html` file the agent writes with the **agent-feedback framework**. `.json` files are intentionally NOT wrapped — they're reserved for the questionnaire workflow (see the [Agent contract](../../README.md#agent-contract-questionnaires)).
 
 ## Install (recommended)
 
@@ -38,7 +38,7 @@ npx @nsharir/agent-feedback uninstall --codex
 
 After every Codex write/edit/patch tool call:
 1. Reads the file path from `tool_input`
-2. Checks if it's a `.md`, `.html`, or `.json` file
+2. Checks if it's a `.md` or `.html` file. `.json` files are skipped entirely — see [Agent contract](../../README.md#agent-contract-questionnaires).
 3. Runs `agent-feedback compile <file> -o <file>.{review,annotated,feedback}.html --force`
 4. Returns an `additionalContext` so the agent shares the wrapped file with the user
 

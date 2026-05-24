@@ -1,6 +1,6 @@
 # Hermes plugin
 
-Installs a `post_tool_call` plugin into Hermes that automatically wraps any `.md` / `.html` / `.json` file the agent writes with the **agent-feedback framework**.
+Installs a `post_tool_call` plugin into Hermes that automatically wraps any `.md` / `.html` file the agent writes with the **agent-feedback framework**. `.json` files are intentionally NOT wrapped — they're reserved for the questionnaire workflow (see the [Agent contract](../../README.md#agent-contract-questionnaires)).
 
 ## Install (recommended)
 

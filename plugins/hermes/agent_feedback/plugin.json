@@ -1,7 +1,7 @@
 {
   "name": "agent_feedback",
   "version": "1.0.0",
-  "description": "Auto-wraps agent-produced .md / .html / .json files with the agent-feedback framework",
+  "description": "Auto-wraps agent-produced .md / .html files with the agent-feedback framework; reminds the agent to use questions.json for multi-question prompts",
   "author": "nsharir",
   "hooks": ["post_tool_call"],
   "requires": {
