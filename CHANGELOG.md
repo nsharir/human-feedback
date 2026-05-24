@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added — `install --hermes` now writes the rule into Hermes `MEMORY.md` (v1.7.1)
+
+- The Hermes installer now appends a single managed memory entry to Hermes' `MEMORY.md` (project scope: `./.hermes/memories/MEMORY.md`, global scope: `~/.hermes/memories/MEMORY.md`). The entry is a short prose version of the >1-question + `-review` rules.
+- Why: the Python `pre_llm_call` plugin hook only fires when Hermes has run `discover_plugins()` AND the plugin is enabled in `~/.hermes/config.yaml`. Hermes WebUI historically skipped plugin discovery, and `plugins.enabled` may not include `agent_feedback` even after install. In both failure modes the previously injected rule never reached the agent. Hermes' memory injection runs unconditionally on every turn, so the new entry guarantees rule delivery regardless of plugin state.
+- Idempotent: the entry is wrapped in `<!-- agent-feedback:managed-rule:begin -->` / `:end` markers so re-running `install --hermes` does not duplicate it.
+- Reversible: `uninstall --hermes` strips the managed block while preserving every other memory entry and any user-added prose.
+- Result objects now carry a `memory` field: `{ file, wrote }` on install, `{ file, removed }` on uninstall.
+- Tests: `test/installer.js` covers the new write path, idempotency, preservation of prior entries, and clean removal on uninstall.
+
+## [1.7.0]
+
 ### Changed — auto-open is now OPT-IN; agent shares a `file://` link instead (v1.7.0)
 
 - The post-write hook no longer launches a browser by default. After wrapping, it emits a `file://` link in the agent's reply message; the user clicks the link to open the review surface / questionnaire. This removes the disruptive browser pop when the agent finishes writing.

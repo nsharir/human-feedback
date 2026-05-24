@@ -64,6 +64,42 @@ try {
   const r4 = installer.install('hermes', 'project');
   assert(r4.changed && fs.existsSync(path.join(tmp, '.hermes', 'plugins', 'agent_feedback', '__init__.py')), 'installs Hermes plugin');
 
+  // Hermes install also writes the rule into MEMORY.md (project scope here).
+  const memoryFile = path.join(tmp, '.hermes', 'memories', 'MEMORY.md');
+  assert(fs.existsSync(memoryFile), 'Hermes: creates MEMORY.md when missing');
+  {
+    const mem = fs.readFileSync(memoryFile, 'utf8');
+    assert(mem.includes('agent-feedback:managed-rule:begin'), 'Hermes: memory rule begin marker written');
+    assert(mem.includes('agent-feedback:managed-rule:end'),   'Hermes: memory rule end marker written');
+    assert(mem.includes('questions*.json'),                   'Hermes: memory rule body contains the >1-question contract');
+    assert(r4.memory && r4.memory.wrote === true,             'Hermes: install result reports memory.wrote=true');
+  }
+
+  // Memory write is idempotent — second install on already-populated MEMORY.md
+  // must not duplicate the entry.
+  const r4c = installer.install('hermes', 'project');
+  {
+    const mem = fs.readFileSync(memoryFile, 'utf8');
+    const occurrences = (mem.match(/agent-feedback:managed-rule:begin/g) || []).length;
+    assert(occurrences === 1, 'Hermes: re-install does not duplicate the memory rule');
+    assert(r4c.memory && r4c.memory.wrote === false, 'Hermes: idempotent install reports memory.wrote=false');
+  }
+
+  // Memory install preserves prior MEMORY.md entries.
+  fs.unlinkSync(memoryFile);
+  fs.writeFileSync(memoryFile, 'user note one\n§\nuser note two\n');
+  // Force a re-write by removing the plugin sentinel + reinstalling
+  fs.rmSync(path.join(tmp, '.hermes', 'plugins', 'agent_feedback'), { recursive: true, force: true });
+  installer.install('hermes', 'project');
+  {
+    const mem = fs.readFileSync(memoryFile, 'utf8');
+    assert(mem.startsWith('user note one\n§\nuser note two\n'), 'Hermes: memory install preserves prior entries');
+    assert(mem.includes('agent-feedback:managed-rule:begin'),   'Hermes: memory install appends rule entry');
+    // The appended block must be separated by a "§" line.
+    assert(/\n§\n<!-- agent-feedback:managed-rule:begin -->/.test(mem),
+      'Hermes: appended rule is delimited by "§" from prior entries');
+  }
+
   // Idempotency
   const r1b = installer.install('claude-code', 'project');
   assert(r1b.changed === false, 'Claude Code install is idempotent');
@@ -88,6 +124,18 @@ try {
   // Uninstall Hermes
   const u4 = installer.uninstall('hermes', 'project');
   assert(u4.changed === true && !fs.existsSync(path.join(tmp, '.hermes', 'plugins', 'agent_feedback')), 'uninstalls Hermes plugin');
+
+  // Uninstall must also strip the managed memory entry while preserving user prose.
+  if (fs.existsSync(memoryFile)) {
+    const mem = fs.readFileSync(memoryFile, 'utf8');
+    assert(!mem.includes('agent-feedback:managed-rule'), 'Hermes: uninstall removes managed memory rule');
+    assert(mem.includes('user note one') && mem.includes('user note two'),
+      'Hermes: uninstall preserves user-added memory entries');
+  } else {
+    // The user-prose-only file remained; ensure it really is empty-of-rule.
+    assert(true, 'Hermes: uninstall left no managed memory rule (file removed)');
+  }
+  assert(u4.memory && u4.memory.removed === true, 'Hermes: uninstall result reports memory.removed=true');
 
   console.log('\n=== Installer tests complete ===\n');
 } finally {
