@@ -1,10 +1,10 @@
 {
-  "name": "@nsharir/agent-feedback",
+  "name": "@nsharir/human-feedback",
   "version": "2.0.0",
-  "description": "Close the loop on AI agent output — compile .md / .html / .json files into interactive feedback surfaces. Install the /agent-feedback command into Claude Code, Cursor, Codex, or Hermes.",
+  "description": "Close the loop on AI agent output — compile .md / .html / .json files into interactive feedback surfaces. Install the /human-feedback command into Claude Code, Cursor, Codex, or Hermes.",
   "main": "lib/compiler.js",
   "bin": {
-    "agent-feedback": "./bin/cli.js"
+    "human-feedback": "./bin/cli.js"
   },
   "scripts": {
     "build": "node build/build.js",
@@ -34,12 +34,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nsharir/agent-feedback.git"
+    "url": "git+https://github.com/nsharir/human-feedback.git"
   },
   "bugs": {
-    "url": "https://github.com/nsharir/agent-feedback/issues"
+    "url": "https://github.com/nsharir/human-feedback/issues"
   },
-  "homepage": "https://github.com/nsharir/agent-feedback#readme",
+  "homepage": "https://github.com/nsharir/human-feedback#readme",
   "license": "MIT",
   "engines": {
     "node": ">=18"

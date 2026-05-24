@@ -1,7 +1,7 @@
-<!-- agent-feedback:begin v2.0.0 -->
-## agent-feedback
+<!-- human-feedback:begin v2.0.0 -->
+## human-feedback
 
-When the user asks for feedback on an artifact, or says "agent-feedback", compile it into an interactive feedback surface.
+When the user asks for feedback on an artifact, or says "human-feedback", compile it into an interactive feedback surface.
 
 ### Determine what to compile
 
@@ -25,7 +25,7 @@ Output filename convention:
 - `.json` → `<stem>.feedback.html`
 
 ```
-agent-feedback compile <input-path> -o <output-path> --force
+human-feedback compile <input-path> -o <output-path> --force
 ```
 
 ### Present the result
@@ -36,7 +36,7 @@ Wait for the user's response. Do not continue with dependent work until they pas
 
 ### Keep the link up to date
 
-After the initial compile, **every time you edit the source file** (the `.md`, `.html`, or `.json` that was compiled), you MUST immediately recompile by running the same `agent-feedback compile` command again with `--force`. Then share the updated `file://` link so the user always sees the latest version. Do not wait for the user to ask — recompile proactively whenever you modify the source.
+After the initial compile, **every time you edit the source file** (the `.md`, `.html`, or `.json` that was compiled), you MUST immediately recompile by running the same `human-feedback compile` command again with `--force`. Then share the updated `file://` link so the user always sees the latest version. Do not wait for the user to ask — recompile proactively whenever you modify the source.
 
 ### JSON questionnaire schema
 
@@ -55,4 +55,4 @@ After the initial compile, **every time you edit the source file** (the `.md`, `
 ```
 
 Types: `text`, `textarea`, `radio`, `checkbox`, `select`, `boolean`, `scale`, `range`, `date`. Add `"other": true` for free-text option, `"required": true` for mandatory questions.
-<!-- agent-feedback:end -->
+<!-- human-feedback:end -->

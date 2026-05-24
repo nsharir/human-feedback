@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for your interest in `agent-feedback`!
+Thanks for your interest in `human-feedback`!
 
 ## Development setup
 
 ```bash
 git clone <repo>
-cd agent-feedback
+cd human-feedback
 npm install
 npm test
 ```

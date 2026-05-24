@@ -1,14 +1,14 @@
-# agent-feedback
+# human-feedback
 
 **A CLI tool for human-in-the-loop AI agent workflows.**
 
 When an AI agent produces output — a document, a plan, a UI, a dataset — the human needs a way to respond with precise, structured feedback. Not a chat message. Not a vague thumbs up. **Real inline feedback that the agent can act on.**
 
-`agent-feedback` compiles your content into self-contained HTML tools the human opens in a browser, annotates or answers, then copies a structured **free-text prompt** back to the agent. No server. No special tooling. No integrations to set up.
+`human-feedback` compiles your content into self-contained HTML tools the human opens in a browser, annotates or answers, then copies a structured **free-text prompt** back to the agent. No server. No special tooling. No integrations to set up.
 
 ```
 Agent produces output
-  → agent-feedback compiles it into an HTML file
+  → human-feedback compiles it into an HTML file
   → Human opens file, gives feedback
   → Human copies a prompt
   → Agent reads the prompt, continues
@@ -41,23 +41,23 @@ A typical 3-stage agent loop: gather requirements → review the draft spec → 
 ## Install
 
 ```bash
-npm install -g @nsharir/agent-feedback
+npm install -g @nsharir/human-feedback
 ```
 
 Or run without installing:
 
 ```bash
-npx @nsharir/agent-feedback compile input.json -o form.html
+npx @nsharir/human-feedback compile input.json -o form.html
 ```
 
 ---
 
-## Add `/agent-feedback` to your agent (one command)
+## Add `/human-feedback` to your agent (one command)
 
-Once installed, add the `/agent-feedback` command to your agent harness so the user can trigger interactive feedback surfaces on demand.
+Once installed, add the `/human-feedback` command to your agent harness so the user can trigger interactive feedback surfaces on demand.
 
 ```bash
-npx @nsharir/agent-feedback install
+npx @nsharir/human-feedback install
 ```
 
 The installer detects which agent harnesses are present and installs a skill/command definition into each one.
@@ -66,31 +66,31 @@ The installer detects which agent harnesses are present and installs a skill/com
 
 | Harness | What gets installed | Location |
 |---|---|---|
-| **Claude Code** | Custom slash command | `.claude/commands/agent-feedback.md` |
-| **Cursor** (1.7+) | Agent-requested rule | `.cursor/rules/agent-feedback.mdc` |
+| **Claude Code** | Custom slash command | `.claude/commands/human-feedback.md` |
+| **Cursor** (1.7+) | Agent-requested rule | `.cursor/rules/human-feedback.mdc` |
 | **Codex** (CLI) | AGENTS.md section | `AGENTS.md` |
-| **Hermes** (0.9+) | Skill file | `.hermes/skills/agent-feedback/SKILL.md` |
+| **Hermes** (0.9+) | Skill file | `.hermes/skills/human-feedback/SKILL.md` |
 
 **Targeted installs:**
 
 ```bash
-npx @nsharir/agent-feedback install --claude-code
-npx @nsharir/agent-feedback install --cursor --global
-npx @nsharir/agent-feedback install --codex
-npx @nsharir/agent-feedback install --hermes
-npx @nsharir/agent-feedback install --all              # every detected harness
+npx @nsharir/human-feedback install --claude-code
+npx @nsharir/human-feedback install --cursor --global
+npx @nsharir/human-feedback install --codex
+npx @nsharir/human-feedback install --hermes
+npx @nsharir/human-feedback install --all              # every detected harness
 ```
 
 **Verify what's installed:**
 
 ```bash
-npx @nsharir/agent-feedback doctor
+npx @nsharir/human-feedback doctor
 ```
 
 **Uninstall:**
 
 ```bash
-npx @nsharir/agent-feedback uninstall --all
+npx @nsharir/human-feedback uninstall --all
 ```
 
 See [`plugins/<harness>/INSTALL.md`](plugins/) for per-harness details.
@@ -99,9 +99,9 @@ See [`plugins/<harness>/INSTALL.md`](plugins/) for per-harness details.
 
 ## How it works
 
-1. The user types `/agent-feedback` (or says "get feedback on this") in their agent chat
+1. The user types `/human-feedback` (or says "get feedback on this") in their agent chat
 2. The agent identifies the artifact to compile — an HTML mockup, a markdown doc, or a JSON questionnaire
-3. The agent runs `agent-feedback compile <input> -o <output> --force`
+3. The agent runs `human-feedback compile <input> -o <output> --force`
 4. The agent shares a `file://` link to the compiled file
 5. The user opens it in a browser, annotates or responds
 6. The user copies the structured prompt and pastes it back to the agent
@@ -115,8 +115,8 @@ When the agent edits the source file after the initial compile, it automatically
 
 | Command | Description |
 |---|---|
-| `/agent-feedback` | Default — compile and present a feedback surface |
-| `/agent-feedback update` | Update to the latest version and reinstall the skill |
+| `/human-feedback` | Default — compile and present a feedback surface |
+| `/human-feedback update` | Update to the latest version and reinstall the skill |
 
 ---
 
@@ -130,19 +130,19 @@ input file  +  embedded template  →  standalone HTML
 |---|---|---|
 | `.html` / `.htm` | **HTML Annotator** | Your page with click-to-annotate + text-selection UI |
 | `.md` / `.markdown` | **Markdown Annotator** | Your markdown rendered as a preview with annotation controls |
-| `.json` | **Agent Feedback** | A form the human fills in; structured answers copy to clipboard |
+| `.json` | **Human Feedback** | A form the human fills in; structured answers copy to clipboard |
 
-### `agent-feedback compile <input> -o <output>`
+### `human-feedback compile <input> -o <output>`
 
 ```bash
 # Wrap a static HTML page with annotation controls
-agent-feedback compile page.html -o page.annotated.html
+human-feedback compile page.html -o page.annotated.html
 
 # Bake a markdown file into a rendered, annotatable preview
-agent-feedback compile docs.md -o docs-review.html
+human-feedback compile docs.md -o docs-review.html
 
-# Bake a questions JSON into an agent-feedback form
-agent-feedback compile questions.json -o feedback.html
+# Bake a questions JSON into a human-feedback form
+human-feedback compile questions.json -o feedback.html
 ```
 
 | Flag | Description |
@@ -151,7 +151,7 @@ agent-feedback compile questions.json -o feedback.html
 | `--tool <name>` | Override: `annotator` \| `md-annotator` \| `feedback` |
 | `--force` | Overwrite output if it already exists |
 
-### `agent-feedback info <file>`
+### `human-feedback info <file>`
 
 Detect which tool would be used for a file without compiling.
 
@@ -165,7 +165,7 @@ AI agents are increasingly capable of producing complex artifacts: HTML pages, m
 - Screenshot and describe problems verbally
 - Spend time re-explaining context the agent already has
 
-`agent-feedback` closes this gap by turning agent output into an interactive feedback surface — with **no extra tooling required on either side**. The agent writes a file. The human opens it in a browser. The output is a structured payload the agent can parse.
+`human-feedback` closes this gap by turning agent output into an interactive feedback surface — with **no extra tooling required on either side**. The agent writes a file. The human opens it in a browser. The output is a structured payload the agent can parse.
 
 ---
 
@@ -179,7 +179,7 @@ Inlines the annotation script into any static HTML page. The human opens it and 
 **Output:** same HTML with annotator injected before `</body>`
 
 ```bash
-agent-feedback compile landing.html -o landing.annotated.html
+human-feedback compile landing.html -o landing.annotated.html
 ```
 
 **How the human annotates:**
@@ -206,7 +206,7 @@ Bakes a `.md` file into a self-contained HTML viewer. Annotations reference back
 **Output:** `md-annotator.html` with markdown auto-loaded on open
 
 ```bash
-agent-feedback compile docs/api.md -o review/api-review.html
+human-feedback compile docs/api.md -o review/api-review.html
 ```
 
 Generated prompt format:
@@ -220,7 +220,7 @@ Markdown source reference:
 Comment: Add a curl example here
 ```
 
-### Agent Feedback
+### Human Feedback
 
 Replaces the `QUESTIONS = null` placeholder with your JSON config. The output is a complete form the user fills in and submits — answers copy to clipboard as a structured natural-language prompt (see [Output prompt](#output-prompt) below).
 
@@ -228,7 +228,7 @@ Replaces the `QUESTIONS = null` placeholder with your JSON config. The output is
 **Output:** `feedback.html` with questions baked in
 
 ```bash
-agent-feedback compile sprint-questions.json -o sprint-form.html
+human-feedback compile sprint-questions.json -o sprint-form.html
 ```
 
 #### JSON schema
@@ -320,7 +320,7 @@ This means the tools work even when opened directly via `file://` — the user j
 Every output file starts with an HTML comment identifying it:
 
 ```html
-<!-- compiled by @nsharir/agent-feedback | tool: feedback | source: questions.json -->
+<!-- compiled by @nsharir/human-feedback | tool: feedback | source: questions.json -->
 ```
 
 Agents can read the first line of any output file to verify what they're presenting to a user.
@@ -403,8 +403,8 @@ The built templates are committed to git so `npm install` works without a build 
 
 ```
 1. Agent generates or modifies an HTML page
-2. User types /agent-feedback (or "get feedback on the page")
-3. Agent: agent-feedback compile page.html -o page.annotated.html
+2. User types /human-feedback (or "get feedback on the page")
+3. Agent: human-feedback compile page.html -o page.annotated.html
 4. Agent shares the file:// link
 5. Human opens, annotates → copies prompt
 6. Agent reads prompt, makes targeted edits
@@ -415,8 +415,8 @@ The built templates are committed to git so `npm install` works without a build 
 
 ```
 1. Agent writes a markdown document
-2. User types /agent-feedback
-3. Agent: agent-feedback compile doc.md -o doc.review.html
+2. User types /human-feedback
+3. Agent: human-feedback compile doc.md -o doc.review.html
 4. Human opens file, annotates sections by line number
 5. Agent receives prompt with line-referenced comments
 6. Agent edits the specific lines and recompiles
@@ -426,9 +426,9 @@ The built templates are committed to git so `npm install` works without a build 
 
 ```
 1. Agent needs information before proceeding
-2. User types /agent-feedback (or agent recognizes it needs input)
+2. User types /human-feedback (or agent recognizes it needs input)
 3. Agent writes questions.json targeting exactly what it needs
-4. Agent: agent-feedback compile questions.json -o intake.html
+4. Agent: human-feedback compile questions.json -o intake.html
 5. Human fills in the form, copies the prompt
 6. Agent reads the structured prompt, extracts answers
 7. Agent continues with full context — no back-and-forth
@@ -441,7 +441,7 @@ The built templates are committed to git so `npm install` works without a build 
 In Claude Code, just type:
 
 ```
-/agent-feedback update
+/human-feedback update
 ```
 
 This updates the npm package and reinstalls the skill in one step.
@@ -449,19 +449,19 @@ This updates the npm package and reinstalls the skill in one step.
 From the terminal:
 
 ```bash
-npm install -g @nsharir/agent-feedback@latest && agent-feedback install
+npm install -g @nsharir/human-feedback@latest && human-feedback install
 ```
 
 ### Upgrading from v1.x
 
-v2.0 replaces the hook-based auto-wrap system with a user-triggered `/agent-feedback` command. To upgrade:
+v2.0 replaces the hook-based auto-wrap system with a user-triggered `/human-feedback` command. To upgrade:
 
 ```bash
 # Remove old hooks
-npx @nsharir/agent-feedback uninstall --all
+npx @nsharir/human-feedback uninstall --all
 
 # Install new skill definitions
-npx @nsharir/agent-feedback install --all
+npx @nsharir/human-feedback install --all
 ```
 
 Or just run `install` — it automatically cleans up legacy hooks when it finds them.
@@ -469,7 +469,7 @@ Or just run `install` — it automatically cleans up legacy hooks when it finds 
 The `doctor` command will warn you if legacy hooks are still present:
 
 ```bash
-npx @nsharir/agent-feedback doctor
+npx @nsharir/human-feedback doctor
 ```
 
 ---

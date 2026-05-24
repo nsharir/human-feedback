@@ -21,7 +21,7 @@ const sym = {
 
 function printBanner() {
   console.log('');
-  console.log(pc.bold('  agent-feedback') + pc.dim(` v${pkg.version}`));
+  console.log(pc.bold('  human-feedback') + pc.dim(` v${pkg.version}`));
   console.log(pc.dim('  close the loop on AI agent output'));
   console.log('');
 }
@@ -51,28 +51,28 @@ function printError(msg) {
 const program = new Command();
 
 program
-  .name('agent-feedback')
+  .name('human-feedback')
   .version(pkg.version, '-v, --version')
   .description(pkg.description)
   .addHelpText('after', `
 ${pc.bold('Examples:')}
   ${pc.dim('# Auto-detect tool from extension')}
-  $ agent-feedback compile page.html      -o page.annotated.html
-  $ agent-feedback compile docs.md        -o docs-review.html
-  $ agent-feedback compile questions.json -o feedback.html
+  $ human-feedback compile page.html      -o page.annotated.html
+  $ human-feedback compile docs.md        -o docs-review.html
+  $ human-feedback compile questions.json -o feedback.html
 
-  ${pc.dim('# Install the /agent-feedback command into your agent harness')}
-  $ agent-feedback install                ${pc.dim('# interactive — detects what is present')}
-  $ agent-feedback install --claude-code  ${pc.dim('# targeted')}
-  $ agent-feedback install --all          ${pc.dim('# every detected harness')}
+  ${pc.dim('# Install the /human-feedback command into your agent harness')}
+  $ human-feedback install                ${pc.dim('# interactive — detects what is present')}
+  $ human-feedback install --claude-code  ${pc.dim('# targeted')}
+  $ human-feedback install --all          ${pc.dim('# every detected harness')}
 
   ${pc.dim('# Override tool detection')}
-  $ agent-feedback compile input.html --tool annotator -o out.html
+  $ human-feedback compile input.html --tool annotator -o out.html
 
 ${pc.bold('Supported tools:')}
   ${pc.cyan('annotator')}     .html / .htm        Wraps a static HTML page with the annotation UI
   ${pc.cyan('md-annotator')}  .md / .markdown     Bakes markdown into a rendered, annotatable preview
-  ${pc.cyan('feedback')}      .json               Bakes a questions config into the agent-feedback form
+  ${pc.cyan('feedback')}      .json               Bakes a questions config into the human-feedback form
 
 ${pc.bold('Feedback JSON schema:')}
   {
@@ -201,7 +201,7 @@ function readlineQuestion(query) {
 
 program
   .command('install')
-  .description('Install the /agent-feedback command into one or more agent harnesses')
+  .description('Install the /human-feedback command into one or more agent harnesses')
   .option('--claude-code', 'Install into Claude Code')
   .option('--cursor',      'Install into Cursor')
   .option('--codex',       'Install into Codex')
@@ -279,7 +279,7 @@ program
 
     console.log('');
     if (anyChange) {
-      console.log(`  ${sym.ok} ${pc.bold('Done.')} The /agent-feedback command is now available.`);
+      console.log(`  ${sym.ok} ${pc.bold('Done.')} The /human-feedback command is now available.`);
     } else {
       console.log(`  ${pc.dim('Nothing to do.')}`);
     }
@@ -290,7 +290,7 @@ program
 
 program
   .command('uninstall')
-  .description('Remove the /agent-feedback command from one or more agent harnesses')
+  .description('Remove the /human-feedback command from one or more agent harnesses')
   .option('--claude-code', 'Uninstall from Claude Code')
   .option('--cursor',      'Uninstall from Cursor')
   .option('--codex',       'Uninstall from Codex')
@@ -332,7 +332,7 @@ program
 
 program
   .command('doctor')
-  .description('Show which agent harnesses are detected and whether /agent-feedback is installed')
+  .description('Show which agent harnesses are detected and whether /human-feedback is installed')
   .action(() => {
     printBanner();
     const d = installer.detectAll();
@@ -364,7 +364,7 @@ program
     );
     if (anyLegacy) {
       console.log('');
-      console.log(`  ${sym.warn} ${pc.yellow('Legacy v1.x hooks detected.')} Run ${pc.bold('agent-feedback install')} to upgrade.`);
+      console.log(`  ${sym.warn} ${pc.yellow('Legacy v1.x hooks detected.')} Run ${pc.bold('human-feedback install')} to upgrade.`);
     }
 
     console.log('');

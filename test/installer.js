@@ -36,12 +36,12 @@ try {
 
   // ── Claude Code install ───────────────────────────────────────────────────
   const r1 = installer.install('claude-code', 'project');
-  const ccTarget = path.join(tmp, '.claude', 'commands', 'agent-feedback.md');
+  const ccTarget = path.join(tmp, '.claude', 'commands', 'human-feedback.md');
   assert(r1.changed === true, 'Claude Code: install reports changed');
   assert(fs.existsSync(ccTarget), 'Claude Code: command file created');
   {
     const content = fs.readFileSync(ccTarget, 'utf8');
-    assert(content.includes('agent-feedback compile'), 'Claude Code: command file contains compile instruction');
+    assert(content.includes('human-feedback compile'), 'Claude Code: command file contains compile instruction');
     assert(content.includes('$ARGUMENTS'), 'Claude Code: command file references $ARGUMENTS');
     assert(content.includes('Claude Preview'), 'Claude Code: command file mentions Preview');
   }
@@ -52,12 +52,12 @@ try {
 
   // ── Cursor install ────────────────────────────────────────────────────────
   const r2 = installer.install('cursor', 'project');
-  const cursorTarget = path.join(tmp, '.cursor', 'rules', 'agent-feedback.mdc');
+  const cursorTarget = path.join(tmp, '.cursor', 'rules', 'human-feedback.mdc');
   assert(r2.changed === true, 'Cursor: install reports changed');
   assert(fs.existsSync(cursorTarget), 'Cursor: rule file created');
   {
     const content = fs.readFileSync(cursorTarget, 'utf8');
-    assert(content.includes('agent-feedback compile'), 'Cursor: rule file contains compile instruction');
+    assert(content.includes('human-feedback compile'), 'Cursor: rule file contains compile instruction');
     assert(content.includes('alwaysApply: false'), 'Cursor: rule is agent-requested, not always-on');
   }
 
@@ -72,9 +72,9 @@ try {
   assert(fs.existsSync(agentsMd), 'Codex: AGENTS.md created');
   {
     const content = fs.readFileSync(agentsMd, 'utf8');
-    assert(content.includes('<!-- agent-feedback:begin'), 'Codex: AGENTS.md has begin marker');
-    assert(content.includes('<!-- agent-feedback:end -->'), 'Codex: AGENTS.md has end marker');
-    assert(content.includes('agent-feedback compile'), 'Codex: AGENTS.md contains compile instruction');
+    assert(content.includes('<!-- human-feedback:begin'), 'Codex: AGENTS.md has begin marker');
+    assert(content.includes('<!-- human-feedback:end -->'), 'Codex: AGENTS.md has end marker');
+    assert(content.includes('human-feedback compile'), 'Codex: AGENTS.md contains compile instruction');
   }
 
   // Idempotency
@@ -88,17 +88,17 @@ try {
     installer.install('codex', 'project');
     const content = fs.readFileSync(agentsMd, 'utf8');
     assert(content.startsWith('# My Project Agents'), 'Codex: preserves existing AGENTS.md content');
-    assert(content.includes('<!-- agent-feedback:begin'), 'Codex: appends section to existing file');
+    assert(content.includes('<!-- human-feedback:begin'), 'Codex: appends section to existing file');
   }
 
   // ── Hermes install ────────────────────────────────────────────────────────
   const r4 = installer.install('hermes', 'project');
-  const hermesTarget = path.join(tmp, '.hermes', 'skills', 'agent-feedback', 'SKILL.md');
+  const hermesTarget = path.join(tmp, '.hermes', 'skills', 'human-feedback', 'SKILL.md');
   assert(r4.changed === true, 'Hermes: install reports changed');
   assert(fs.existsSync(hermesTarget), 'Hermes: skill file created');
   {
     const content = fs.readFileSync(hermesTarget, 'utf8');
-    assert(content.includes('agent-feedback compile'), 'Hermes: skill file contains compile instruction');
+    assert(content.includes('human-feedback compile'), 'Hermes: skill file contains compile instruction');
     assert(content.includes('MEDIA:'), 'Hermes: skill file mentions MEDIA token');
     assert(content.includes('Workspace::v1'), 'Hermes: skill file references Workspace tag');
   }
@@ -133,14 +133,14 @@ try {
   assert(u3.changed === true, 'Codex: uninstall reports changed');
   {
     const content = fs.readFileSync(agentsMd, 'utf8');
-    assert(!content.includes('<!-- agent-feedback:begin'), 'Codex: section removed from AGENTS.md');
+    assert(!content.includes('<!-- human-feedback:begin'), 'Codex: section removed from AGENTS.md');
     assert(content.includes('My Project Agents'), 'Codex: user content preserved after uninstall');
   }
 
   // ── Uninstall Hermes ──────────────────────────────────────────────────────
   const u4 = installer.uninstall('hermes', 'project');
   assert(u4.changed === true, 'Hermes: uninstall reports changed');
-  assert(!fs.existsSync(path.join(tmp, '.hermes', 'skills', 'agent-feedback')), 'Hermes: skill directory removed');
+  assert(!fs.existsSync(path.join(tmp, '.hermes', 'skills', 'human-feedback')), 'Hermes: skill directory removed');
 
   // ── Legacy hook migration ─────────────────────────────────────────────────
   // Simulate a v1.x hook-based install and verify the new installer cleans it up

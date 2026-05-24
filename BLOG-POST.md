@@ -38,21 +38,21 @@ The constraints:
 
 So I built it.
 
-## agent-feedback
+## human-feedback
 
-[`agent-feedback`](https://github.com/nsharir/agent-feedback) is a tiny CLI. It compiles your agent's output — `.md`, `.html`, or a questionnaire `.json` — into a **self-contained HTML file** with a feedback layer baked in. The human opens it in a browser, gives feedback inline, and copies a structured prompt back to the agent.
+[`human-feedback`](https://github.com/nsharir/human-feedback) is a tiny CLI. It compiles your agent's output — `.md`, `.html`, or a questionnaire `.json` — into a **self-contained HTML file** with a feedback layer baked in. The human opens it in a browser, gives feedback inline, and copies a structured prompt back to the agent.
 
 Three tools, one command:
 
 ```bash
 # Wrap a markdown spec
-agent-feedback compile spec.md -o spec.review.html
+human-feedback compile spec.md -o spec.review.html
 
 # Wrap an HTML mockup
-agent-feedback compile mockup.html -o mockup.review.html
+human-feedback compile mockup.html -o mockup.review.html
 
 # Bake a questionnaire
-agent-feedback compile questions.json -o intake.html
+human-feedback compile questions.json -o intake.html
 ```
 
 That's it. No server, no API key, no signup.
@@ -67,7 +67,7 @@ I don't want the agent to start writing code or specs based on what it *thinks* 
 
 The human (me, or a stakeholder) fills it out in the browser, and the agent gets a structured answer back covering everything it needs to know.
 
-![Feedback questioner demo](https://raw.githubusercontent.com/nsharir/agent-feedback/main/examples/demos/feedback.gif)
+![Feedback questioner demo](https://raw.githubusercontent.com/nsharir/human-feedback/main/examples/demos/feedback.gif)
 
 ### Stage 2: Annotate the functional spec
 
@@ -75,13 +75,13 @@ The agent drafts a spec from those answers. I open the rendered markdown in a br
 
 When I'm done, I click "Copy Prompt" and paste a structured natural-language prompt back to the agent. The prompt tells the agent exactly which line each comment refers to, what the original text said, and what I want changed.
 
-![Markdown annotator demo](https://raw.githubusercontent.com/nsharir/agent-feedback/main/examples/demos/md-annotator.gif)
+![Markdown annotator demo](https://raw.githubusercontent.com/nsharir/human-feedback/main/examples/demos/md-annotator.gif)
 
 ### Stage 3: Critique the mockup
 
 For UI work, the agent ships an HTML mockup. I open it, **click on any element**, and leave a comment. CSS selectors are captured automatically so the agent knows exactly what I was pointing at.
 
-![HTML annotator demo](https://raw.githubusercontent.com/nsharir/agent-feedback/main/examples/demos/html-annotator.gif)
+![HTML annotator demo](https://raw.githubusercontent.com/nsharir/human-feedback/main/examples/demos/html-annotator.gif)
 
 ## Why this accelerates the loop
 
@@ -99,24 +99,24 @@ Three principles, in case anyone wants to build something similar:
 
 1. **No server.** Everything compiles to a single self-contained HTML file. The "backend" is the clipboard.
 2. **One output format.** Every tool emits the same structured natural-language prompt. The agent can parse it the same way every time.
-3. **Native agent integration.** A single `agent-feedback install` command adds the `/agent-feedback` command to Claude Code, Cursor, Codex, or Hermes — the user triggers it when they want to give feedback.
+3. **Native agent integration.** A single `human-feedback install` command adds the `/human-feedback` command to Claude Code, Cursor, Codex, or Hermes — the user triggers it when they want to give feedback.
 
 The whole thing is ~3,000 lines of vanilla JS. No framework. No build pipeline beyond a simple file-inliner.
 
 ## Try it
 
 ```bash
-npm install -g @nsharir/agent-feedback
-agent-feedback install   # interactive setup for your harness
+npm install -g @nsharir/human-feedback
+human-feedback install   # interactive setup for your harness
 ```
 
 Or one-shot:
 
 ```bash
-npx @nsharir/agent-feedback compile some-spec.md -o review.html
+npx @nsharir/human-feedback compile some-spec.md -o review.html
 ```
 
-Repo: [github.com/nsharir/agent-feedback](https://github.com/nsharir/agent-feedback)
+Repo: [github.com/nsharir/human-feedback](https://github.com/nsharir/human-feedback)
 
 ---
 

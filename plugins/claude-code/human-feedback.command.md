@@ -1,20 +1,34 @@
----
-description: "Use agent-feedback to compile HTML/MD/JSON artifacts into interactive feedback surfaces. Activate when the user asks for feedback, review, or annotation on a file, or says 'agent-feedback'."
-globs: []
-alwaysApply: false
----
-<!-- agent-feedback v2.0.0 -->
-# agent-feedback
+<!-- human-feedback v2.0.0 -->
+# /human-feedback
 
 Compile an artifact into an interactive feedback surface the user opens in a browser.
 
-## When to use
+## Sub-commands
 
-Use this when the user asks for feedback on something you produced, or when you need structured input from the user. The user may say "agent-feedback", "get feedback on this", "let me review that", or similar.
+Check `$ARGUMENTS` first. If it matches a sub-command below, run that instead of the default compile flow.
 
-## Determine what to compile
+| `$ARGUMENTS` | Action |
+|---|---|
+| `update` | Run the update flow (see below) |
+| anything else | Continue to the compile flow |
 
-1. If the user specified a file or described what needs feedback, use that.
+### `/human-feedback update`
+
+Update the human-feedback package to the latest version and reinstall the skill:
+
+```
+npm install -g @nsharir/human-feedback@latest && human-feedback install --claude-code
+```
+
+Report the new version (`human-feedback --version`) and confirm the skill was reinstalled. Then stop — do not compile anything.
+
+---
+
+## When the user invokes this command (default compile flow)
+
+Determine what needs feedback:
+
+1. If `$ARGUMENTS` is provided (and is not a sub-command above), use it to identify the file or describe what to compile.
 2. Otherwise, look at your recent conversation — find the most recent artifact you produced (an HTML mockup, a markdown spec/plan, or a situation where you need to ask the user multiple structured questions).
 
 ## Identify the input
@@ -34,25 +48,29 @@ Pick an output filename based on the input extension:
 - `.md` / `.markdown` input → `<stem>.review.html`
 - `.json` input → `<stem>.feedback.html`
 
-Run in the terminal:
+Run:
 
 ```
-agent-feedback compile <input-path> -o <output-path> --force
+human-feedback compile <input-path> -o <output-path> --force
 ```
 
 ## Present the result
 
-Share the compiled file with the user as a clickable link:
+Share the compiled file with the user:
 
 ```
 file://<absolute-output-path>
 ```
 
+If Claude Preview is available, show it inline:
+1. `mcp__Claude_Preview__preview_start` with the file path
+2. `mcp__Claude_Preview__preview_screenshot` to display it
+
 Tell the user the feedback surface is ready and **wait for their response**. Do not continue with work that depends on their feedback until they paste the structured prompt back.
 
 ## Keep the link up to date
 
-After the initial compile, **every time you edit the source file** (the `.md`, `.html`, or `.json` that was compiled), you MUST immediately recompile by running the same `agent-feedback compile` command again with `--force`. Then share the updated `file://` link so the user always sees the latest version. Do not wait for the user to ask — recompile proactively whenever you modify the source.
+After the initial compile, **every time you edit the source file** (the `.md`, `.html`, or `.json` that was compiled), you MUST immediately recompile by running the same `human-feedback compile` command again with `--force`. Then share the updated `file://` link (or refresh the Claude Preview) so the user always sees the latest version. Do not wait for the user to ask — recompile proactively whenever you modify the source.
 
 ## JSON questionnaire schema
 

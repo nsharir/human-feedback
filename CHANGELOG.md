@@ -4,25 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [2.0.0] — 2026-05-24
 
-### Changed (BREAKING) — replaced hook system with `/agent-feedback` slash command
+### Changed (BREAKING) — replaced hook system with `/human-feedback` slash command
 
 - **The entire hook/rule-injection system has been removed.** No more `PostToolUse`, `SessionStart`, `UserPromptSubmit`, `beforeSubmitPrompt`, or `pre_llm_call` hooks. No more managed `MEMORY.md` entries. No more Python plugin for Hermes.
-- **Replaced with a simple slash command** (`/agent-feedback`) the user invokes explicitly. The installer now writes skill/command definition files instead of patching hook configs:
-  - Claude Code: `.claude/commands/agent-feedback.md`
-  - Cursor: `.cursor/rules/agent-feedback.mdc`
-  - Codex: `AGENTS.md` section (marked with `<!-- agent-feedback:begin/end -->`)
-  - Hermes: `.hermes/skills/agent-feedback/SKILL.md`
-- The core compile engine (`lib/compiler.js`) is unchanged. `agent-feedback compile` works exactly as before.
-- **Migration:** `agent-feedback install` automatically detects and cleans up v1.x hook-based installations. `agent-feedback doctor` warns about legacy hooks.
+- **Replaced with a simple slash command** (`/human-feedback`) the user invokes explicitly. The installer now writes skill/command definition files instead of patching hook configs:
+  - Claude Code: `.claude/commands/human-feedback.md`
+  - Cursor: `.cursor/rules/human-feedback.mdc`
+  - Codex: `AGENTS.md` section (marked with `<!-- human-feedback:begin/end -->`)
+  - Hermes: `.hermes/skills/human-feedback/SKILL.md`
+- The core compile engine (`lib/compiler.js`) is unchanged. `human-feedback compile` works exactly as before.
+- **Migration:** `human-feedback install` automatically detects and cleans up v1.x hook-based installations. `human-feedback doctor` warns about legacy hooks.
 
 ### Removed
 
 - `lib/rule-injection.js` — rule text variants injected into agent context
 - `plugins/shared/post-write-hook.js` — the shared hook script
-- `plugins/hermes/agent_feedback/` — Python plugin directory
+- `plugins/hermes/human_feedback/` — Python plugin directory
 - Hook template JSON files (`settings.template.json`, `hooks.template.json`)
 - The `__hook` hidden CLI command
-- `AGENT_FEEDBACK_DISABLED`, `AGENT_FEEDBACK_AUTO_OPEN`, `AGENT_FEEDBACK_VERBOSE`, `AGENT_FEEDBACK_QUESTIONNAIRE` env vars (no longer applicable)
+- `HUMAN_FEEDBACK_DISABLED`, `HUMAN_FEEDBACK_AUTO_OPEN`, `HUMAN_FEEDBACK_VERBOSE`, `HUMAN_FEEDBACK_QUESTIONNAIRE` env vars (no longer applicable)
 
 ---
 
@@ -33,7 +33,7 @@ All notable changes to this project will be documented in this file.
 - The rule injected into Hermes' `pre_llm_call` and the managed `MEMORY.md` entry now instruct the agent to write `questions*.json` and `<topic>-review.md` / `-review.html` files under `<workspace>/.hermes/plans/<filename>`, where `<workspace>` is the absolute path from the most recent `[Workspace::v1: /abs/path]` tag on the user's message.
 - This stops the agent from dumping review artifacts into `/tmp`, into the repo root next to user code, or under `$HOME` — they should live next to the project they refer to, where they survive context switches and are easy for the user to find.
 - The addendum is **Hermes-only**: Claude Code, Cursor, and Codex don't have the `[Workspace::v1: ...]` convention so they keep the cross-harness rule unchanged.
-- Implementation: new `HERMES_ADDENDUM` constant in `lib/rule-injection.js` appended to `RULE_TEXT` only in the Hermes `pre_llm_call` branch of the post-write hook. The Hermes `MEMORY.md` rule in `lib/installer.js` carries the same instruction so the rule survives even when the plugin hook is silent (WebUI plugin discovery, `plugins.enabled` excluding agent_feedback, etc.).
+- Implementation: new `HERMES_ADDENDUM` constant in `lib/rule-injection.js` appended to `RULE_TEXT` only in the Hermes `pre_llm_call` branch of the post-write hook. The Hermes `MEMORY.md` rule in `lib/installer.js` carries the same instruction so the rule survives even when the plugin hook is silent (WebUI plugin discovery, `plugins.enabled` excluding human_feedback, etc.).
 - Tests: positive assertions that the Hermes channels include `Workspace::v1` and `.hermes/plans/`; negative assertion that non-Hermes `SessionStart` does NOT include the addendum.
 
 ### Added — Hermes WebUI inline embedding via `MEDIA:` token (v1.7.2)
@@ -48,8 +48,8 @@ All notable changes to this project will be documented in this file.
 ### Added — `install --hermes` now writes the rule into Hermes `MEMORY.md` (v1.7.1)
 
 - The Hermes installer now appends a single managed memory entry to Hermes' `MEMORY.md` (project scope: `./.hermes/memories/MEMORY.md`, global scope: `~/.hermes/memories/MEMORY.md`). The entry is a short prose version of the >1-question + `-review` rules.
-- Why: the Python `pre_llm_call` plugin hook only fires when Hermes has run `discover_plugins()` AND the plugin is enabled in `~/.hermes/config.yaml`. Hermes WebUI historically skipped plugin discovery, and `plugins.enabled` may not include `agent_feedback` even after install. In both failure modes the previously injected rule never reached the agent. Hermes' memory injection runs unconditionally on every turn, so the new entry guarantees rule delivery regardless of plugin state.
-- Idempotent: the entry is wrapped in `<!-- agent-feedback:managed-rule:begin -->` / `:end` markers so re-running `install --hermes` does not duplicate it.
+- Why: the Python `pre_llm_call` plugin hook only fires when Hermes has run `discover_plugins()` AND the plugin is enabled in `~/.hermes/config.yaml`. Hermes WebUI historically skipped plugin discovery, and `plugins.enabled` may not include `human_feedback` even after install. In both failure modes the previously injected rule never reached the agent. Hermes' memory injection runs unconditionally on every turn, so the new entry guarantees rule delivery regardless of plugin state.
+- Idempotent: the entry is wrapped in `<!-- human-feedback:managed-rule:begin -->` / `:end` markers so re-running `install --hermes` does not duplicate it.
 - Reversible: `uninstall --hermes` strips the managed block while preserving every other memory entry and any user-added prose.
 - Result objects now carry a `memory` field: `{ file, wrote }` on install, `{ file, removed }` on uninstall.
 - Tests: `test/installer.js` covers the new write path, idempotency, preservation of prior entries, and clean removal on uninstall.
@@ -59,7 +59,7 @@ All notable changes to this project will be documented in this file.
 ### Changed — auto-open is now OPT-IN; agent shares a `file://` link instead (v1.7.0)
 
 - The post-write hook no longer launches a browser by default. After wrapping, it emits a `file://` link in the agent's reply message; the user clicks the link to open the review surface / questionnaire. This removes the disruptive browser pop when the agent finishes writing.
-- Re-enable the old auto-launch behavior with `AGENT_FEEDBACK_AUTO_OPEN=1` (was `=0` to disable, before).
+- Re-enable the old auto-launch behavior with `HUMAN_FEEDBACK_AUTO_OPEN=1` (was `=0` to disable, before).
 - Injected rule text updated: the canonical reply lines are now `"questionnaire ready ✓ — open: <file://link> — waiting on your response."` and `"review ready ✓ — open: <file://link> — waiting on your response."` — both relay the wrapped file's link verbatim.
 - Test `test/post-write-hook.js` updated to assert the message carries a `file://...` link and does NOT claim the file was opened, in the default no-AUTO_OPEN-flag path.
 
@@ -77,19 +77,19 @@ All notable changes to this project will be documented in this file.
 
 ### Hook architecture
 
-- The single shared post-write hook (`plugins/shared/post-write-hook.js`) remains the **only** hook in use. Every event (`SessionStart`, `UserPromptSubmit`, `beforeSubmitPrompt`, `PostToolUse`, `afterFileEdit`, Hermes `pre_llm_call`, Hermes `post_tool_call`) routes through one binary entry point (`agent-feedback __hook`). No second hook script, no harness-specific dispatchers.
+- The single shared post-write hook (`plugins/shared/post-write-hook.js`) remains the **only** hook in use. Every event (`SessionStart`, `UserPromptSubmit`, `beforeSubmitPrompt`, `PostToolUse`, `afterFileEdit`, Hermes `pre_llm_call`, Hermes `post_tool_call`) routes through one binary entry point (`human-feedback __hook`). No second hook script, no harness-specific dispatchers.
 
 ## [1.5.0]
 
 ### Added — system-prompt rule injection across all harnesses
-- **The >1-question rule now reaches the agent at session start, not just after it writes a file.** Each harness's hook config gains additional managed groups that route the agent's native context-injection events to the shared `agent-feedback __hook` binary:
+- **The >1-question rule now reaches the agent at session start, not just after it writes a file.** Each harness's hook config gains additional managed groups that route the agent's native context-injection events to the shared `human-feedback __hook` binary:
   - **Claude Code:** `SessionStart` + `UserPromptSubmit` → `hookSpecificOutput.additionalContext`
   - **Codex:** `SessionStart` + `UserPromptSubmit` → `hookSpecificOutput.additionalContext`
   - **Cursor:** `beforeSubmitPrompt` → `agentMessage`
   - **Hermes:** new `pre_llm_call` hook in the Python plugin → ephemeral context on the first LLM call of each session (idempotent per session for prompt-cache safety; re-armed on `on_session_reset`)
 - No project markdown files (`CLAUDE.md` / `AGENTS.md` / `.cursorrules` / `.cursor/rules/`) are touched — the rule is injected through each agent's runtime context channel only.
 - New `lib/rule-injection.js` exports `RULE_TEXT` — single source of truth for the >1-question contract; the shared hook script reads from it.
-- Added test coverage: `test/post-write-hook.js` now exercises all four rule-injection paths and the `AGENT_FEEDBACK_DISABLED=1` opt-out. `test/installer.js` verifies the new groups are written and removed cleanly.
+- Added test coverage: `test/post-write-hook.js` now exercises all four rule-injection paths and the `HUMAN_FEEDBACK_DISABLED=1` opt-out. `test/installer.js` verifies the new groups are written and removed cleanly.
 
 ### Fixed
 - **Hermes plugin was never actually loading.** The previous `__init__.py` exported a `__plugin__` dict but Hermes' plugin loader calls a top-level `register(ctx)` function. The plugin now exposes `register(ctx)` that wires the three hooks (`post_tool_call`, `pre_llm_call`, `on_session_reset`); legacy callable aliases are kept for any out-of-tree importers.
@@ -98,11 +98,11 @@ All notable changes to this project will be documented in this file.
 ## [1.4.0]
 
 ### Added
-- **Auto-open wrapped files in the user's default browser** after the hook compiles them (`open` on macOS, `start` on Windows, `xdg-open` on Linux). Closes the last manual step in the feedback loop — agents no longer need to remember to share or open the file. Works across all four harnesses (Hermes / Claude Code / Cursor / Codex). Opt out with `AGENT_FEEDBACK_AUTO_OPEN=0`. Auto-skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
+- **Auto-open wrapped files in the user's default browser** after the hook compiles them (`open` on macOS, `start` on Windows, `xdg-open` on Linux). Closes the last manual step in the feedback loop — agents no longer need to remember to share or open the file. Works across all four harnesses (Hermes / Claude Code / Cursor / Codex). Opt out with `HUMAN_FEEDBACK_AUTO_OPEN=0`. Auto-skipped in CI (`CI=1`) and on headless Linux (no `$DISPLAY` / `$WAYLAND_DISPLAY`).
 - Agent-facing hook message updated to instruct the agent to stop and wait for the user's response, rather than continuing with dependent tool calls.
 
 ### Changed (BREAKING)
-- **Output format unified to a single free-text prompt across all three tools.** The feedback questioner previously copied a JSON payload (`{"_type": "agent_feedback_response", …}`); it now copies the same structured natural-language prompt used by the annotator and md-annotator. Agents that parsed the old JSON shape must switch to reading the prompt text. See README → *Output prompt* for the new format.
+- **Output format unified to a single free-text prompt across all three tools.** The feedback questioner previously copied a JSON payload (`{"_type": "human_feedback_response", …}`); it now copies the same structured natural-language prompt used by the annotator and md-annotator. Agents that parsed the old JSON shape must switch to reading the prompt text. See README → *Output prompt* for the new format.
 - Removed the **Copy JSON** button from the shared annotation panel — Copy Prompt is now the only output.
 
 ### Added
@@ -116,16 +116,16 @@ All notable changes to this project will be documented in this file.
 ## [1.3.0] — 2026-05-24
 
 ### Added
-- **Native harness plugins** — `agent-feedback install` patches hook configs for Claude Code, Cursor (1.7+), Codex CLI, and Hermes Agent (0.9+).
+- **Native harness plugins** — `human-feedback install` patches hook configs for Claude Code, Cursor (1.7+), Codex CLI, and Hermes Agent (0.9+).
 - **Single shared hook script** (`plugins/shared/post-write-hook.js`) handles event normalization across all four harnesses.
 - New CLI commands: `install`, `uninstall`, `doctor`, and the hidden `__hook` subcommand invoked by hook configs.
-- New env vars: `AGENT_FEEDBACK_DISABLED=1` to bypass the hook, `AGENT_FEEDBACK_VERBOSE=0` for quieter agent messages.
+- New env vars: `HUMAN_FEEDBACK_DISABLED=1` to bypass the hook, `HUMAN_FEEDBACK_VERBOSE=0` for quieter agent messages.
 - Per-harness `INSTALL.md` guides under `plugins/<harness>/`.
 - Installer tests covering detection, install, idempotency, user-config preservation, and uninstall.
 - Examples folder with `.html`, `.md`, and `.json` inputs + `npm run compile:examples` script.
 
 ### Changed
-- Package renamed to `@nsharir/agent-feedback` (repo: `nsharir/agent-feedback`).
+- Package renamed to `@nsharir/human-feedback` (repo: `nsharir/human-feedback`).
 - Repo restructured: `plugins/` directory added alongside `src/`, `lib/`, `bin/`.
 
 ## [1.2.0] — 2026-05-24
@@ -158,4 +158,4 @@ All notable changes to this project will be documented in this file.
 Initial release. Three tools:
 - HTML annotator (`.html` → annotation-enabled HTML)
 - Markdown annotator (`.md` → rendered review page)
-- Agent feedback (`.json` → structured question form)
+- Human feedback (`.json` → structured question form)

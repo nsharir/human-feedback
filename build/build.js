@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────────────────────────────────────
-   Build process for @nsharir/agent-feedback
+   Build process for @nsharir/human-feedback
 
    Reads source files from src/, resolves @include directives, and writes
    the final templates to lib/templates/ where the compiler consumes them.
@@ -115,7 +115,7 @@ function build() {
 }
 
 try {
-  console.log('Building agent-feedback templates…\n');
+  console.log('Building human-feedback templates…\n');
   build();
   console.log('\n✓ Build complete.\n');
 } catch (err) {

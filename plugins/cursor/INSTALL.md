@@ -1,27 +1,27 @@
-# Cursor — agent-feedback rule
+# Cursor — human-feedback rule
 
 ## Automatic install
 
 ```bash
-npx @nsharir/agent-feedback install --cursor
+npx @nsharir/human-feedback install --cursor
 ```
 
-This writes `.cursor/rules/agent-feedback.mdc` in your project. Add `--global` to install at `~/.cursor/rules/` instead.
+This writes `.cursor/rules/human-feedback.mdc` in your project. Add `--global` to install at `~/.cursor/rules/` instead.
 
 ## Uninstall
 
 ```bash
-npx @nsharir/agent-feedback uninstall --cursor
+npx @nsharir/human-feedback uninstall --cursor
 ```
 
 ## What gets installed
 
-A single `.mdc` rule file at `.cursor/rules/agent-feedback.mdc`. The rule has `alwaysApply: false`, so Cursor only activates it when relevant (when the user mentions feedback, review, annotation, etc.).
+A single `.mdc` rule file at `.cursor/rules/human-feedback.mdc`. The rule has `alwaysApply: false`, so Cursor only activates it when relevant (when the user mentions feedback, review, annotation, etc.).
 
 The rule teaches the agent to:
 
 1. Identify the artifact that needs feedback
-2. Run `agent-feedback compile <input> -o <output> --force`
+2. Run `human-feedback compile <input> -o <output> --force`
 3. Share a `file://` link to the compiled output
 4. Wait for the user's structured feedback
 
@@ -30,12 +30,12 @@ The rule teaches the agent to:
 In Cursor, say:
 
 ```
-use agent-feedback to get feedback on the page I just made
+use human-feedback to get feedback on the page I just made
 ```
 
 ## Manual install
 
-Copy `agent-feedback.rule.mdc` from this directory to `.cursor/rules/agent-feedback.mdc`.
+Copy `human-feedback.rule.mdc` from this directory to `.cursor/rules/human-feedback.mdc`.
 
 ## Upgrading from v1.x
 
@@ -45,4 +45,4 @@ Running `install` automatically removes old hook-based entries from `.cursor/hoo
 
 - Cursor 1.7 or later
 - Node.js 18+ on PATH
-- `@nsharir/agent-feedback` installed globally (`npm install -g @nsharir/agent-feedback`)
+- `@nsharir/human-feedback` installed globally (`npm install -g @nsharir/human-feedback`)

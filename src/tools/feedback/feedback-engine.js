@@ -424,7 +424,7 @@
 
   function buildPayload() {
     const payload = {
-      _type: 'agent_feedback_response',
+      _type: 'human_feedback_response',
       title: config && config.title || null,
       answered_at: new Date().toISOString(),
       answers: {}
