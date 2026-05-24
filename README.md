@@ -16,6 +16,24 @@ Agent produces output
 
 ---
 
+## See it in action
+
+A typical 3-stage agent loop: gather requirements → review the draft spec → critique the mockup.
+
+### 1. Gather requirements with a questionnaire
+
+![Feedback questioner demo](examples/demos/feedback.gif)
+
+### 2. Annotate the functional spec
+
+![Markdown annotator demo](examples/demos/md-annotator.gif)
+
+### 3. Annotate the HTML mockup
+
+![HTML annotator demo](examples/demos/html-annotator.gif)
+
+---
+
 ## Install
 
 ```bash
