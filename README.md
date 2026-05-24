@@ -33,47 +33,70 @@ Agent produces a long artifact
 
 https://github.com/user-attachments/assets/982e3634-de48-4745-b29e-ce2cd60665b7
 
-A typical 3-stage agent loop: gather requirements → review the draft spec → critique the mockup.
+A typical project has three stages where you need to give the agent precise feedback. Here's how each one works:
 
 ### 1. Gather requirements with a questionnaire
+
+The agent has been reading your codebase and needs to make decisions — but instead of asking you 8 questions one at a time in chat, it collects them into a structured form. Radio buttons for choices, text fields for details, scales for priorities. You fill it out in your browser and paste back a clean prompt with every answer labeled and typed.
 
 ![Feedback questioner demo](examples/demos/feedback.gif)
 
 ### 2. Annotate the functional spec
 
+The agent drafted a 150-line markdown spec. Instead of reading it as a wall of text in chat, you open it as a rendered document — click on any section, highlight specific text, leave comments anchored to exact line numbers. The agent gets back a prompt that says "Line 42: this auth flow needs a refresh token step" instead of "somewhere in the auth section, you missed something."
+
 ![Markdown annotator demo](examples/demos/md-annotator.gif)
 
 ### 3. Annotate the HTML mockup
+
+The agent built an HTML prototype. You open it in your browser and click on the actual elements — the hero section, a button, a card layout — and leave comments attached to CSS selectors. The agent knows exactly which `div.pricing-card > h3` you're talking about.
 
 ![HTML annotator demo](examples/demos/html-annotator.gif)
 
 ---
 
-## Install
+## Quick start
+
+### 1. Install
 
 ```bash
 npm install -g @nsharir/human-feedback
 ```
 
-Or run without installing:
+### 2. Add to your agent
 
 ```bash
-npx @nsharir/human-feedback compile input.json -o form.html
+human-feedback install
 ```
+
+That's it. The installer detects which agent harnesses are present and installs the skill into each one.
+
+### 3. Use it
+
+In Claude Code:
+```
+you:   Write a functional spec for the new auth system
+agent: [writes auth-spec.md — 180 lines]
+you:   /human-feedback
+agent: [compiles auth-spec.md → auth-spec.review.html, shares link]
+       Ready for your review: file:///Users/you/project/auth-spec.review.html
+you:   [open in browser, annotate 4 sections, copy prompt, paste back]
+agent: [reads line-referenced feedback, updates the exact sections]
+```
+
+In Cursor:
+```
+you:   Build the landing page mockup
+agent: [writes landing.html]
+you:   Let me review that with human-feedback
+agent: [compiles landing.html → landing.annotated.html, shares link]
+```
+
+The agent can also use it on its own — when it needs answers to multiple questions before continuing, it writes a JSON questionnaire and compiles it without you having to ask.
 
 ---
 
-## Add `/human-feedback` to your agent (one command)
-
-Once installed, add the `/human-feedback` command to your agent harness so the user can trigger interactive feedback surfaces on demand.
-
-```bash
-npx @nsharir/human-feedback install
-```
-
-The installer detects which agent harnesses are present and installs a skill/command definition into each one.
-
-**Supported harnesses:**
+## Supported harnesses
 
 | Harness | What gets installed | Location |
 |---|---|---|
@@ -85,23 +108,23 @@ The installer detects which agent harnesses are present and installs a skill/com
 **Targeted installs:**
 
 ```bash
-npx @nsharir/human-feedback install --claude-code
-npx @nsharir/human-feedback install --cursor --global
-npx @nsharir/human-feedback install --codex
-npx @nsharir/human-feedback install --hermes
-npx @nsharir/human-feedback install --all              # every detected harness
+human-feedback install --claude-code
+human-feedback install --cursor --global
+human-feedback install --codex
+human-feedback install --hermes
+human-feedback install --all              # every detected harness
 ```
 
 **Verify what's installed:**
 
 ```bash
-npx @nsharir/human-feedback doctor
+human-feedback doctor
 ```
 
 **Uninstall:**
 
 ```bash
-npx @nsharir/human-feedback uninstall --all
+human-feedback uninstall --all
 ```
 
 See [`plugins/<harness>/INSTALL.md`](plugins/) for per-harness details.
