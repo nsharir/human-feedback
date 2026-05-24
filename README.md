@@ -42,9 +42,9 @@ The agent doesn't need to have written a file. If it just replied with a long te
 
 Download these and open them in your browser to see what each tool produces:
 
-- [Questionnaire — Email Client Brainstorm](https://github.com/user-attachments/files/28196983/email-client-brainstorm.feedback.html) (structured Q&A form)
-- [Markdown Annotator — Email Client Spec](https://github.com/user-attachments/files/28196982/email-client-spec.review.html) (rendered spec with comment layer)
-- [Source markdown](https://github.com/user-attachments/files/28196981/email-client-spec.md) used to generate the review above
+- [Questionnaire — Requirements Discovery](https://github.com/user-attachments/files/28198417/email-client-requirements.feedback.html) (structured Q&A form)
+- [Markdown Annotator — Functional Spec](https://github.com/user-attachments/files/28198418/email-client-spec.review.html) (rendered spec with comment layer)
+- [HTML Annotator — UI Mockup](https://github.com/user-attachments/files/28198419/email-client-mockup.annotated.html) (click-to-annotate prototype)
 
 ---
 
