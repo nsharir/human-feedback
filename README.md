@@ -1,29 +1,12 @@
 # human-feedback
 
-**Give precise feedback on long agent output — without losing your mind.**
+**The agent isn't slow. *Delivering the feedback back to the agent* is what's killing you.**
 
-AI agents write a lot. A 200-line functional spec. An HTML mockup. A multi-step migration plan. Reading all of that inside a chat window is painful. Scrolling back and forth, trying to remember which paragraph had the issue, then typing "the part about auth near the middle needs work" and hoping the agent figures out what you mean.
+You're reading a spec and trying to describe *which paragraph* you disagree with. You're staring at a mockup and typing "the button in the top-right of the second row" because there's no other way to point. You're answering "just a few clarifying questions" for the fourth time today.
 
-`human-feedback` fixes this. It compiles agent output into an interactive HTML page you open in a browser — click on an element, highlight a paragraph, annotate a section — then copies a structured prompt back to the agent with exact references (CSS selectors, line numbers, question IDs). The agent knows precisely what to fix.
+`human-feedback` fixes this. It turns any agent output — a markdown spec, an HTML mockup, a list of questions, or even just a long text message — into a reviewable, annotatable artifact you open in your browser. You highlight, click, comment, and then copy a structured prompt back. The agent knows exactly which line, which element, which answer each comment refers to.
 
-Three tools for three kinds of output:
-
-- **HTML Annotator** — click-to-annotate any HTML page the agent produced
-- **Markdown Annotator** — review a rendered spec/plan with line-number-referenced comments
-- **Questionnaire** — structured Q&A when the agent needs decisions from you before continuing
-
-Just type `/human-feedback` — the agent automatically picks up the latest artifact it produced (the HTML page it just wrote, the markdown spec it just drafted, or the questions it needs answered), compiles it into a reviewable format, and hands you a link. No need to specify files or remember paths.
-
-No server. No browser extension. No integrations. Just a slash command and a browser.
-
-```
-Agent produces a long artifact
-  → you type /human-feedback
-  → agent auto-detects the artifact and compiles it
-  → you open the link, review and annotate
-  → you copy the structured prompt back
-  → agent reads precise, line-level feedback and continues
-```
+No server. No accounts. No browser extension. Just a single command: `/human-feedback`.
 
 ---
 
@@ -33,66 +16,54 @@ Agent produces a long artifact
 
 https://github.com/user-attachments/assets/982e3634-de48-4745-b29e-ce2cd60665b7
 
-A typical project has three stages where you need to give the agent precise feedback. Here's how each one works:
+### The agent asks you what you want
 
-### 1. Gather requirements with a questionnaire
-
-The agent has been reading your codebase and needs to make decisions — but instead of asking you 8 questions one at a time in chat, it collects them into a structured form. Radio buttons for choices, text fields for details, scales for priorities. You fill it out in your browser and paste back a clean prompt with every answer labeled and typed.
+You know how it goes: the agent dumps a long message with a dozen questions for you to respond to. You just reply with `/human-feedback` — it generates a full-blown questionnaire for you to easily respond to every question. Fill it in, click copy, paste it back.
 
 ![Feedback questioner demo](examples/demos/feedback.gif)
 
-### 2. Annotate the functional spec
+### The agent drafts a spec
 
-The agent drafted a 150-line markdown spec. Instead of reading it as a wall of text in chat, you open it as a rendered document — click on any section, highlight specific text, leave comments anchored to exact line numbers. The agent gets back a prompt that says "Line 42: this auth flow needs a refresh token step" instead of "somewhere in the auth section, you missed something."
+The agent writes markdown — or even worse, sends you an inline message with a specification in place. Struggling to provide feedback on different sections of the text is painfully time-consuming. Same command: `/human-feedback`. It restructures the spec into a reviewable artifact with a comment layer baked in. Highlight any sentence, type a comment, get floating labels in the text. Click "Copy Prompt" and hand the agent a structured response: *which line, what it said, what you want changed.*
 
 ![Markdown annotator demo](examples/demos/md-annotator.gif)
 
-### 3. Annotate the HTML mockup
+### The agent ships a UI mockup
 
-The agent built an HTML prototype. You open it in your browser and click on the actual elements — the hero section, a button, a card layout — and leave comments attached to CSS selectors. The agent knows exactly which `div.pricing-card > h3` you're talking about.
+The agent renders HTML — but describing what to fix spatially ("the button at the left side panel, on the top") is a nightmare. Same command: `/human-feedback`. Click on any element, leave a comment, and the CSS selector goes with it. The agent sees exactly what you were pointing at.
 
 ![HTML annotator demo](examples/demos/html-annotator.gif)
+
+### The agent just... responds with text
+
+The agent doesn't need to have written a file. If it just replied with a long text message — an analysis, a list of recommendations, a draft email — invoke `/human-feedback` and the agent will take its own response, save it as an artifact, and compile it into a reviewable surface on the spot. Any textual agent output becomes a human-reviewable artifact.
 
 ---
 
 ## Quick start
 
-### 1. Install
+Just tell your agent to set it up:
+
+```
+Please install https://github.com/nsharir/human-feedback
+```
+
+Or install manually:
 
 ```bash
 npm install -g @nsharir/human-feedback
+human-feedback install   # interactive — pick your harness
 ```
 
-### 2. Add to your agent
+Note: most tools require a new session for the command and skill to take effect.
 
-```bash
-human-feedback install
+Next time the agent produces anything you need to review, just type:
+
+```
+/human-feedback
 ```
 
-That's it. The installer detects which agent harnesses are present and installs the skill into each one.
-
-### 3. Use it
-
-In Claude Code:
-```
-you:   Write a functional spec for the new auth system
-agent: [writes auth-spec.md — 180 lines]
-you:   /human-feedback
-agent: [compiles auth-spec.md → auth-spec.review.html, shares link]
-       Ready for your review: file:///Users/you/project/auth-spec.review.html
-you:   [open in browser, annotate 4 sections, copy prompt, paste back]
-agent: [reads line-referenced feedback, updates the exact sections]
-```
-
-In Cursor:
-```
-you:   Build the landing page mockup
-agent: [writes landing.html]
-you:   Let me review that with human-feedback
-agent: [compiles landing.html → landing.annotated.html, shares link]
-```
-
-The agent can also use it on its own — when it needs answers to multiple questions before continuing, it writes a JSON questionnaire and compiles it without you having to ask.
+It will do the magic, with no further instructions needed. The agent automatically picks up the latest artifact it produced, compiles it into a reviewable format, and hands you a link.
 
 ---
 
@@ -188,21 +159,6 @@ human-feedback compile questions.json -o feedback.html
 ### `human-feedback info <file>`
 
 Detect which tool would be used for a file without compiling.
-
----
-
-## Why this exists
-
-The longer an agent's output gets, the worse the feedback loop becomes. A 20-line snippet is easy to comment on in chat. A 200-line spec is not. Humans end up:
-
-- Skimming instead of reading, then giving vague feedback ("looks good but fix the header")
-- Screenshotting parts and describing problems verbally, losing all machine-readable context
-- Re-explaining things the agent already knows because pointing at "that paragraph" doesn't work in a chat window
-- Giving up and approving work they haven't fully reviewed
-
-The root problem: **chat is a terrible interface for reviewing long artifacts.** You need to see the whole document, point at specific parts, and have your comments land back in the agent's context with enough precision that it can act without guessing.
-
-`human-feedback` gives you a proper review surface — outside the chat — and brings the feedback back as a structured prompt the agent can parse.
 
 ---
 
