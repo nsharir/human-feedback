@@ -38,6 +38,14 @@ The agent renders HTML — but describing what to fix spatially ("the button at 
 
 The agent doesn't need to have written a file. If it just replied with a long text message — an analysis, a list of recommendations, a draft email — invoke `/human-feedback` and the agent will take its own response, save it as an artifact, and compile it into a reviewable surface on the spot. Any textual agent output becomes a human-reviewable artifact.
 
+### Try the samples yourself
+
+Download these and open them in your browser to see what each tool produces:
+
+- [Questionnaire — Email Client Brainstorm](https://github.com/user-attachments/files/28196983/email-client-brainstorm.feedback.html) (structured Q&A form)
+- [Markdown Annotator — Email Client Spec](https://github.com/user-attachments/files/28196982/email-client-spec.review.html) (rendered spec with comment layer)
+- [Source markdown](https://github.com/user-attachments/files/28196981/email-client-spec.md) used to generate the review above
+
 ---
 
 ## Quick start
