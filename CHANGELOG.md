@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added — review-artifact rule + opt-in `-review` suffix whitelist
+
+- The injected system-prompt rule now covers **two** contracts in one block: the existing >1-question rule AND a new review-artifact rule. Agents are told that any file the user must review must be named `<topic>-review.md` / `<topic>-review.html` — the hook auto-compiles + auto-opens it, and the agent replies only `review opened ✓ — waiting on your response.` and stops.
+- `shouldWrap` is now an explicit **whitelist**: only `*-review.md`, `*-review.html`, and `questions*.json` get wrapped. Everything else — `README.md`, `CHANGELOG.md`, `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, source code, arbitrary scratch markdown — passes through silently. This stops the hook from popping a browser every time the agent writes a routine `.md`.
+- Defense-in-depth: a name-based skip list (`CHANGELOG|README|AGENTS|CLAUDE|SKILL|CONTRIBUTING|LICENSE|NOTICE|TODO|NOTES|HOOK|PLUGIN`) catches accidental misnames.
+- Rule text rewritten for token efficiency — ~40% shorter while covering both rules and the opt-out env vars.
+
+### Hook architecture
+
+- The single shared post-write hook (`plugins/shared/post-write-hook.js`) remains the **only** hook in use. Every event (`SessionStart`, `UserPromptSubmit`, `beforeSubmitPrompt`, `PostToolUse`, `afterFileEdit`, Hermes `pre_llm_call`, Hermes `post_tool_call`) routes through one binary entry point (`agent-feedback __hook`). No second hook script, no harness-specific dispatchers.
+
+## [1.5.0]
+
 ### Added — system-prompt rule injection across all harnesses
 - **The >1-question rule now reaches the agent at session start, not just after it writes a file.** Each harness's hook config gains additional managed groups that route the agent's native context-injection events to the shared `agent-feedback __hook` binary:
   - **Claude Code:** `SessionStart` + `UserPromptSubmit` → `hookSpecificOutput.additionalContext`

@@ -53,7 +53,7 @@ console.log('\n=== Post-write hook tests ===\n');
 
   const r = runHook(src);
   assert(r.status === 0, 'hook exits 0 for valid .json');
-  assert(fs.existsSync(path.join(dir, 'questions.feedback.html')), 'compiles .json → .feedback.html');
+  assert(fs.existsSync(path.join(dir, 'questions.feedback.html')), 'compiles questions.json → .feedback.html');
   assert(r.parsed && /Auto-open was skipped \(ci\)/.test(r.parsed.message || ''),
     'CI=1 reports auto-open skipped with reason=ci');
 }
@@ -61,13 +61,13 @@ console.log('\n=== Post-write hook tests ===\n');
 // ── 2. AGENT_FEEDBACK_AUTO_OPEN=0 reports reason=disabled ─────────────────
 {
   const dir = tmpDir();
-  const src = path.join(dir, 'notes.md');
+  const src = path.join(dir, 'spec-review.md');
   fs.writeFileSync(src, '# hi\n\nbody\n');
 
   // Unset CI so the disabled branch is exercised independently
   const r = runHook(src, { AGENT_FEEDBACK_AUTO_OPEN: '0', CI: '' });
-  assert(r.status === 0, 'hook exits 0 for valid .md');
-  assert(fs.existsSync(path.join(dir, 'notes.review.html')), 'compiles .md → .review.html');
+  assert(r.status === 0, 'hook exits 0 for valid -review.md');
+  assert(fs.existsSync(path.join(dir, 'spec-review.review.html')), 'compiles -review.md → .review.html');
   assert(r.parsed && /Auto-open was skipped \(disabled\)/.test(r.parsed.message || ''),
     'AGENT_FEEDBACK_AUTO_OPEN=0 reports auto-open skipped with reason=disabled');
 }
@@ -96,6 +96,41 @@ console.log('\n=== Post-write hook tests ===\n');
   const sibs = fs.readdirSync(dir);
   assert(sibs.length === 1 && sibs[0] === 'something.feedback.html',
     'does not re-wrap an already-wrapped .feedback.html');
+}
+
+// ── 4b. Whitelist enforcement: plain .md without -review is NOT wrapped ──
+{
+  const dir = tmpDir();
+  const src = path.join(dir, 'notes.md');
+  fs.writeFileSync(src, '# scratch\n');
+  const r = runHook(src);
+  assert(r.status === 0, 'plain .md (no -review suffix): exits 0');
+  assert(!fs.existsSync(path.join(dir, 'notes.review.html')),
+    'plain .md (no -review suffix) is NOT wrapped');
+}
+
+// ── 4c. Whitelist enforcement: README.md / CHANGELOG.md skipped ──────────
+{
+  for (const name of ['README.md', 'CHANGELOG.md', 'AGENTS.md', 'SKILL.md']) {
+    const dir = tmpDir();
+    const src = path.join(dir, name);
+    fs.writeFileSync(src, '# x\n');
+    const r = runHook(src);
+    assert(r.status === 0, `${name}: exits 0`);
+    const wrapped = path.join(dir, name.replace(/\.md$/, '.review.html'));
+    assert(!fs.existsSync(wrapped), `${name} is NOT wrapped (internal MD skip)`);
+  }
+}
+
+// ── 4d. Whitelist enforcement: -review.html IS wrapped ───────────────────
+{
+  const dir = tmpDir();
+  const src = path.join(dir, 'mockup-review.html');
+  fs.writeFileSync(src, '<!doctype html><html><body><h1>hi</h1></body></html>');
+  const r = runHook(src);
+  assert(r.status === 0, '-review.html: exits 0');
+  assert(fs.existsSync(path.join(dir, 'mockup-review.annotated.html')),
+    '-review.html → .annotated.html');
 }
 
 console.log('\n=== Post-write hook tests complete ===\n');

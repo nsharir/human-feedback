@@ -173,23 +173,46 @@ function ack(message, harness) {
 }
 
 // ── Decide whether to wrap ─────────────────────────────────────────────────
+// Wrap only files the agent has explicitly marked as "for human review":
+//   • <topic>-review.md  /  <topic>-review.markdown
+//   • <topic>-review.html / .htm
+//   • questions*.json    (questionnaires)
+// Everything else (CHANGELOG.md, README.md, source code, config json,
+// scratch notes) is left alone. This stops the hook from popping a browser
+// every time the agent writes a routine markdown file.
+const REVIEW_SUFFIX_RE = /-review$/i;
+const QUESTIONS_JSON_RE = /^questions[\w.-]*\.json$/i;
+const INTERNAL_MD_STEM = /^(changelog|readme|agents|claude|skill|contributing|license|notice|todo|notes|hook|plugin)$/i;
+const CONFIG_JSON_RE   = /^(package|package-lock|tsconfig|jsconfig|composer|cargo|pyproject|\.eslintrc|\.prettierrc|\.babelrc|\.stylelintrc)/i;
+
 function shouldWrap(filePath) {
   if (!filePath) return false;
-  // Skip if the user opted out
   if (process.env.AGENT_FEEDBACK_DISABLED === '1') return false;
-  const ext = path.extname(filePath).toLowerCase();
-  if (ext !== '.md' && ext !== '.markdown' && ext !== '.html' && ext !== '.htm' && ext !== '.json') return false;
-  // Skip already-compiled files (avoid wrap loops)
+
+  const ext  = path.extname(filePath).toLowerCase();
+  const base = path.basename(filePath);
+  const stem = base.slice(0, base.length - ext.length);
+
+  // Skip already-compiled outputs (avoid wrap loops)
   if (/\.(review|feedback|annotated)\.html?$/i.test(filePath)) return false;
-  // Skip files in node_modules / dist / build / .git
+  // Skip vendor / build / VCS noise
   if (/[\/\\](node_modules|dist|build|coverage|\.git)[\/\\]/.test(filePath)) return false;
-  // Skip package.json, tsconfig.json, and other config-y JSON
-  const base = path.basename(filePath).toLowerCase();
-  if (ext === '.json' && /^(package|package-lock|tsconfig|jsconfig|composer|cargo|pyproject|.eslintrc|.prettierrc)/.test(base)) return false;
-  // Only wrap files that actually exist on disk (the hook runs AFTER the write,
-  // so the file should be present)
+  // Skip well-known internal markdown (defense in depth — they wouldn't
+  // match the -review suffix anyway, but agents sometimes get creative)
+  if ((ext === '.md' || ext === '.markdown') && INTERNAL_MD_STEM.test(stem)) return false;
+  // Skip common config JSON
+  if (ext === '.json' && CONFIG_JSON_RE.test(base)) return false;
+  // Only wrap files that actually exist on disk
   if (!fs.existsSync(filePath)) return false;
-  return true;
+
+  // Whitelist: -review suffix for md/html, or questions*.json for forms
+  if (ext === '.md' || ext === '.markdown' || ext === '.html' || ext === '.htm') {
+    return REVIEW_SUFFIX_RE.test(stem);
+  }
+  if (ext === '.json') {
+    return QUESTIONS_JSON_RE.test(base);
+  }
+  return false;
 }
 
 // ── Quick-exit when we don't wrap ──────────────────────────────────────────
