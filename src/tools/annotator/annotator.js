@@ -5,7 +5,7 @@
  * Mobile:  long-press (600ms) to annotate element, native text-selection + toolbar tap for text
  * FAB bottom-right opens annotation menu on mobile.
  *
- * Usage: <script src="annotator.js"></script>
+ * Usage: <script src="annotator.js"><\/script>
  */
 
 (function () {
@@ -18,7 +18,10 @@
   let annotationMode = true;
   let pendingAnnotation = null;
 
-  const isMobile = () => window.matchMedia('(pointer: coarse)').matches;
+  const isMobile = () => {
+    try { return window.matchMedia && window.matchMedia('(pointer: coarse)').matches; }
+    catch (_) { return false; }
+  };
 
   const COLORS = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C77DFF','#FF9A3C'];
   let colorIndex = 0;
