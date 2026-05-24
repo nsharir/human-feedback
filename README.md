@@ -489,26 +489,6 @@ From the terminal:
 npm install -g @nsharir/human-feedback@latest && human-feedback install
 ```
 
-### Upgrading from v1.x
-
-v2.0 replaces the hook-based auto-wrap system with a user-triggered `/human-feedback` command. To upgrade:
-
-```bash
-# Remove old hooks
-npx @nsharir/human-feedback uninstall --all
-
-# Install new skill definitions
-npx @nsharir/human-feedback install --all
-```
-
-Or just run `install` — it automatically cleans up legacy hooks when it finds them.
-
-The `doctor` command will warn you if legacy hooks are still present:
-
-```bash
-npx @nsharir/human-feedback doctor
-```
-
 ---
 
 ## Examples
