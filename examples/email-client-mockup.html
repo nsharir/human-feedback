@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mailbox — Inbox Mockup (v0.1)</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --border: #e6e8ec;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --accent: #4f46e5;
+    --accent-soft: #eef2ff;
+    --unread: #111827;
+    --hover: #f3f4f6;
+    --selected: #eef2ff;
+    --shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 8px 24px rgba(17, 24, 39, 0.06);
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; overflow: hidden; }
+
+  .app { display: grid; grid-template-columns: 220px 360px 1fr; height: 100vh; }
+
+  /* ─── Sidebar ──────────────────────────────────────────── */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .brand { font-weight: 700; font-size: 16px; padding: 8px 12px 16px; letter-spacing: -0.01em; }
+  .brand .dot { display: inline-block; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; margin-right: 8px; vertical-align: 1px; }
+  .compose-btn { background: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .compose-btn:hover { filter: brightness(1.05); }
+  .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; border-radius: 6px; font-size: 14px; color: #374151; cursor: pointer; }
+  .nav-item:hover { background: var(--hover); }
+  .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .nav-item .count { font-size: 12px; color: var(--muted); }
+  .nav-item.active .count { color: var(--accent); }
+  .nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 16px 12px 6px; }
+  .account-row { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 13px; color: #374151; }
+  .account-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ─── Message list ─────────────────────────────────────── */
+  .list { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .list-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .list-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .search { flex: 1; }
+  .search input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); }
+  .search input:focus { outline: none; border-color: var(--accent); background: white; }
+  .list-scroll { overflow-y: auto; flex: 1; }
+  .msg { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: grid; grid-template-columns: 6px 1fr; gap: 10px; }
+  .msg:hover { background: var(--hover); }
+  .msg.selected { background: var(--selected); }
+  .msg.unread .indicator { background: var(--accent); }
+  .msg .indicator { width: 6px; align-self: center; height: 24px; border-radius: 3px; background: transparent; }
+  .msg .body { min-width: 0; }
+  .msg-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .msg-from { font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .msg.read .msg-from { font-weight: 500; color: #4b5563; }
+  .msg-time { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .msg-subject { font-size: 13px; color: var(--unread); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .msg.read .msg-subject { color: #4b5563; }
+  .msg-preview { font-size: 12px; color: var(--muted); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .msg-tags { display: flex; gap: 4px; margin-top: 6px; }
+  .tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+  .tag.work { background: #dbeafe; color: #1e40af; }
+  .tag.personal { background: #fef3c7; color: #92400e; }
+  .tag.ai { background: #ede9fe; color: #5b21b6; }
+
+  /* ─── Reading pane ─────────────────────────────────────── */
+  .reader { background: var(--bg); overflow-y: auto; }
+  .reader-toolbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; gap: 8px; }
+  .icon-btn { background: transparent; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; color: #374151; }
+  .icon-btn:hover { background: var(--hover); }
+  .icon-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .reader-body { max-width: 720px; margin: 24px auto; padding: 0 24px; }
+  .reader-subject { font-size: 22px; font-weight: 600; margin: 0 0 16px; line-height: 1.3; letter-spacing: -0.01em; }
+  .ai-summary { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #374151; }
+  .ai-summary strong { color: var(--accent); display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .ai-summary ul { margin: 0; padding-left: 18px; }
+  .ai-summary li { margin: 2px 0; }
+  .thread-msg { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .sender-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
+  .sender-info { flex: 1; }
+  .sender-name { font-weight: 600; font-size: 14px; }
+  .sender-meta { font-size: 12px; color: var(--muted); }
+  .thread-body { font-size: 14px; line-height: 1.65; color: #1f2937; }
+  .thread-body p { margin: 0 0 12px; }
+  .reply-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 20px; }
+  .reply-box .placeholder { color: var(--muted); font-size: 14px; font-style: italic; }
+  .reply-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .ai-draft { background: var(--accent-soft); color: var(--accent); border: 1px dashed var(--accent); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  /* ─── Misc ─────────────────────────────────────────────── */
+  .kbd { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; background: #f3f4f6; border: 1px solid #d1d5db; border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: #374151; }
+  .draft-notice { background: #fffbeb; border-bottom: 1px solid #fde68a; color: #92400e; font-size: 12px; padding: 8px 24px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="draft-notice">
+  📐 <strong>Mockup v0.1</strong> — generated from the approved functional spec. Highlight any element or area to leave feedback for the agent.
+</div>
+
+<div class="app">
+
+  <!-- ─── Sidebar ─── -->
+  <aside class="sidebar">
+    <div class="brand"><span class="dot"></span>Mailbox</div>
+    <button class="compose-btn">✎  Compose &nbsp; <span class="kbd" style="background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.3);color:white">c</span></button>
+
+    <div class="nav-item active">
+      <span>📥 Inbox</span><span class="count">12</span>
+    </div>
+    <div class="nav-item">
+      <span>⭐ Starred</span><span class="count">3</span>
+    </div>
+    <div class="nav-item">
+      <span>⏰ Snoozed</span><span class="count">5</span>
+    </div>
+    <div class="nav-item">
+      <span>📤 Sent</span><span class="count"></span>
+    </div>
+    <div class="nav-item">
+      <span>📝 Drafts</span><span class="count">2</span>
+    </div>
+    <div class="nav-item">
+      <span>🗑 Trash</span><span class="count"></span>
+    </div>
+
+    <div class="nav-section">Accounts</div>
+    <div class="account-row"><span class="account-dot" style="background:#4f46e5"></span>nadav@work.com</div>
+    <div class="account-row"><span class="account-dot" style="background:#10b981"></span>nadav@personal.io</div>
+    <div class="account-row"><span class="account-dot" style="background:#f59e0b"></span>side-project@gmail.com</div>
+
+    <div style="flex:1"></div>
+    <div style="padding:12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">
+      Press <span class="kbd">?</span> for shortcuts
+    </div>
+  </aside>
+
+  <!-- ─── Message list ─── -->
+  <section class="list">
+    <div class="list-header">
+      <div class="search"><input type="text" placeholder="Search all mail… (/)" /></div>
+    </div>
+    <div class="list-scroll">
+
+      <div class="msg unread selected">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">Sarah Chen</span>
+            <span class="msg-time">9:42 AM</span>
+          </div>
+          <div class="msg-subject">Q3 product review — your input needed</div>
+          <div class="msg-preview">Hi Nadav, ahead of Thursday's review I wanted to share the draft deck and flag two areas where I'd love your perspective…</div>
+          <div class="msg-tags"><span class="tag work">work</span><span class="tag ai">✨ needs reply</span></div>
+        </div>
+      </div>
+
+      <div class="msg unread">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">GitHub</span>
+            <span class="msg-time">9:18 AM</span>
+          </div>
+          <div class="msg-subject">[nsharir/agent-feedback] PR #14 ready for review</div>
+          <div class="msg-preview">@octocat opened a pull request: "Add Vim-mode keybindings". 3 files changed, +127 −2…</div>
+          <div class="msg-tags"><span class="tag work">work</span></div>
+        </div>
+      </div>
+
+      <div class="msg unread">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">Michal Sharir</span>
+            <span class="msg-time">8:55 AM</span>
+          </div>
+          <div class="msg-subject">קייטרינג לסופ"ש</div>
+          <div class="msg-preview">חשבתי על מסעדה חדשה שפתחו בנווה צדק. אפשר לבדוק זמינות לשבת בערב?</div>
+          <div class="msg-tags"><span class="tag personal">personal</span></div>
+        </div>
+      </div>
+
+      <div class="msg read">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">Linear</span>
+            <span class="msg-time">7:12 AM</span>
+          </div>
+          <div class="msg-subject">Daily digest: 3 issues updated</div>
+          <div class="msg-preview">ENG-204 moved to In Review, ENG-198 closed, ENG-210 commented…</div>
+          <div class="msg-tags"><span class="tag work">work</span></div>
+        </div>
+      </div>
+
+      <div class="msg read">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">Stripe</span>
+            <span class="msg-time">Yesterday</span>
+          </div>
+          <div class="msg-subject">Your invoice for May is ready</div>
+          <div class="msg-preview">$249.00 — payment will be auto-charged on the 15th. View invoice or update billing details…</div>
+        </div>
+      </div>
+
+      <div class="msg read">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">Hacker News Digest</span>
+            <span class="msg-time">Yesterday</span>
+          </div>
+          <div class="msg-subject">Top stories: Show HN: A new email client, Vim turns 35, …</div>
+          <div class="msg-preview">Curated stories from the last 24 hours based on your reading history…</div>
+        </div>
+      </div>
+
+      <div class="msg read">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">Vercel</span>
+            <span class="msg-time">May 22</span>
+          </div>
+          <div class="msg-subject">Deployment succeeded — agent-feedback-docs</div>
+          <div class="msg-preview">Production deployment is live at agent-feedback-docs.vercel.app…</div>
+        </div>
+      </div>
+
+      <div class="msg read">
+        <div class="indicator"></div>
+        <div class="body">
+          <div class="msg-top">
+            <span class="msg-from">Calendly</span>
+            <span class="msg-time">May 22</span>
+          </div>
+          <div class="msg-subject">New event: 1:1 with Elad Amit — Friday 14:00</div>
+          <div class="msg-preview">Elad Amit scheduled a meeting via your scheduling page…</div>
+          <div class="msg-tags"><span class="tag work">work</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── Reading pane ─── -->
+  <section class="reader">
+    <div class="reader-toolbar">
+      <button class="icon-btn">↩ Reply <span class="kbd">r</span></button>
+      <button class="icon-btn">↩↩ Reply all <span class="kbd">a</span></button>
+      <button class="icon-btn">→ Forward <span class="kbd">f</span></button>
+      <button class="icon-btn">📁 Archive <span class="kbd">e</span></button>
+      <button class="icon-btn">⏰ Snooze</button>
+      <button class="icon-btn">🗑 Delete <span class="kbd">#</span></button>
+      <div style="flex:1"></div>
+      <button class="icon-btn">⋯</button>
+    </div>
+
+    <div class="reader-body">
+      <h1 class="reader-subject">Q3 product review — your input needed</h1>
+
+      <div class="ai-summary">
+        <strong>✨ AI summary</strong>
+        <ul>
+          <li>Sarah wants your input on two open questions in the Q3 deck before Thursday's review.</li>
+          <li>The two questions concern: (a) <em>pricing model for the AI features</em>, (b) <em>whether to support PGP in v1</em>.</li>
+          <li>She's asking for a written response by EOD Wednesday.</li>
+        </ul>
+      </div>
+
+      <div class="thread-msg">
+        <div class="sender-row">
+          <div class="avatar">SC</div>
+          <div class="sender-info">
+            <div class="sender-name">Sarah Chen &nbsp;<span style="font-weight:400;color:var(--muted);font-size:12px">&lt;sarah@example.com&gt;</span></div>
+            <div class="sender-meta">to me, Elad, Steve · Today at 9:42 AM</div>
+          </div>
+        </div>
+
+        <div class="thread-body">
+          <p>Hi Nadav,</p>
+          <p>Ahead of Thursday's review I wanted to share the <a href="#" style="color:var(--accent)">draft deck</a> and flag two areas where I'd love your perspective before we present:</p>
+          <p><strong>1. Pricing model for the AI features.</strong> The current proposal is BYO-API-key only at v1 (no markup). Concern: this leaves money on the table from less technical users. Alternative: a thin paid tier with our own keys at a 20% markup. Thoughts?</p>
+          <p><strong>2. PGP / S/MIME in v1.</strong> The spec marks this as out of scope, but I've gotten 3 enterprise inquiries this quarter asking specifically about it. Worth revisiting, or hold the line?</p>
+          <p>Hoping to lock these by EOD Wednesday. Even a 2-sentence reply per question works.</p>
+          <p>— Sarah</p>
+        </div>
+      </div>
+
+      <div class="reply-box">
+        <div class="placeholder">Reply to Sarah…</div>
+        <div class="reply-actions">
+          <button class="icon-btn primary">Send <span class="kbd" style="background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.3);color:white">⌘↵</span></button>
+          <button class="ai-draft">✨ AI draft</button>
+          <button class="icon-btn">📎 Attach</button>
+          <button class="icon-btn">⏰ Send later</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+</body>
+</html>
