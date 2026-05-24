@@ -12,14 +12,17 @@ Three tools for three kinds of output:
 - **Markdown Annotator** — review a rendered spec/plan with line-number-referenced comments
 - **Questionnaire** — structured Q&A when the agent needs decisions from you before continuing
 
-No server. No browser extension. No integrations. Just a CLI that compiles a file and a browser that opens it.
+Just type `/human-feedback` — the agent automatically picks up the latest artifact it produced (the HTML page it just wrote, the markdown spec it just drafted, or the questions it needs answered), compiles it into a reviewable format, and hands you a link. No need to specify files or remember paths.
+
+No server. No browser extension. No integrations. Just a slash command and a browser.
 
 ```
-Agent produces output
-  → human-feedback compiles it into an HTML file
-  → Human opens file, gives feedback
-  → Human copies a prompt
-  → Agent reads the prompt, continues
+Agent produces a long artifact
+  → you type /human-feedback
+  → agent auto-detects the artifact and compiles it
+  → you open the link, review and annotate
+  → you copy the structured prompt back
+  → agent reads precise, line-level feedback and continues
 ```
 
 ---
