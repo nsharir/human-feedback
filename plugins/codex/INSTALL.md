@@ -2,8 +2,16 @@
 
 ## Automatic install
 
+First install the `human-feedback` CLI (one-time, ~10 seconds):
+
 ```bash
-npx @nsharir/human-feedback install --codex
+curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install.sh | bash
+```
+
+Then install the Codex plugin:
+
+```bash
+human-feedback install --codex
 ```
 
 This appends a marked section to `AGENTS.md` in your project. Add `--global` to install at `~/AGENTS.md` instead.
@@ -11,7 +19,7 @@ This appends a marked section to `AGENTS.md` in your project. Add `--global` to 
 ## Uninstall
 
 ```bash
-npx @nsharir/human-feedback uninstall --codex
+human-feedback uninstall --codex
 ```
 
 ## What gets installed
@@ -44,4 +52,4 @@ Running `install` automatically removes old hook-based entries from `.codex/hook
 ## Requires
 
 - Node.js 18+ on PATH
-- `@nsharir/human-feedback` installed globally (`npm install -g @nsharir/human-feedback`)
+- `human-feedback` CLI installed (see *Automatic install* above)

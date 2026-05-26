@@ -59,9 +59,11 @@ Please install https://github.com/nsharir/human-feedback
 Or install manually:
 
 ```bash
-npm install -g @nsharir/human-feedback
+curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install.sh | bash
 human-feedback install   # interactive — pick your harness
 ```
+
+The installer clones the repo to `~/.human-feedback`, builds the templates, and symlinks the CLI to `~/.local/bin/human-feedback`. No npm package — installs and updates come straight from GitHub.
 
 Note: most tools require a new session for the command and skill to take effect.
 
@@ -445,13 +447,21 @@ In Claude Code, just type:
 /human-feedback update
 ```
 
-This updates the npm package and reinstalls the skill in one step.
+This pulls the latest from GitHub and rebuilds the templates in one step.
 
 From the terminal:
 
 ```bash
-npm install -g @nsharir/human-feedback@latest && human-feedback install
+human-feedback update
 ```
+
+To check whether a new version is available without updating:
+
+```bash
+human-feedback check-for-updates
+```
+
+The CLI also prints an `[human-feedback:update-available current=X latest=Y]` marker once per session when an update is available, so the agent can mention it to you.
 
 ---
 

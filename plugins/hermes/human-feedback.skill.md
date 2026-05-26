@@ -1,10 +1,10 @@
 ---
 name: human-feedback
-version: "2.0.0"
+version: "2.1.0"
 description: "Compile HTML, Markdown, or JSON artifacts into interactive feedback surfaces. Use when the user asks for feedback on a mockup, spec, plan, or questionnaire."
 tags: [feedback, review, annotate, questionnaire, human-in-the-loop]
 ---
-<!-- human-feedback v2.0.0 -->
+<!-- human-feedback v2.1.0 -->
 # human-feedback
 
 Compile an artifact into an interactive feedback surface the user opens in a browser.
@@ -88,3 +88,27 @@ Supported types: `text`, `textarea`, `radio`, `checkbox`, `select`, `boolean`, `
 ## User response format
 
 When the user pastes their response, it is a structured free-text prompt starting with "The user completed/reviewed/annotated…" — each `## Item N` section has their comment plus context (CSS selectors for HTML, line numbers for markdown, question types for forms).
+
+## Updating human-feedback
+
+If the user asks to "update human-feedback" or "update to latest", run:
+
+```
+human-feedback update
+```
+
+This pulls the latest from GitHub, reinstalls dependencies, and rebuilds the templates. Report the new version (`human-feedback --version`) when it finishes.
+
+## Version check
+
+After running any `human-feedback` CLI command, inspect its output for a line matching:
+
+```
+[human-feedback:update-available current=X.Y.Z latest=A.B.C]
+```
+
+If you see this marker, surface a single one-liner to the user alongside your normal response:
+
+> _human-feedback v{latest} is available (you're on {current}). Run `human-feedback update` or ask me to update it for you._
+
+Only mention this **once per conversation**. Do not repeat the notice on subsequent invocations in the same session. Do not poll proactively — only react to the marker emitted by the CLI itself.

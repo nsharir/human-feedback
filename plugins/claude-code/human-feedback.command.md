@@ -1,4 +1,4 @@
-<!-- human-feedback v2.0.0 -->
+<!-- human-feedback v2.1.0 -->
 # /human-feedback
 
 Compile an artifact into an interactive feedback surface the user opens in a browser.
@@ -14,13 +14,15 @@ Check `$ARGUMENTS` first. If it matches a sub-command below, run that instead of
 
 ### `/human-feedback update`
 
-Update the human-feedback package to the latest version and reinstall the skill:
+Update the human-feedback installation to the latest version:
 
 ```
-npm install -g @nsharir/human-feedback@latest && human-feedback install --claude-code
+human-feedback update
 ```
 
-Report the new version (`human-feedback --version`) and confirm the skill was reinstalled. Then stop — do not compile anything.
+This pulls the latest from GitHub, reinstalls dependencies, and rebuilds the templates. After it succeeds, report the new version (`human-feedback --version`). Then stop — do not compile anything.
+
+If `human-feedback update` reports that the install is not managed by `install.sh`, fall back to the manual instructions it prints (typically a `git pull` in a dev clone).
 
 ---
 
@@ -99,3 +101,17 @@ Supported types: `text`, `textarea`, `radio`, `checkbox`, `select`, `boolean`, `
 ## User response format
 
 When the user pastes their response, it is a structured free-text prompt starting with "The user completed/reviewed/annotated…" — each `## Item N` section has their comment plus context (CSS selectors for HTML, line numbers for markdown, question types for forms).
+
+## Version check
+
+After running any `human-feedback` CLI command, inspect its output for a line matching:
+
+```
+[human-feedback:update-available current=X.Y.Z latest=A.B.C]
+```
+
+If you see this marker, surface a single one-liner to the user alongside your normal response:
+
+> _human-feedback v{latest} is available (you're on {current}). Run `/human-feedback update` or ask me to update it for you._
+
+Only mention this **once per conversation**. Do not repeat the notice on subsequent invocations in the same session. Do not poll proactively — only react to the marker emitted by the CLI itself.

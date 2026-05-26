@@ -5,7 +5,9 @@ const { Command } = require('commander');
 const pc          = require('picocolors');
 const path        = require('path');
 const fs          = require('fs');
+const { spawnSync } = require('child_process');
 const { compile, detectTool } = require('../lib/compiler');
+const versionCheck = require('../lib/version-check');
 
 const pkg = require('../package.json');
 
@@ -356,6 +358,181 @@ program
 
     console.log('');
   });
+
+// ── check-for-updates command ────────────────────────────────────────────────
+
+program
+  .command('check-for-updates')
+  .alias('check-updates')
+  .alias('check')
+  .description('Check GitHub for a newer version of human-feedback')
+  .action(async () => {
+    printBanner();
+    const result = await versionCheck.fetchLatest();
+    if (!result) {
+      console.log(`  ${sym.warn} Could not reach GitHub. Try again later or check your network.`);
+      console.log('');
+      process.exit(0);
+    }
+    if (result.outdated) {
+      console.log(versionCheck.formatBanner(result.current, result.latest));
+      console.log(`  Run ${pc.bold('human-feedback update')} to upgrade.`);
+      console.log('');
+    } else if (result.ahead) {
+      console.log(`  ${sym.ok} You're on ${pc.bold('v' + result.current)} — ahead of latest release (${pc.dim('v' + result.latest)}). Looks like a dev build.`);
+      console.log('');
+    } else {
+      console.log(`  ${sym.ok} You're on the latest version (${pc.bold('v' + result.current)}).`);
+      console.log('');
+    }
+  });
+
+// ── update command ───────────────────────────────────────────────────────────
+
+function detectInstallRoot() {
+  // The CLI lives at <root>/bin/cli.js — the repo root is one level up.
+  // We treat the install as managed by install.sh when that root contains
+  // a .git directory (curl|bash clones the repo) AND the root path
+  // resembles the install.sh default (HUMAN_FEEDBACK_HOME).
+  const root = path.resolve(__dirname, '..');
+  const hasGit = fs.existsSync(path.join(root, '.git'));
+  return { root, managed: hasGit };
+}
+
+program
+  .command('update')
+  .alias('upgrade')
+  .alias('self-update')
+  .description('Update human-feedback to the latest version')
+  .option('--ref <ref>', 'Git ref to update to (default: main)', 'main')
+  .option('--dry-run', 'Print the commands that would run without executing', false)
+  .action(async (opts) => {
+    printBanner();
+    const { root, managed } = detectInstallRoot();
+
+    if (!managed) {
+      console.log(`  ${sym.warn} This human-feedback install is not managed by ${pc.bold('install.sh')}.`);
+      console.log('');
+      console.log(`  Install path: ${pc.dim(root)}`);
+      console.log('');
+      console.log(`  To update, either:`);
+      console.log(`    ${sym.info} from a dev clone:  ${pc.bold('cd ' + root + ' && git pull && npm install && npm run build')}`);
+      console.log(`    ${sym.info} switch to the standard install:`);
+      console.log(`        ${pc.bold('curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install.sh | bash')}`);
+      console.log('');
+      process.exit(0);
+    }
+
+    const ref = opts.ref;
+    const dry = opts.dryRun;
+
+    const before = pkg.version;
+    console.log(`  ${sym.info} updating from ${pc.bold('v' + before)} (ref: ${pc.cyan(ref)})…`);
+    console.log('');
+
+    const steps = [
+      ['git', ['-C', root, 'fetch', '--tags', '--quiet', 'origin']],
+      ['git', ['-C', root, 'checkout', '--quiet', ref]],
+      // Try reset --hard only if we're on a branch (not detached HEAD on a tag)
+      ['__maybeReset', [root, ref]],
+      ['npm', ['--prefix', root, 'install', '--omit=dev', '--no-audit', '--no-fund', '--silent']],
+      ['npm', ['--prefix', root, 'run', 'build', '--silent']],
+    ];
+
+    for (const [cmd, args] of steps) {
+      if (cmd === '__maybeReset') {
+        const [r, refName] = args;
+        const sym1 = spawnSync('git', ['-C', r, 'symbolic-ref', '-q', 'HEAD'], { stdio: 'ignore' });
+        if (sym1.status === 0) {
+          const resetArgs = ['-C', r, 'reset', '--hard', '--quiet', `origin/${refName}`];
+          console.log(`  ${pc.dim('$')} git ${resetArgs.join(' ')}`);
+          if (!dry) {
+            const r2 = spawnSync('git', resetArgs, { stdio: 'inherit' });
+            if (r2.status !== 0) { printError('git reset failed.'); process.exit(1); }
+          }
+        }
+        continue;
+      }
+      console.log(`  ${pc.dim('$')} ${cmd} ${args.join(' ')}`);
+      if (dry) continue;
+      const r = spawnSync(cmd, args, { stdio: 'inherit' });
+      if (r.status !== 0) {
+        printError(`${cmd} failed (exit ${r.status}).`);
+        process.exit(1);
+      }
+    }
+
+    if (dry) {
+      console.log('');
+      console.log(`  ${sym.info} ${pc.dim('(dry run — no changes made)')}`);
+      console.log('');
+      return;
+    }
+
+    // Re-read package.json from disk to pick up the new version.
+    let after = before;
+    try {
+      after = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
+    } catch (_) { /* ignore */ }
+
+    console.log('');
+    if (after !== before) {
+      console.log(`  ${sym.ok} Updated ${pc.bold('v' + before)} → ${pc.bold(pc.green('v' + after))}`);
+    } else {
+      console.log(`  ${sym.ok} Already at ${pc.bold('v' + after)}.`);
+    }
+    console.log('');
+    console.log(`  ${pc.dim('Tip:')} re-run ${pc.bold('human-feedback install')} to refresh installed skills with the latest content.`);
+    console.log('');
+  });
+
+// ── once-per-session version-check hook ──────────────────────────────────────
+//
+// Fires before every command runs. Races with the command (~5-50ms),
+// banner emitted at process exit on stderr (so it doesn't pollute stdout
+// that scripts may parse). Stdout gets a machine-readable marker line so
+// the agent can detect outdated state deterministically.
+//
+// Skipped for: update, check-for-updates, --version, --help, uninstall.
+
+const SKIP_AUTO_CHECK = new Set(['update', 'upgrade', 'self-update', 'check-for-updates', 'check-updates', 'check', 'uninstall']);
+
+function maybeAttachVersionCheck(argv) {
+  // Cheap arg parsing: find the first non-flag token as the subcommand.
+  let sub = null;
+  for (const a of argv.slice(2)) {
+    if (a === '--version' || a === '-v' || a === '--help' || a === '-h') return;
+    if (a.startsWith('-')) continue;
+    sub = a;
+    break;
+  }
+  if (sub && SKIP_AUTO_CHECK.has(sub)) return;
+
+  // Kick off the check immediately; emit banner at process exit if outdated.
+  const checkPromise = versionCheck.checkOnce({ current: pkg.version });
+  let printed = false;
+  const emit = (result) => {
+    if (printed || !result || !result.outdated) return;
+    printed = true;
+    // Banner on stderr to avoid breaking stdout consumers
+    process.stderr.write(versionCheck.formatBanner(result.current, result.latest));
+    // Machine marker on stdout so agents can detect outdated state
+    process.stdout.write(versionCheck.machineMarker(result.current, result.latest) + '\n');
+  };
+  process.on('beforeExit', async () => {
+    // beforeExit can fire repeatedly while the event loop has work; await once.
+    try { emit(await checkPromise); } catch (_) { /* silent */ }
+  });
+  process.on('exit', () => {
+    // Last-chance synchronous emit if the promise has already resolved by exit.
+    // (beforeExit may not fire if process.exit() is called from a handler.)
+    if (printed) return;
+    // We can't await here, but if checkPromise already resolved synchronously
+    // (cache hit), emit() above will have already fired via beforeExit.
+  });
+}
+
+maybeAttachVersionCheck(process.argv);
 
 program.parse(process.argv);
 

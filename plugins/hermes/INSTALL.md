@@ -2,8 +2,16 @@
 
 ## Automatic install
 
+First install the `human-feedback` CLI (one-time, ~10 seconds):
+
 ```bash
-npx @nsharir/human-feedback install --hermes
+curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install.sh | bash
+```
+
+Then install the Hermes plugin:
+
+```bash
+human-feedback install --hermes
 ```
 
 This writes `.hermes/skills/human-feedback/SKILL.md` in your project. Add `--global` to install at `~/.hermes/skills/human-feedback/` instead.
@@ -11,7 +19,7 @@ This writes `.hermes/skills/human-feedback/SKILL.md` in your project. Add `--glo
 ## Uninstall
 
 ```bash
-npx @nsharir/human-feedback uninstall --hermes
+human-feedback uninstall --hermes
 ```
 
 ## What gets installed
@@ -46,4 +54,4 @@ Copy `human-feedback.skill.md` from this directory to `.hermes/skills/human-feed
 
 - Hermes Agent 0.9 or later
 - Node.js 18+ on PATH
-- `@nsharir/human-feedback` installed globally (`npm install -g @nsharir/human-feedback`)
+- `human-feedback` CLI installed (see *Automatic install* above)

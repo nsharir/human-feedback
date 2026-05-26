@@ -1,4 +1,4 @@
-<!-- human-feedback:begin v2.0.0 -->
+<!-- human-feedback:begin v2.1.0 -->
 ## human-feedback
 
 When the user asks for feedback on an artifact, or says "human-feedback", compile it into an interactive feedback surface.
@@ -55,4 +55,16 @@ After the initial compile, **every time you edit the source file** (the `.md`, `
 ```
 
 Types: `text`, `textarea`, `radio`, `checkbox`, `select`, `boolean`, `scale`, `range`, `date`. Add `"other": true` for free-text option, `"required": true` for mandatory questions.
+
+### Updating human-feedback
+
+If the user asks to update human-feedback, run `human-feedback update` — it pulls the latest from GitHub and rebuilds.
+
+### Version check
+
+After running any `human-feedback` CLI command, inspect its output for a line matching `[human-feedback:update-available current=X.Y.Z latest=A.B.C]`. If found, surface a single one-liner to the user **once per conversation**:
+
+> _human-feedback v{latest} is available (you're on {current}). Run `human-feedback update` or ask me to update it for you._
+
+Do not poll proactively — only react to the marker emitted by the CLI.
 <!-- human-feedback:end -->

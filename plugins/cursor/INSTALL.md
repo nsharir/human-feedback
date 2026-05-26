@@ -2,8 +2,16 @@
 
 ## Automatic install
 
+First install the `human-feedback` CLI (one-time, ~10 seconds):
+
 ```bash
-npx @nsharir/human-feedback install --cursor
+curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install.sh | bash
+```
+
+Then install the Cursor plugin:
+
+```bash
+human-feedback install --cursor
 ```
 
 This writes `.cursor/rules/human-feedback.mdc` in your project. Add `--global` to install at `~/.cursor/rules/` instead.
@@ -11,7 +19,7 @@ This writes `.cursor/rules/human-feedback.mdc` in your project. Add `--global` t
 ## Uninstall
 
 ```bash
-npx @nsharir/human-feedback uninstall --cursor
+human-feedback uninstall --cursor
 ```
 
 ## What gets installed
@@ -45,4 +53,4 @@ Running `install` automatically removes old hook-based entries from `.cursor/hoo
 
 - Cursor 1.7 or later
 - Node.js 18+ on PATH
-- `@nsharir/human-feedback` installed globally (`npm install -g @nsharir/human-feedback`)
+- `human-feedback` CLI installed (see *Automatic install* above)

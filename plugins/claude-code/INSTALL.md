@@ -2,8 +2,16 @@
 
 ## Automatic install
 
+First install the `human-feedback` CLI (one-time, ~10 seconds):
+
 ```bash
-npx @nsharir/human-feedback install --claude-code
+curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install.sh | bash
+```
+
+Then install the Claude Code plugin:
+
+```bash
+human-feedback install --claude-code
 ```
 
 This writes `.claude/commands/human-feedback.md` in your project. Add `--global` to install at `~/.claude/commands/` instead.
@@ -11,7 +19,7 @@ This writes `.claude/commands/human-feedback.md` in your project. Add `--global`
 ## Uninstall
 
 ```bash
-npx @nsharir/human-feedback uninstall --claude-code
+human-feedback uninstall --claude-code
 ```
 
 ## What gets installed
@@ -48,10 +56,10 @@ Copy `human-feedback.command.md` from this directory to `.claude/commands/human-
 Running `install` automatically removes old hook-based entries from `.claude/settings.json`. Run `doctor` to check:
 
 ```bash
-npx @nsharir/human-feedback doctor
+human-feedback doctor
 ```
 
 ## Requires
 
 - Node.js 18+ on PATH
-- `@nsharir/human-feedback` installed globally (`npm install -g @nsharir/human-feedback`)
+- `human-feedback` CLI installed (see *Automatic install* above)
