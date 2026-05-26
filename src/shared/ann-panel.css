@@ -309,7 +309,7 @@
 #ann-shared-fab-badge.on { display: block; }
 
 /* ── MOBILE: bottom sheet ───────────────────────────────────────────────── */
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 720px) {
   #ann-panel {
     top: auto; bottom: 0; left: 0; right: 0;
     width: 100%;

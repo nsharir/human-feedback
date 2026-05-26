@@ -621,3 +621,20 @@ input[type=date].q-input { font-family: var(--sans); }
   line-height: 1.7;
 }
 .success-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* ── Narrow viewports (phones, small windows) ─────────────────────────────── */
+@media (max-width: 480px) {
+  header { padding: 0 14px; }
+  main   { padding: 24px 14px 48px; }
+  .q-card { padding: 16px 16px; }
+  #q-title { font-size: 22px; }
+  #q-description { font-size: 12px; }
+  .schema-box { padding: 16px 16px; }
+  /* Keep 1–10 scale on a single row even on small screens. */
+  .q-scale-btn { min-width: 34px; height: 36px; font-size: 12px; }
+}
+
+@media (max-width: 360px) {
+  #q-title { font-size: 20px; }
+  .q-scale-btn { min-width: 30px; height: 34px; }
+}
