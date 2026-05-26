@@ -1,6 +1,6 @@
 {
   "name": "@nsharir/human-feedback",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Close the loop on AI agent output — compile .md / .html / .json files into interactive feedback surfaces. Install the /human-feedback command into Claude Code, Cursor, Codex, or Hermes.",
   "main": "lib/compiler.js",
   "bin": {

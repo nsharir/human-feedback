@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] — 2026-05-26
+
+No-op version bump for end-to-end update-flow testing.
+
 ## [0.2.1] — 2026-05-26
 
 ### Fixed
