@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] — 2026-05-26
+
+### Fixed
+
+- `install.sh`: brace-quote `${HOME_DIR}` and `${BIN_DIR}` expansions before the ellipsis character so bash doesn't treat U+2026 as part of the variable name (under `set -u` this aborted every fresh install with `unbound variable`).
+
 ## [0.2.0] — 2026-05-26
 
 ### Added
