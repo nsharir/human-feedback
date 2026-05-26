@@ -88,7 +88,7 @@ if [ -d "$HOME_DIR/.git" ]; then
 elif [ -d "$HOME_DIR" ]; then
   die "$HOME_DIR exists but is not a git repository. Remove it or set HUMAN_FEEDBACK_HOME to a different path."
 else
-  info "cloning $REPO_URL into $HOME_DIR…"
+  info "cloning $REPO_URL into ${HOME_DIR}…"
   run git clone --depth=1 --branch "$REF" --quiet "$REPO_URL" "$HOME_DIR"
   ok "repository cloned"
 fi
@@ -105,7 +105,7 @@ ok "templates built"
 printf '\n'
 
 # ── symlink ──────────────────────────────────────────────────────────────────
-info "linking CLI into $BIN_DIR…"
+info "linking CLI into ${BIN_DIR}…"
 run mkdir -p "$BIN_DIR"
 run chmod +x "$HOME_DIR/bin/cli.js"
 
