@@ -52,23 +52,20 @@ jobs:
         run: |
           VERSION="${{ steps.tag.outputs.version }}"
           # Pull lines from "## [VERSION]" up to (but not including) the next "## ["
-          NOTES=$(awk -v v="## [$VERSION]" '
+          awk -v v="## [$VERSION]" '
             $0 ~ "^## \\[" {
               if (found) exit
               if (index($0, v) == 1) { found=1; next }
             }
             found { print }
-          ' CHANGELOG.md)
-          if [ -z "$NOTES" ]; then
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
             echo "::warning::No CHANGELOG section found for v$VERSION; falling back to placeholder."
-            NOTES="Release v$VERSION. See CHANGELOG.md for details."
+            echo "Release v$VERSION. See CHANGELOG.md for details." > release-notes.md
           fi
-          # Emit multi-line output for downstream step.
-          {
-            echo "body<<HF_NOTES_EOF"
-            echo "$NOTES"
-            echo "HF_NOTES_EOF"
-          } >> "$GITHUB_OUTPUT"
+          echo "--- release notes ---"
+          cat release-notes.md
+          echo "--- end ---"
 
       - name: Create GitHub Release
         env:
@@ -77,4 +74,4 @@ jobs:
           gh release create "${{ steps.tag.outputs.tag }}" \
             --repo "${{ github.repository }}" \
             --title "${{ steps.tag.outputs.tag }}" \
-            --notes "${{ steps.notes.outputs.body }}"
+            --notes-file release-notes.md
