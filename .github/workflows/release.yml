@@ -1,0 +1,80 @@
+name: Release
+
+# Triggered when a tag matching v* is pushed to the repo. The job:
+#   1. Verifies package.json version matches the tag.
+#   2. Extracts the matching section from CHANGELOG.md.
+#   3. Publishes a GitHub Release using GITHUB_TOKEN (which has repo write
+#      access by virtue of running inside this repo's Actions context — no
+#      need to wire up a PAT).
+#
+# To ship a release:
+#   1. Bump package.json + add CHANGELOG.md entry (## [X.Y.Z] — YYYY-MM-DD).
+#   2. Commit, push main.
+#   3. git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z
+#   4. This workflow fires, publishes the Release.
+#   5. `human-feedback check-for-updates` clients pick it up within 24h
+#      (or immediately after their session cache expires).
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # required to create a Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: tag
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify package.json version matches tag
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "${{ steps.tag.outputs.version }}" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match tag (${{ steps.tag.outputs.version }})"
+            exit 1
+          fi
+          echo "Verified package.json version == tag: $PKG_VERSION"
+
+      - name: Extract CHANGELOG section
+        id: notes
+        run: |
+          VERSION="${{ steps.tag.outputs.version }}"
+          # Pull lines from "## [VERSION]" up to (but not including) the next "## ["
+          NOTES=$(awk -v v="## [$VERSION]" '
+            $0 ~ "^## \\[" {
+              if (found) exit
+              if (index($0, v) == 1) { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "::warning::No CHANGELOG section found for v$VERSION; falling back to placeholder."
+            NOTES="Release v$VERSION. See CHANGELOG.md for details."
+          fi
+          # Emit multi-line output for downstream step.
+          {
+            echo "body<<HF_NOTES_EOF"
+            echo "$NOTES"
+            echo "HF_NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.tag.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --title "${{ steps.tag.outputs.tag }}" \
+            --notes "${{ steps.notes.outputs.body }}"

@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] — 2026-05-27
+
+### Changed
+
+- **Compiled artifacts now carry `Cache-Control: no-store` headers** plus `Pragma`/`Expires` fallbacks, injected into `<head>` of every output. A normal browser reload always shows the latest content — no hard-refresh, no filename juggling. This makes the `-r<N>` filename suffix convention unnecessary; recompile in place against the same `-o <output>` path on every iteration.
+
+### Added
+
+- **Real `<title>` derived from content.** Compiled HTML titles now reflect the source instead of the generic "MD Annotator" / "Human Feedback" template defaults:
+  - Markdown → first `# H1`
+  - HTML → source's existing `<title>`
+  - JSON → `config.title`
+  - Fallback → humanized filename stem (`RD-Strategy-H2-2026-v0-nadav` → "RD Strategy H2 2026 v0 nadav")
+- **Build-stamp comment** at the top of every compiled artifact: `<!-- @human-feedback build-stamp: <ISO timestamp> | source: <filename> -->` — view-source sanity check for "is this the latest build?".
+- `<meta name="human-feedback-built-at" content="<ISO>">` for programmatic freshness checks.
+- **Automated GitHub Release workflow** — pushing a `v*` tag triggers `.github/workflows/release.yml`, which extracts the matching CHANGELOG section and publishes a Release. No more manual click in the GitHub UI.
+
 ## [0.2.2] — 2026-05-26
 
 No-op version bump for end-to-end update-flow testing.
