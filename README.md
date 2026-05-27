@@ -400,6 +400,65 @@ The built templates are committed to git so `npm install` works without a build 
 
 ---
 
+## Releasing
+
+Releases are published automatically by `.github/workflows/release.yml` whenever a tag matching `v*` is pushed. The workflow extracts the matching section from `CHANGELOG.md` and creates a GitHub Release using the built-in `GITHUB_TOKEN` (no PAT required).
+
+### Cutting a new release
+
+1. **Bump the version** in `package.json` and `package-lock.json` (both `"version"` occurrences for this package — leave nested deps alone).
+2. **Add a CHANGELOG entry** at the top:
+   ```markdown
+   ## [X.Y.Z] — YYYY-MM-DD
+
+   ### Added / Changed / Fixed
+
+   - ...
+   ```
+   The version inside the brackets must match the tag (the workflow verifies this and fails the run if they diverge).
+3. **Commit and push `main`**:
+   ```bash
+   git add package.json package-lock.json CHANGELOG.md
+   git commit -m "vX.Y.Z: <short summary>"
+   git push origin main
+   ```
+4. **Tag and push the tag**:
+   ```bash
+   git tag -a vX.Y.Z -m "vX.Y.Z"
+   git push origin vX.Y.Z
+   ```
+5. The release workflow fires on the tag push. Watch it with:
+   ```bash
+   gh run list --repo nsharir/human-feedback --workflow=release.yml --limit 3
+   ```
+6. Once it completes, the release is live at `https://github.com/nsharir/human-feedback/releases/tag/vX.Y.Z`. Clients running `human-feedback check-for-updates` (or any CLI command, which auto-checks once per session) will see the new version within 24 hours of cache expiry.
+
+### What the workflow does
+
+| Step | Action |
+|------|--------|
+| 1 | Checks out the repo at the tagged commit |
+| 2 | Extracts the version from the tag (`v1.2.3` → `1.2.3`) |
+| 3 | Verifies `package.json` version matches the tag — fails the run on mismatch |
+| 4 | Awk-extracts the matching `## [X.Y.Z]` section from `CHANGELOG.md` into `release-notes.md` |
+| 5 | Runs `gh release create vX.Y.Z --notes-file release-notes.md` |
+
+### Notes
+
+- **The tag IS the trigger.** No commit-message flag or manual step needed. Pushing the tag is the single action that publishes the release.
+- **The notes come from CHANGELOG.md.** If you forget the changelog entry the workflow falls back to a generic "See CHANGELOG.md for details" placeholder — fix it by editing the release on GitHub or by retagging.
+- **Retagging a published version:** delete the local + remote tag, then push the new tag. The workflow runs again and the release is recreated.
+  ```bash
+  git tag -d vX.Y.Z
+  git push origin :refs/tags/vX.Y.Z
+  gh release delete vX.Y.Z --repo nsharir/human-feedback --yes
+  git tag -a vX.Y.Z -m "vX.Y.Z"
+  git push origin vX.Y.Z
+  ```
+- **Notes with backticks render fine** because we use `--notes-file` rather than interpolating into the shell.
+
+---
+
 ## Agent workflow patterns
 
 ### HTML review loop
