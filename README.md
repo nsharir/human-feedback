@@ -61,6 +61,7 @@ Please install https://github.com/nsharir/human-feedback
 > 2. **Harnesses** — which of the detected ones to wire up: Claude Code, Cursor, Codex, Hermes, or `--all`?
 >
 > Then run the matching `human-feedback install --<harness> [--global]` command(s). Use `human-feedback doctor` to confirm.
+> Once done, let the user knows that smetimes they will need to start a new session/reload skills/commands in order to see this in action
 
 Or install manually:
 
