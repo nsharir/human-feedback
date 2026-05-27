@@ -56,6 +56,12 @@ Just tell your agent to set it up:
 Please install https://github.com/nsharir/human-feedback
 ```
 
+> **For agents:** after running the installer (`curl … | bash`), do **not** silently pick a harness or scope. Ask the user:
+> 1. **Scope** — install **globally** (`~/.<harness>/…`, available in every project) or **project-local** (this repo only)?
+> 2. **Harnesses** — which of the detected ones to wire up: Claude Code, Cursor, Codex, Hermes, or `--all`?
+>
+> Then run the matching `human-feedback install --<harness> [--global]` command(s). Use `human-feedback doctor` to confirm.
+
 Or install manually:
 
 ```bash
