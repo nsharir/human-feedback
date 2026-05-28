@@ -57,6 +57,18 @@ The agent doesn't need to have written a file.
 If it just replied with a long text message — an analysis, a list of recommendations, a draft email — invoke `/human-feedback` and the agent will take its own response, save it as an artifact, and compile it into a reviewable surface on the spot. 
 **Any textual agent output becomes a human-reviewable artifact.**
 
+### You ask the agent to do something — and review it on the way back
+
+`/human-feedback` isn't only a feedback-after-the-fact tool — it's also a one-shot way to dispatch a task *and* get a review surface for the output. Pass an ask after the command and the agent runs it, then immediately compiles the result into a feedback artifact you can annotate.
+
+```
+/human-feedback draft me a test plan for the saved-reports feature
+/human-feedback summarize this PR diff and flag risky changes
+/human-feedback turn the meeting notes into action items grouped by owner
+```
+
+Same paste-back loop, zero extra steps. The agent does the work, hands you the reviewable artifact in one go.
+
 ### Try the samples yourself
 
 Download these and open them in your browser to see what each tool produces:
