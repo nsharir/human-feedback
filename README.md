@@ -1,5 +1,5 @@
 # human-feedback
-## Stop explaining yourself to your AI agent: Fix the Human-Feedback loop
+## Stop explaining yourself to your AI Agent: Fix the Human-Feedback loop
 
 The agent isn't slow. **Delivering the feedback back to the agent is what's killing you**
 
@@ -8,7 +8,8 @@ You're staring at a mockup and typing "the button in the top-right of the second
 You're answering "just a few clarifying questions" for the fourth time today.
 
 
-`human-feedback` fixes this. 
+`human-feedback` fixes this.
+
 It turns any agent output — a markdown spec, an HTML mockup, a list of questions, or even just a long text message — into a reviewable, annotatable artifact you open in your browser. 
 You highlight, click, comment, and then copy a structured prompt back. 
 The agent knows exactly which line, which element, which answer each comment refers to.
@@ -19,9 +20,9 @@ No server. No accounts. No browser extension. Just a single command: `/human-fee
 
 ## See it in action
 
-**End-to-end walkthrough** — from intent capture to mockup feedback, with narration:
+*End-to-end walkthrough* — ***Turn up your volume!*** 
 
-https://github.com/user-attachments/assets/cb70bbfd-bf67-42a8-b1e6-3b3bbe7eb6a3
+https://github.com/user-attachments/assets/c0563b21-584b-4e02-87cb-5c18203c77da
 
 ### The agent asks you what you want
 
