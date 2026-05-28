@@ -4,12 +4,14 @@
   "description": "Close the loop on AI agent output — compile .md / .html / .json files into interactive feedback surfaces. Install the /human-feedback command into Claude Code, Cursor, Codex, or Hermes.",
   "main": "lib/compiler.js",
   "bin": {
-    "human-feedback": "./bin/cli.js"
+    "human-feedback": "./bin/cli.bundled.js"
   },
   "scripts": {
     "build": "node build/build.js",
-    "test": "npm run build && node test/run.js && node test/annotator.js && node test/md-annotator.js && node test/installer.js && node test/version-check.js",
-    "prepack": "npm run build",
+    "build:bundle": "node build/bundle.js",
+    "build:all": "npm run build && npm run build:bundle",
+    "test": "npm run build:all && node test/run.js && node test/annotator.js && node test/md-annotator.js && node test/installer.js && node test/version-check.js && node test/help-agents.js",
+    "prepack": "npm run build:all",
     "compile:examples": "node scripts/compile-examples.js"
   },
   "files": [
@@ -49,6 +51,7 @@
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
+    "esbuild": "^0.28.0",
     "jsdom": "^24.1.0"
   }
 }
