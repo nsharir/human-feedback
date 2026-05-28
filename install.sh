@@ -62,7 +62,6 @@ need() {
 }
 need git "Install via your package manager: 'brew install git' on macOS, 'apt install git' on Debian/Ubuntu."
 need node "Install Node.js 18+ from https://nodejs.org or via nvm: 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash'."
-need npm  "npm ships with Node.js; reinstall Node to get it."
 
 # Node version check (>= 18)
 node_major=$(node -p 'process.versions.node.split(".")[0]')
@@ -72,7 +71,6 @@ fi
 
 ok "git $(git --version | awk '{print $3}')"
 ok "node $(node -v)"
-ok "npm  $(npm -v)"
 printf '\n'
 
 # ── clone or update ──────────────────────────────────────────────────────────
@@ -95,26 +93,20 @@ fi
 printf '\n'
 
 # ── install runtime deps + build ─────────────────────────────────────────────
-info "installing runtime dependencies…"
-run npm --prefix "$HOME_DIR" install --omit=dev --no-audit --no-fund --silent
-ok "dependencies installed"
-
-info "building templates…"
-run npm --prefix "$HOME_DIR" run build --silent
-ok "templates built"
-printf '\n'
+# (bundled CLI ships in the repo as bin/cli.bundled.js, so no npm install /
+#  build step is required on the user's machine.)
 
 # ── symlink ──────────────────────────────────────────────────────────────────
 info "linking CLI into ${BIN_DIR}…"
 run mkdir -p "$BIN_DIR"
-run chmod +x "$HOME_DIR/bin/cli.js"
+run chmod +x "$HOME_DIR/bin/cli.bundled.js"
 
 LINK_PATH="$BIN_DIR/human-feedback"
 if [ -L "$LINK_PATH" ] || [ -e "$LINK_PATH" ]; then
   run rm -f "$LINK_PATH"
 fi
-run ln -s "$HOME_DIR/bin/cli.js" "$LINK_PATH"
-ok "symlink created: $LINK_PATH → $HOME_DIR/bin/cli.js"
+run ln -s "$HOME_DIR/bin/cli.bundled.js" "$LINK_PATH"
+ok "symlink created: $LINK_PATH → $HOME_DIR/bin/cli.bundled.js"
 printf '\n'
 
 # ── PATH check ───────────────────────────────────────────────────────────────
@@ -144,13 +136,20 @@ if [ "$DRY_RUN" != "1" ]; then
 fi
 printf '\n'
 
-# ── next steps ───────────────────────────────────────────────────────────────
-printf '  %sNext steps:%s\n\n' "$C_BOLD" "$C_RESET"
-printf '    Install the %s/human-feedback%s command into your agent harness:\n\n' "$C_CYAN" "$C_RESET"
-printf '      %shuman-feedback install%s             %s# interactive%s\n'   "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET"
-printf '      %shuman-feedback install --claude-code%s\n' "$C_BOLD" "$C_RESET"
-printf '      %shuman-feedback install --cursor%s\n'      "$C_BOLD" "$C_RESET"
-printf '      %shuman-feedback install --codex%s\n'       "$C_BOLD" "$C_RESET"
-printf '      %shuman-feedback install --hermes%s\n\n'    "$C_BOLD" "$C_RESET"
-printf '    To update later:                   %shuman-feedback update%s\n'             "$C_BOLD" "$C_RESET"
-printf '    To check for a new version:        %shuman-feedback check-for-updates%s\n\n' "$C_BOLD" "$C_RESET"
+# ── next steps (agent-readable) ──────────────────────────────────────────────
+printf '\n'
+printf '  %s━━━ AGENT NEXT STEPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%s\n' "$C_BOLD" "$C_RESET"
+printf '  Do NOT pick defaults. Ask the user two questions:\n'
+printf '    1. Scope:    global (~/) or project-local (this repo)?\n'
+printf '    2. Harness:  claude-code | cursor | codex | hermes | --all\n'
+printf '  Then run:      %shuman-feedback install --<harness> [--global]%s\n' "$C_BOLD" "$C_RESET"
+printf '  Verify:        %shuman-feedback doctor%s\n' "$C_BOLD" "$C_RESET"
+printf '  Full playbook: %shuman-feedback help-agents%s\n' "$C_BOLD" "$C_RESET"
+printf '  %s━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%s\n\n' "$C_BOLD" "$C_RESET"
+
+printf '  %sHuman next steps:%s\n\n' "$C_BOLD" "$C_RESET"
+printf '    Install command/skill into your agent:\n'
+printf '      %shuman-feedback install%s             %s# interactive%s\n' "$C_BOLD" "$C_RESET" "$C_DIM" "$C_RESET"
+printf '      %shuman-feedback install --all%s\n\n' "$C_BOLD" "$C_RESET"
+printf '    Update later:                      %shuman-feedback update%s\n'             "$C_BOLD" "$C_RESET"
+printf '    Check for a new version:           %shuman-feedback check-for-updates%s\n\n' "$C_BOLD" "$C_RESET"
