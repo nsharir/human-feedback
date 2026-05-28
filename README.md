@@ -1,10 +1,17 @@
 # human-feedback
+## Stop explaining yourself to your AI agent: Fix the Human-Feedback loop
 
-**The agent isn't slow. *Delivering the feedback back to the agent* is what's killing you.**
+The agent isn't slow. **Delivering the feedback back to the agent is what's killing you**
 
-You're reading a spec and trying to describe *which paragraph* you disagree with. You're staring at a mockup and typing "the button in the top-right of the second row" because there's no other way to point. You're answering "just a few clarifying questions" for the fourth time today.
+You're reading a spec and trying to describe *which paragraph* you disagree with. 
+You're staring at a mockup and typing "the button in the top-right of the second row" because there's no other way to point. 
+You're answering "just a few clarifying questions" for the fourth time today.
 
-`human-feedback` fixes this. It turns any agent output — a markdown spec, an HTML mockup, a list of questions, or even just a long text message — into a reviewable, annotatable artifact you open in your browser. You highlight, click, comment, and then copy a structured prompt back. The agent knows exactly which line, which element, which answer each comment refers to.
+
+`human-feedback` fixes this. 
+It turns any agent output — a markdown spec, an HTML mockup, a list of questions, or even just a long text message — into a reviewable, annotatable artifact you open in your browser. 
+You highlight, click, comment, and then copy a structured prompt back. 
+The agent knows exactly which line, which element, which answer each comment refers to.
 
 No server. No accounts. No browser extension. Just a single command: `/human-feedback`.
 
@@ -14,29 +21,40 @@ No server. No accounts. No browser extension. Just a single command: `/human-fee
 
 **End-to-end walkthrough** — from intent capture to mockup feedback, with narration:
 
-https://github.com/user-attachments/assets/73058dc7-7a15-4014-b69a-ef864e024e79
+https://github.com/user-attachments/assets/cb70bbfd-bf67-42a8-b1e6-3b3bbe7eb6a3
 
 ### The agent asks you what you want
 
-You know how it goes: the agent dumps a long message with a dozen questions for you to respond to. You just reply with `/human-feedback` — it generates a full-blown questionnaire for you to easily respond to every question. Fill it in, click copy, paste it back.
+You know how it goes: the agent dumps a long message with a dozen questions for you to respond to. 
+You just reply with `/human-feedback` — it generates a full-blown questionnaire for you to easily respond to every question. 
+Fill it in, click copy, paste it back.
 
 ![Feedback questioner demo](examples/demos/feedback.gif)
 
 ### The agent drafts a spec
 
-The agent writes markdown — or even worse, sends you an inline message with a specification in place. Struggling to provide feedback on different sections of the text is painfully time-consuming. Same command: `/human-feedback`. It restructures the spec into a reviewable artifact with a comment layer baked in. Highlight any sentence, type a comment, get floating labels in the text. Click "Copy Prompt" and hand the agent a structured response: *which line, what it said, what you want changed.*
+The agent writes markdown — or even worse, sends you an inline message with a specification in place. 
+Struggling to provide feedback on different sections of the text is painfully time-consuming. 
+Same command: `/human-feedback`. 
+It restructures the spec into a reviewable artifact with a comment layer baked in. Highlight any sentence, type a comment, get floating labels in the text. 
+Click "Copy Prompt" and hand the agent a structured response: *which line, what it said, what you want changed.*
 
 ![Markdown annotator demo](examples/demos/md-annotator.gif)
 
 ### The agent ships a UI mockup
 
-The agent renders HTML — but describing what to fix spatially ("the button at the left side panel, on the top") is a nightmare. Same command: `/human-feedback`. Click on any element, leave a comment, and the CSS selector goes with it. The agent sees exactly what you were pointing at.
+The agent renders HTML — but describing what to fix spatially ("the button at the left side panel, on the top") is a nightmare. 
+Same command: `/human-feedback`. 
+Click on any element, leave a comment, and the CSS selector goes with it. 
+The agent sees exactly what you were pointing at.
 
 ![HTML annotator demo](examples/demos/html-annotator.gif)
 
 ### The agent just... responds with text
 
-The agent doesn't need to have written a file. If it just replied with a long text message — an analysis, a list of recommendations, a draft email — invoke `/human-feedback` and the agent will take its own response, save it as an artifact, and compile it into a reviewable surface on the spot. Any textual agent output becomes a human-reviewable artifact.
+The agent doesn't need to have written a file. 
+If it just replied with a long text message — an analysis, a list of recommendations, a draft email — invoke `/human-feedback` and the agent will take its own response, save it as an artifact, and compile it into a reviewable surface on the spot. 
+**Any textual agent output becomes a human-reviewable artifact.**
 
 ### Try the samples yourself
 
