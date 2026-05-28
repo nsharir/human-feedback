@@ -3292,7 +3292,7 @@ var require_package = __commonJS({
   "package.json"(exports2, module2) {
     module2.exports = {
       name: "@nsharir/human-feedback",
-      version: "0.3.0",
+      version: "0.3.1",
       description: "Close the loop on AI agent output \u2014 compile .md / .html / .json files into interactive feedback surfaces. Install the /human-feedback command into Claude Code, Cursor, Codex, or Hermes.",
       main: "lib/compiler.js",
       bin: {

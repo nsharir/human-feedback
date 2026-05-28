@@ -3,7 +3,7 @@ description: "Use human-feedback to compile HTML/MD/JSON artifacts into interact
 globs: []
 alwaysApply: false
 ---
-<!-- human-feedback v2.1.0 -->
+<!-- human-feedback v2.1.1 -->
 # human-feedback
 
 Compile an artifact into an interactive feedback surface the user opens in a browser.
@@ -42,11 +42,19 @@ human-feedback compile <input-path> -o <output-path> --force
 
 ## Present the result
 
-Share the compiled file with the user as a clickable link:
+Share the compiled file with the user as a clickable link **and** offer to open it:
 
 ```
 file://<absolute-output-path>
 ```
+
+Then propose opening it in their default browser. On macOS run:
+
+```
+open <absolute-output-path>
+```
+
+(Linux: `xdg-open`, Windows: `start`.) If the user confirms — or has previously told you to just open artifacts automatically — run the command. Otherwise leave the link for them to click.
 
 Tell the user the feedback surface is ready and **wait for their response**. Do not continue with work that depends on their feedback until they paste the structured prompt back.
 

@@ -1,4 +1,4 @@
-<!-- human-feedback v2.1.0 -->
+<!-- human-feedback v2.1.1 -->
 # /human-feedback
 
 Compile an artifact into an interactive feedback surface the user opens in a browser.
@@ -58,13 +58,21 @@ human-feedback compile <input-path> -o <output-path> --force
 
 ## Present the result
 
-Share the compiled file with the user:
+Share the compiled file with the user as a clickable `file://` link **and** offer to open it for them:
 
 ```
 file://<absolute-output-path>
 ```
 
-If Claude Preview is available, show it inline:
+Then explicitly suggest opening it. On macOS, propose running:
+
+```
+open <absolute-output-path>
+```
+
+(On Linux use `xdg-open`, on Windows use `start`.) If the user confirms — or has previously told you to just open artifacts automatically — run the command. Otherwise leave the link for them to click.
+
+If Claude Preview is available, also show it inline:
 1. `mcp__Claude_Preview__preview_start` with the file path
 2. `mcp__Claude_Preview__preview_screenshot` to display it
 

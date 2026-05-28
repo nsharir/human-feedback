@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] — 2026-05-28
+
+### Changed
+
+- **CLI plugins (claude-code, cursor, codex): explicitly suggest opening the compiled file.** The agent now shares the `file://` link **and** proposes running `open <path>` (macOS) / `xdg-open` (Linux) / `start` (Windows), and opens it on confirm. Previously the link was shared but the user had to manually click — friction Nadav flagged in Claude CLI.
+- Plugin marker comments bumped to `v2.1.1` in the three CLI plugin files. Hermes plugin unchanged (WebUI uses inline `MEDIA:` embed, no `open` needed).
+
 ## [0.3.0] — 2026-05-28
 
 ### Changed

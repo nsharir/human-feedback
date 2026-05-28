@@ -1,4 +1,4 @@
-<!-- human-feedback:begin v2.1.0 -->
+<!-- human-feedback:begin v2.1.1 -->
 ## human-feedback
 
 When the user asks for feedback on an artifact, or says "human-feedback", compile it into an interactive feedback surface.
@@ -31,6 +31,14 @@ human-feedback compile <input-path> -o <output-path> --force
 ### Present the result
 
 Share: `file://<absolute-output-path>`
+
+Then offer to open it. On macOS propose:
+
+```
+open <absolute-output-path>
+```
+
+(Linux: `xdg-open`, Windows: `start`.) If the user confirms — or has told you to just open artifacts automatically — run the command. Otherwise leave the link for them to click.
 
 Wait for the user's response. Do not continue with dependent work until they paste back the structured feedback prompt.
 
