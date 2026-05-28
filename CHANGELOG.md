@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] — 2026-05-28
+
+### Changed
+
+- **Distribution: ship a pre-bundled CLI.** `bin/cli.bundled.js` (~153 KB, built via esbuild) is now committed to git. The bootstrap installer (`curl … | bash`) clones the repo and symlinks the bundled file directly — **no `npm install`, no `npm run build` runs on the user's machine**. Prereqs shrink to `git` + `node 18+`.
+- `install.sh`: replace the generic "Next steps" footer with a clearly-delimited **`AGENT NEXT STEPS`** block (plus a separate "Human next steps" block). A harness running `curl … | bash` now sees the install playbook in stdout without needing to fetch any doc — fixes the chicken-and-egg gap where Codex previously had no playbook to follow until *after* `install --codex` succeeded.
+- README quick-start, `CONTRIBUTING.md`, and every `plugins/<harness>/INSTALL.md`: replace inline "ask scope + harness" guidance with pointers to the new canonical playbook command (see below).
+
+### Added
+
+- **`human-feedback help-agents`** — new subcommand printing the canonical install + usage playbook for AI coding agents. Single source of truth, version-locked to the installed CLI. Includes the explicit STOP gate (ask scope + harness before picking any defaults), install verification step, compile/share flow, and update-marker handling.
+- **`build/bundle.js`** — esbuild-driven bundler that resolves `commander` and `picocolors` against the project's own `node_modules`, bypassing any ancestor Yarn PnP manifest (e.g. a stray `~/.pnp.cjs`) that would otherwise break module resolution.
+- **`build:bundle`, `build:all`** npm scripts. `test` and `prepack` now run `build:all`. New `test/help-agents.js` smoke test (15 assertions) wired into the test suite.
+- **Backfilled CHANGELOG entries for 0.2.5, 0.2.6, 0.2.7** so the GitHub release workflow's awk-extractor stops falling back to the generic "See CHANGELOG.md for details" placeholder for those tags.
+
+### Fixed
+
+- Codex install flow: agents reading `plugins/codex/INSTALL.md` (or any other harness's INSTALL.md) now see a top banner pointing at `help-agents` before they pick a default scope/harness.
+
 ## [0.2.7] — 2026-05-27
 
 ### Changed
