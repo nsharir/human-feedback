@@ -1,5 +1,9 @@
 # Cursor — human-feedback rule
 
+> **Agent installing this?** Run `human-feedback help-agents` first — it
+> prints the canonical install playbook (scope + harness questions you
+> must ask the user before picking any defaults).
+
 ## Automatic install
 
 First install the `human-feedback` CLI (one-time, ~10 seconds):

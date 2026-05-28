@@ -56,12 +56,7 @@ Just tell your agent to set it up:
 Please install https://github.com/nsharir/human-feedback
 ```
 
-> **For agents:** after running the installer (`curl … | bash`), do **not** silently pick a harness or scope. Ask the user:
-> 1. **Scope** — install **globally** (`~/.<harness>/…`, available in every project) or **project-local** (this repo only)?
-> 2. **Harnesses** — which of the detected ones to wire up: Claude Code, Cursor, Codex, Hermes, or `--all`?
->
-> Then run the matching `human-feedback install --<harness> [--global]` command(s). Use `human-feedback doctor` to confirm.
-> Once done, let the user knows that smetimes they will need to start a new session/reload skills/commands in order to see this in action
+> **For agents:** after running the installer, do **not** silently pick a harness or scope. Run `human-feedback help-agents` and follow the playbook it prints. (TL;DR: ask the user about scope + harness first, then run `human-feedback install --<harness> [--global]`. Verify with `human-feedback doctor`.)
 
 Or install manually:
 
@@ -70,7 +65,7 @@ curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install
 human-feedback install   # interactive — pick your harness
 ```
 
-The installer clones the repo to `~/.human-feedback`, builds the templates, and symlinks the CLI to `~/.local/bin/human-feedback`. No npm package — installs and updates come straight from GitHub.
+The installer clones the repo to `~/.human-feedback` and symlinks the prebuilt CLI to `~/.local/bin/human-feedback`. No `npm install`, no build step on your machine — the bundled CLI is committed to git. Prereqs: `git` and `node 18+`.
 
 Note: most tools require a new session for the command and skill to take effect.
 

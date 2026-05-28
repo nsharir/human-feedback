@@ -19,12 +19,35 @@ The repo uses an `@include`-based build process to keep shared code DRY:
 src/shared/       single source of truth
 src/tools/<name>/ tool-specific code
 build/build.js    resolves @include directives
+build/bundle.js   bundles bin/cli.js + deps into bin/cli.bundled.js
 lib/templates/    built output (committed)
 lib/compiler.js   reads lib/templates/ and produces compiled HTML
-bin/cli.js        CLI entry point
+bin/cli.js        CLI source entrypoint (dev clones)
+bin/cli.bundled.js  pre-bundled CLI (shipped to end users — committed)
 ```
 
-When you edit anything in `src/`, run `npm run build` to regenerate the templates. Tests run the build automatically.
+When you edit anything in `src/`, run `npm run build` to regenerate the templates.
+When you edit `bin/cli.js`, run `npm run build:bundle` to regenerate `bin/cli.bundled.js`.
+`npm run build:all` does both. Tests run `build:all` automatically.
+
+## Bundling the CLI
+
+End users install via `curl | bash`, which clones the repo and symlinks
+the **bundled** CLI (`bin/cli.bundled.js`) into their PATH. No `npm install`
+runs on their machine, so the bundle must be committed up-to-date.
+
+```bash
+npm run build:bundle      # just the CLI bundle
+npm run build:all         # templates + CLI bundle
+```
+
+The bundler (`build/bundle.js`) uses esbuild's JS API and explicitly resolves
+`commander` and `picocolors` against this project's `node_modules` to bypass
+any ancestor Yarn PnP manifest (e.g. a stray `~/.pnp.cjs`) that would
+otherwise interfere with module resolution.
+
+Always commit both `bin/cli.js` (source) and `bin/cli.bundled.js` (built)
+in the same commit. `prepack` runs `build:all`, so npm/pack flows stay in sync.
 
 ## `@include` syntax
 
