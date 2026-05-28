@@ -22,7 +22,7 @@ No server. No accounts. No browser extension. Just a single command: `/human-fee
 
 *End-to-end walkthrough* — ***Turn up your volume!*** 
 
-https://github.com/user-attachments/assets/c0563b21-584b-4e02-87cb-5c18203c77da
+https://github.com/user-attachments/assets/006b0002-172b-4e42-8e6e-66b515559098
 
 ### The agent asks you what you want
 
