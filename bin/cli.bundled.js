@@ -4193,7 +4193,53 @@ program.command("update").alias("upgrade").alias("self-update").description("Upd
   console.log(`  ${pc.dim("Tip:")} re-run ${pc.bold("human-feedback install")} to refresh installed skills with the latest content.`);
   console.log("");
 });
-var SKIP_AUTO_CHECK = /* @__PURE__ */ new Set(["update", "upgrade", "self-update", "check-for-updates", "check-updates", "check", "uninstall"]);
+program.command("help-agents").description("Print the install + usage playbook for AI coding agents").action(() => {
+  const B = pc.bold;
+  const D = pc.dim;
+  const lines = [
+    "",
+    `${B("human-feedback")} ${D("v" + pkg.version)} ${D("\u2014 playbook for AI agents")}`,
+    "",
+    B("When the user asks you to install human-feedback:"),
+    "",
+    "  1. Run the bootstrap (idempotent \u2014 safe on existing installs):",
+    `       ${B("curl -fsSL https://raw.githubusercontent.com/nsharir/human-feedback/main/install.sh | bash")}`,
+    "",
+    `  2. ${B("STOP")}. Ask the user two questions before proceeding:`,
+    `       a) ${B("Scope")}    \u2014 global (~/) or project-local (this repo)?`,
+    `       b) ${B("Harness")}  \u2014 claude-code | cursor | codex | hermes | --all`,
+    "",
+    "  3. Run the matching install command, for example:",
+    `       ${B("human-feedback install --codex")}            ${D("# project-local")}`,
+    `       ${B("human-feedback install --codex --global")}   ${D("# global")}`,
+    `       ${B("human-feedback install --all --global")}     ${D("# every detected harness, globally")}`,
+    "",
+    "  4. Verify:",
+    `       ${B("human-feedback doctor")}`,
+    "",
+    "  5. Tell the user: most harnesses need a new session or skill reload",
+    `     before ${B("/human-feedback")} is available.`,
+    "",
+    B("When the user asks for feedback on something:"),
+    "",
+    "  1. Identify the artifact (most recent .md / .html, or write a questions.json).",
+    `  2. Run: ${B("human-feedback compile <input> -o <output> --force")}`,
+    `  3. Share a ${B("file://")} link to the output.`,
+    `  4. ${B("WAIT")} for the user's structured response before continuing.`,
+    "  5. If you edit the source file later, recompile immediately and re-share.",
+    "",
+    B("Update flow:"),
+    "",
+    `  - If you see  ${D("[human-feedback:update-available current=X latest=Y]")}  in`,
+    "    any CLI output, mention it to the user ONCE per conversation.",
+    `  - User can run:  ${B("human-feedback update")}`,
+    "",
+    D(`Full reference: https://github.com/nsharir/human-feedback#readme`),
+    ""
+  ];
+  console.log(lines.join("\n"));
+});
+var SKIP_AUTO_CHECK = /* @__PURE__ */ new Set(["update", "upgrade", "self-update", "check-for-updates", "check-updates", "check", "uninstall", "help-agents"]);
 function maybeAttachVersionCheck(argv) {
   let sub = null;
   for (const a of argv.slice(2)) {
