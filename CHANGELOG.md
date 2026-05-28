@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7] — 2026-05-27
+
+### Changed
+
+- README: extend the "for agents" install guidance to note that most harnesses require a new session or skill/command reload before `/human-feedback` is available.
+
+## [0.2.6] — 2026-05-27
+
+Re-tag of 0.2.5 to retrigger the release workflow. No code changes.
+
+## [0.2.5] — 2026-05-27
+
+### Added
+
+- **README "Releasing" section** documenting the `v*` tag workflow that fires `.github/workflows/release.yml`, including how to cut a release, what the workflow does, and how to retag a published version.
+
+### Changed
+
+- **"For agents" install guidance** in the README + plugin INSTALL.md files: instruct agents to ask the user about install scope (global vs project-local) and which harnesses to wire up before running any `human-feedback install --<harness>` command. Stops agents from silently picking defaults.
+
 ## [0.2.4] — 2026-05-27
 
 ### Changed
